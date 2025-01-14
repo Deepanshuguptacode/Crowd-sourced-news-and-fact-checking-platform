@@ -1,0 +1,44 @@
+// models/news.js
+const mongoose = require('mongoose');
+
+// Define the schema for News
+const newsSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  link: {
+    type: String,
+    required: true,
+  },
+  screenshots: [{
+    type: String, // URL to the uploaded screenshot
+  }],
+  status: {
+    type: String,
+    enum: ['Pending', 'Verified', 'Fake'],
+    default: 'Pending',
+  },
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // reference to the User model
+    required: true,
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  comments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment', // reference to Comment model, which will be added later
+  }],
+});
+
+// Create the model from the schema
+const News = mongoose.model('News', newsSchema);
+
+module.exports = News;
