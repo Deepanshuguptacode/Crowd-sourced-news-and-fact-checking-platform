@@ -78,6 +78,63 @@ const uploadNews = async (req, res) => {
   }
 };
 
+const getAllPosts = async (req, res) => {
+  try {
+    // Fetch all news articles and populate the 'uploadedBy' field to include the user's username
+    const news = await News.find()
+      .populate('uploadedBy', 'name') // Populate uploader's username
+      .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
+
+    // Respond with the fetched news articles
+    res.status(200).json({
+      message: 'News posts fetched successfully',
+      news,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: 'Error fetching news posts',
+      error: err.message,
+    });
+  }
+};
+
+// Vote on a news post
+const voteNews = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { voteType } = req.body; // 'upvote' or 'downvote'
+    const userId = req.user.id;
+
+    // Find the post
+    const post = await News.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Remove user from both upvotes and downvotes
+    post.upvotes = post.upvotes.filter(id => id.toString() !== userId);
+    post.downvotes = post.downvotes.filter(id => id.toString() !== userId);
+
+    // Add user to the appropriate vote type
+    if (voteType === 'upvote') {
+      post.upvotes.push(userId);
+    } else if (voteType === 'downvote') {
+      post.downvotes.push(userId);
+    }
+
+    await post.save();
+    res.status(200).json({
+      message: 'Vote registered successfully',
+      upvotes: post.upvotes.length,
+      downvotes: post.downvotes.length,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error voting on post', error: err.message });
+  }
+};
+
 module.exports = {
   uploadNews,
+  getAllPosts,
+  voteNews,
 };

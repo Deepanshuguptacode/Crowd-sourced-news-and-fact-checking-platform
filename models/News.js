@@ -1,5 +1,7 @@
 // models/news.js
 const mongoose = require('mongoose');
+const NormalUser = require('./NormalUser');
+
 
 // Define the schema for News
 const newsSchema = new mongoose.Schema({
@@ -25,7 +27,7 @@ const newsSchema = new mongoose.Schema({
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // reference to the User model
+    ref: "NormalUser", // reference to the User model
     required: true,
   },
   uploadedAt: {
@@ -36,6 +38,9 @@ const newsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment', // reference to Comment model, which will be added later
   }],
+  upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'NoramlUser' }], // Users who upvoted
+  downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'NormalUser' }], // Users who downvoted
+
 });
 
 // Create the model from the schema
