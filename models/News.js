@@ -1,6 +1,8 @@
 // models/news.js
 const mongoose = require('mongoose');
 const NormalUser = require('./NormalUser');
+const { CommunityComment, ExpertComment } = require('./Comments');
+const { communityUserLogin } = require('../controllers/UserController');
 
 
 // Define the schema for News
@@ -36,10 +38,13 @@ const newsSchema = new mongoose.Schema({
   },
   comments: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment', // reference to Comment model, which will be added later
+    ref: 'CommunityComment', // reference to CommunityComment model
+  }, {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ExpertComment', // reference to ExpertComment model
   }],
-  upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'NoramlUser' }], // Users who upvoted
-  downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'NormalUser' }], // Users who downvoted
+  upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CommunityUser' }], // Users who upvoted
+  downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CommunityUser' }], // Users who downvoted
 
 });
 

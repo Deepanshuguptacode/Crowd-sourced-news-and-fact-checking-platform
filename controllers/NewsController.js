@@ -82,10 +82,16 @@ const getAllPosts = async (req, res) => {
   try {
     // Fetch all news articles and populate the 'uploadedBy' field to include the user's username
     const news = await News.find()
-      .populate('uploadedBy', 'name') // Populate uploader's username
+    //what populate does
+    //The populate() function is used to replace the specified path in the document with the document from other collection. It is used to link documents from other collections.
+      .populate('comments') // Populate comments
+      .populate('uploadedBy', 'name')// Populate uploader's username
+      .populate('upvotes', 'name') // Populate upvoters' usernames
+      .populate('downvotes', 'name') // Populate downvoters' usernames
       .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
 
     // Respond with the fetched news articles
+
     res.status(200).json({
       message: 'News posts fetched successfully',
       news,
