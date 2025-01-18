@@ -5,6 +5,15 @@ const communityUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  role: {
+    type: String,
+    default: 'Community', // Should be 'Community'
+  },
   email: {
     type: String,
     required: true,

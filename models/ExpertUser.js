@@ -5,6 +5,15 @@ const expertUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  role: {
+    type: String,
+    default: 'Expert', // Should be 'Expert'
+  },
   email: {
     type: String,
     required: true,

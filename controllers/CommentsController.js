@@ -63,5 +63,46 @@ const addExpertComment = async (req, res) => {
   }
 };
 
+const getAllCommunityComments = async (req, res) => {
+  try {
+    const { newsId } = req.params;
+    const comments = await CommunityComment.find( newsId)
+      .populate('commenter', 'username') // Populate commenter details
+      .sort({ createdAt: -1 }); // Sort by newest first
 
-module.exports = { addCommunityComment, addExpertComment };
+    if (comments.length === 0) {
+      return res.status(404).json({ message: 'No comments found for this news' });
+    }
+
+    res.status(200).json({
+      message: 'Comments fetched successfully',
+      comments,
+    });
+  } catch (err) {
+    console.error('Error in getAllComments:', err);
+    res.status(500).json({ message: 'Error fetching comments', error: err.message });
+  }
+};
+
+const getAllExpertComments = async (req, res) => {
+  try {
+    const { newsId } = req.params;
+    const comments = await ExpertComment.find( newsId)
+      .populate('expert', 'username') // Populate commenter details
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    if (comments.length === 0) {
+      return res.status(404).json({ message: 'No comments found for this news' });
+    }
+
+    res.status(200).json({
+      message: 'Comments fetched successfully',
+      comments,
+    });
+  } catch (err) {
+    console.error('Error in getAllComments:', err);
+    res.status(500).json({ message: 'Error fetching comments', error: err.message });
+  }
+};
+
+module.exports = { addCommunityComment, addExpertComment ,getAllCommunityComments,getAllExpertComments};

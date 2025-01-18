@@ -5,6 +5,15 @@ const normalUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  role: {
+    type: String,
+    default: 'User', // Should be 'Normal'
+  },
   email: {
     type: String,
     required: true,

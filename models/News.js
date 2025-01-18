@@ -43,8 +43,20 @@ const newsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ExpertComment', // reference to ExpertComment model
   }],
-  upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CommunityUser' }], // Users who upvoted
-  downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CommunityUser' }], // Users who downvoted
+  upvotes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CommunityUser'
+  }, {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ExpertUser'
+  }],
+  downvotes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CommunityUser'
+  }, {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ExpertUser'
+  }], // Users who downvoted
 
 });
 

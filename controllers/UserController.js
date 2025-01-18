@@ -12,7 +12,7 @@ const JWT_SECRET = "RAM"; // Replace with a secure secret key
 // Signup Function
 const signup = async (req, res, UserModel) => {
   try {
-    const { name, email, password, profession } = req.body;
+    const { name,username, email, password, profession } = req.body;
     // Check if user already exists
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -25,6 +25,7 @@ const signup = async (req, res, UserModel) => {
     // Create a new user
     const newUser = new UserModel({
       name,
+      username,
       email,
       password: hashedPassword,
       ...(profession && { profession }), // Include profession for ExpertUser

@@ -84,10 +84,10 @@ const getAllPosts = async (req, res) => {
     const news = await News.find()
     //what populate does
     //The populate() function is used to replace the specified path in the document with the document from other collection. It is used to link documents from other collections.
-      .populate('comments') // Populate comments
-      .populate('uploadedBy', 'name')// Populate uploader's username
-      .populate('upvotes', 'name') // Populate upvoters' usernames
-      .populate('downvotes', 'name') // Populate downvoters' usernames
+      .populate('comments','name username comment')// Populate comments
+      .populate('uploadedBy', 'name username')// Populate uploader's username
+      .populate('upvotes', 'name username') // Populate upvoters' usernames
+      .populate('downvotes', 'name username') // Populate downvoters' usernames
       .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
 
     // Respond with the fetched news articles
@@ -124,11 +124,15 @@ const voteNews = async (req, res) => {
     // Add user to the appropriate vote type
     if (voteType === 'upvote') {
       post.upvotes.push(userId);
+      console.log(post.upvotes);
     } else if (voteType === 'downvote') {
       post.downvotes.push(userId);
+      console.log(post.downvotes);
     }
 
     await post.save();
+    console.log(post.upvotes);
+    
     res.status(200).json({
       message: 'Vote registered successfully',
       upvotes: post.upvotes.length,
