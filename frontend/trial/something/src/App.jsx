@@ -8,6 +8,10 @@ import Footer from './components/Footer';
 import RightBar from './components/RightBar';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
+console.log("Hi");
+import config from "./config";
+console.log(config.BASE_URL);
+
 
 
 function App() {

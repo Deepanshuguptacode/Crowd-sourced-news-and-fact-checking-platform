@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios"; 
+import config from "../config";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
+    username: "",
     email: "",
-    password: "",
-    confirmPassword: "",
-    userType: "normal", 
+    password: ""
   });
 
   const handleInputChange = (e) => {
@@ -30,15 +29,19 @@ const SignupForm = () => {
     e.preventDefault();
 
     // Determine the correct endpoint based on user type
-    let endpoint = "/api/normal/signup";
+    let endpoint = `${config.BASE_URL}/api/users/normal/signup`;
     if (formData.userType === "community") {
-      endpoint = "/api/community/signup";
+      endpoint = `${config.BASE_URL}/api/users/community/signup`;
     } else if (formData.userType === "expert") {
-      endpoint = "/api/expert/signup";
+      endpoint = `${config.BASE_URL}/api/users/expert/signup`;
     }
 
     try {
-      const response = await axios.post(endpoint, formData);
+      console.log("response");
+      console.log(endpoint,formData);
+      console.log(formData.email,formData.password,formData.name,formData.username);
+      const response = await axios.post(endpoint, formData,{
+        headers: { "Content-Type": "application/json" }});
       console.log("Signup successful:", response.data);
     } catch (error) {
       console.error("Signup error:", error);
@@ -64,23 +67,23 @@ const SignupForm = () => {
           <div className="flex mb-4">
             <input
               type="text"
-              id="firstName"
-              value={formData.firstName}
+              id="name"
+              value={formData.name}
               onChange={handleInputChange}
-              placeholder="First name"
+              placeholder="Full name"
               className="w-1/2 p-3 mr-2 border rounded"
               required
             />
-            <input
+          </div>
+          <input
               type="text"
-              id="lastName"
-              value={formData.lastName}
+              id="username"
+              value={formData.username}
               onChange={handleInputChange}
-              placeholder="Last name"
+              placeholder="user name"
               className="w-1/2 p-3 border rounded"
               required
             />
-          </div>
           <input
             type="email"
             id="email"

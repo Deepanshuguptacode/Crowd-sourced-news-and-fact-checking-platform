@@ -2,8 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoute');
 const NewsRoutes = require('./routes/NewsRoute');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 
 // Middleware
 app.use(express.json());

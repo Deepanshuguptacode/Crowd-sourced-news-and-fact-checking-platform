@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios"; // Import axios
+import config from "../config";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    userType: "normal", // Add userType to the state
+    password: ""
   });
 
   const handleInputChange = (e) => {
@@ -27,11 +27,11 @@ const LoginForm = () => {
     e.preventDefault();
 
     // Determine the correct endpoint based on user type
-    let endpoint = "/api/normal/login"; // Default endpoint for normal users
+    let endpoint = `${config.BASE_URL}/api/users/normal/login`; // Default endpoint for normal users
     if (formData.userType === "community") {
-      endpoint = "/api/community/login"; // Endpoint for community users
+      endpoint = `${config.BASE_URL}/api/users/community/login`; // Endpoint for community users
     } else if (formData.userType === "expert") {
-      endpoint = "/api/expert/login"; // Endpoint for expert users
+      endpoint = `${config.BASE_URL}/api/users/expert/login`; // Endpoint for expert users
     }
 
     try {
