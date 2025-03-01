@@ -6,10 +6,9 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-
 // Middleware
 app.use(express.json());
-
+// app.use((req,res,next)=>{res.send("hiFromServer");next()})
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/news', NewsRoutes);

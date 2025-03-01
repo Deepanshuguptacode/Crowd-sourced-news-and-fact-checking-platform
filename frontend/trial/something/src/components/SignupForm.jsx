@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import axios from "axios"; 
-import config from "../config";
+// import config from "../config";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -29,19 +29,18 @@ const SignupForm = () => {
     e.preventDefault();
 
     // Determine the correct endpoint based on user type
-    let endpoint = `${config.BASE_URL}/api/users/normal/signup`;
+    let endpoint = `/api/users/normal/signup`;
     if (formData.userType === "community") {
-      endpoint = `${config.BASE_URL}/api/users/community/signup`;
+      endpoint = `/api/users/community/signup`;
     } else if (formData.userType === "expert") {
-      endpoint = `${config.BASE_URL}/api/users/expert/signup`;
+      endpoint = `/api/users/expert/signup`;
     }
 
     try {
       console.log("response");
       console.log(endpoint,formData);
       console.log(formData.email,formData.password,formData.name,formData.username);
-      const response = await axios.post(endpoint, formData,{
-        headers: { "Content-Type": "application/json" }});
+      const response = await axios.post(endpoint, formData);
       console.log("Signup successful:", response.data);
     } catch (error) {
       console.error("Signup error:", error);
