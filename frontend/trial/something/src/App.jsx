@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 import Login from './components/Login';
 import Header from './components/Header';
 import NewsFeed from './components/NewsFeed';
@@ -11,15 +11,18 @@ import LoginForm from './components/LoginForm';
 import config from "./config";
 console.log(config.BASE_URL);
 
-
-
 function App() {
-
   return (
-  <div>
-    <Login/>
-  </div>
-  )
+    <div>
+      <Header />
+      <div className="flex">
+      <RightBar />
+        <NewsFeed />
+        <Sidebar />
+      </div>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;

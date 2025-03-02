@@ -16,6 +16,8 @@ const NewsCard = ({ title, content, factStatus, upvotes: initialUpvotes, downvot
     setShowComments(!showComments);
   };
 
+  console.log("NewsCard Props:", { title, content, factStatus, upvotes, downvotes, comments }); // Debugging log
+
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -74,6 +76,3 @@ NewsCard.defaultProps = {
 };
 
 export default NewsCard;
-
-
-
