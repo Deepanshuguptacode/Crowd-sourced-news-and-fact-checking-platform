@@ -7,7 +7,9 @@ const ExpertUser = require('../models/ExpertUser');
 
 // Middleware to authenticate the user
 const authenticateNormalUser = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  //recive token from cookie
+  const token = req.cookies.token;
+  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
 
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
@@ -25,7 +27,9 @@ const authenticateNormalUser = async (req, res, next) => {
 
 // Middleware to authenticate the user
 const authenticateCommunityUser = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  const token = req.cookies.token;
+
 
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
@@ -41,8 +45,8 @@ const authenticateCommunityUser = async (req, res, next) => {
 };
 
 const authenticateExpertUser = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
-
+  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
   }
@@ -57,7 +61,9 @@ const authenticateExpertUser = async (req, res, next) => {
 };
 
 const authenticateCommunityOrExpertUser = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  const token = req.cookies.token;
+
 
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
