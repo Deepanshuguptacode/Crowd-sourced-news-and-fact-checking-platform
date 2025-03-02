@@ -1,14 +1,17 @@
-import  { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; 
-// import config from "../config";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
     email: "",
-    password: ""
+    password: "",
+    userType:"normal",
+    confirmPassword:""
   });
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -18,12 +21,12 @@ const SignupForm = () => {
     });
   };
 
-  const handleUserTypeChange = (e) => {
+  /*const handleUserTypeChange = (e) => {
     setFormData({
       ...formData,
       userType: e.target.value,
     });
-  };
+  };*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,11 +40,10 @@ const SignupForm = () => {
     }
 
     try {
-      console.log("response");
-      console.log(endpoint,formData);
-      console.log(formData.email,formData.password,formData.name,formData.username);
       const response = await axios.post(endpoint, formData);
       console.log("Signup successful:", response.data);
+      console.log("yo");
+      navigate("/"); // Navigate to the home page after successful signup
     } catch (error) {
       console.error("Signup error:", error);
     }
@@ -55,7 +57,7 @@ const SignupForm = () => {
           <select
             id="userType"
             value={formData.userType}
-            onChange={handleUserTypeChange}
+            onChange={handleInputChange}
             className="w-full p-3 mb-4 border rounded"
             required
           >

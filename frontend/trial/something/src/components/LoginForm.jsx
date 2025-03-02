@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; // Import axios
 
 const LoginForm = () => {
@@ -6,6 +7,7 @@ const LoginForm = () => {
     email: "",
     password: ""
   });
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -36,6 +38,7 @@ const LoginForm = () => {
     try {
       const response = await axios.post(endpoint, formData);
       console.log("Login successful:", response.data);
+      navigate("/"); // Navigate to the home page after successful login
     } catch (error) {
       console.error("Login error:", error);
     }
