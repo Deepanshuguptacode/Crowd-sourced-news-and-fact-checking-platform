@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios"; // Import axios
-import config from "../config";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -27,11 +26,11 @@ const LoginForm = () => {
     e.preventDefault();
 
     // Determine the correct endpoint based on user type
-    let endpoint = `${config.BASE_URL}/api/users/normal/login`; // Default endpoint for normal users
+    let endpoint = `/api/users/normal/login`; // Default endpoint for normal users
     if (formData.userType === "community") {
-      endpoint = `${config.BASE_URL}/api/users/community/login`; // Endpoint for community users
+      endpoint = `/api/users/community/login`; // Endpoint for community users
     } else if (formData.userType === "expert") {
-      endpoint = `${config.BASE_URL}/api/users/expert/login`; // Endpoint for expert users
+      endpoint = `/api/users/expert/login`; // Endpoint for expert users
     }
 
     try {
