@@ -38,7 +38,7 @@ const LoginForm = () => {
     try {
       const response = await axios.post(endpoint, formData);
       console.log("Login successful:", response.data);
-      navigate("/"); // Navigate to the home page after successful login
+      navigate("/home"); // Navigate to the home page after successful login
     } catch (error) {
       console.error("Login error:", error);
     }

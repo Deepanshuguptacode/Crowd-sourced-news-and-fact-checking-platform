@@ -38,6 +38,7 @@ const NewsFeed = () => {
       {news.map((item) => (
         <NewsCard 
           key={item._id} 
+          postId={item._id} 
           title={item.title} 
           content={item.description}
           factStatus={item.status}

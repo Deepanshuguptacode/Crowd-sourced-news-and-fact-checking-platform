@@ -38,7 +38,7 @@ const NewsSubmissionForm = () => {
     }
 
     try {
-      const response = await axios.post('/api/news/submit', formDataToSend, {
+      const response = await axios.post('/api/news/upload', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

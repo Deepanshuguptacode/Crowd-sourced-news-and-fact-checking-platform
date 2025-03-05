@@ -7,7 +7,7 @@ export default defineConfig({
    server: {
     proxy: {
       '/api': {
-        target: 'https://74w9sg4h-3000.inc1.devtunnels.ms/',
+        target: 'https://2nz185bz-3000.inc1.devtunnels.ms/'||'https://74w9sg4h-3000.inc1.devtunnels.ms/',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, 'http://localhost:3000/api/')
       }

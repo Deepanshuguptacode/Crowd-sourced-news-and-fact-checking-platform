@@ -120,18 +120,16 @@ const voteNews = async (req, res) => {
     // Remove user from both upvotes and downvotes
     post.upvotes = post.upvotes.filter(id => id.toString() !== userId);
     post.downvotes = post.downvotes.filter(id => id.toString() !== userId);
-
     // Add user to the appropriate vote type
     if (voteType === 'upvote') {
       post.upvotes.push(userId);
-      console.log(post.upvotes);
+      // console.log(post.upvotes);
     } else if (voteType === 'downvote') {
       post.downvotes.push(userId);
-      console.log(post.downvotes);
+      // console.log(post.downvotes);
     }
 
     await post.save();
-    console.log(post.upvotes);
     
     res.status(200).json({
       message: 'Vote registered successfully',

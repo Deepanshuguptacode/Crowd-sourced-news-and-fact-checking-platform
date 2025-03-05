@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
-
-const NewsCard = ({ title, content, factStatus, upvotes: initialUpvotes, downvotes: initialDownvotes, comments: initialComments }) => {
+import axios from "axios"
+const NewsCard = ({postId, title, content, factStatus, upvotes: initialUpvotes, downvotes: initialDownvotes, comments: initialComments }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes || 0);
   const [downvotes, setDownvotes] = useState(initialDownvotes || 0);
   const [comments, setComments] = useState(initialComments || []);
@@ -15,8 +15,18 @@ const NewsCard = ({ title, content, factStatus, upvotes: initialUpvotes, downvot
   const toggleComments = () => {
     setShowComments(!showComments);
   };
-
-  console.log("NewsCard Props:", { title, content, factStatus, upvotes, downvotes, comments }); // Debugging log
+const handleVotes=async (voteType)=>{
+try {
+  const response = await axios.post(`/api/news/vote/${postId}`,{voteType});
+  if(!response.data.error){
+    setDownvotes(response.data.downvotes);
+    setUpvotes(response.data.upvotes);
+  }
+} catch (error) {
+  console.error("error voting:", error);
+}
+};
+  console.log("NewsCard Props:", { postId,title, content, factStatus, upvotes, downvotes, comments }); // Debugging log
 
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full">
@@ -36,13 +46,13 @@ const NewsCard = ({ title, content, factStatus, upvotes: initialUpvotes, downvot
       <div className="mt-3 flex items-center space-x-4">
         <button
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => setUpvotes(upvotes + 1)}
+          onClick={()=>handleVotes('upvote')}
         >
           👍 {upvotes}
         </button>
         <button
           className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          onClick={() => setDownvotes(downvotes + 1)}
+          onClick={()=>handleVotes('downvote')}
         >
           👎 {downvotes}
         </button>
@@ -61,6 +71,7 @@ const NewsCard = ({ title, content, factStatus, upvotes: initialUpvotes, downvot
 };
 
 NewsCard.propTypes = {
+ postId: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
   factStatus: PropTypes.string.isRequired,
