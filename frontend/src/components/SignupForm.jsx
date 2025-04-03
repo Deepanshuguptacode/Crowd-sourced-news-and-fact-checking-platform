@@ -43,7 +43,7 @@ const SignupForm = () => {
       const response = await axios.post(endpoint, formData);
       console.log("Signup successful:", response.data);
       console.log("yo");
-      navigate("/"); // Navigate to the home page after successful signup
+      navigate("/home"); // Navigate to the home page after successful signup
     } catch (error) {
       console.error("Signup error:", error);
     }
