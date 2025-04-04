@@ -1,15 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-import axios from "axios"; 
+import axios from "axios"; // Import axios
 
-const SignupForm = () => {
+const LoginForm = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    username: "",
     email: "",
-    password: "",
-    userType:"normal",
-    confirmPassword:""
+    password: ""
   });
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -21,43 +17,42 @@ const SignupForm = () => {
     });
   };
 
-  /*const handleUserTypeChange = (e) => {
+  const handleUserTypeChange = (e) => {
     setFormData({
       ...formData,
       userType: e.target.value,
     });
-  };*/
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Determine the correct endpoint based on user type
-    let endpoint = `/api/users/normal/signup`;
+    let endpoint = `/api/users/normal/login`; // Default endpoint for normal users
     if (formData.userType === "community") {
-      endpoint = `/api/users/community/signup`;
+      endpoint = `/api/users/community/login`; // Endpoint for community users
     } else if (formData.userType === "expert") {
-      endpoint = `/api/users/expert/signup`;
+      endpoint = `/api/users/expert/login`; // Endpoint for expert users
     }
 
     try {
       const response = await axios.post(endpoint, formData);
-      console.log("Signup successful:", response.data);
-      console.log("yo");
-      navigate("/"); // Navigate to the home page after successful signup
+      console.log("Login successful:", response.data);
+      navigate("/home"); // Navigate to the home page after successful login
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Login error:", error);
     }
   };
 
   return (
     <div className="min-h-1 flex items-center justify-center bg-gray-800">
       <div className="bg-gray-900 p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="font-bold text-center text-white mb-6 text-5xl">Sign Up</h1>
+        <h1 className="font-bold text-center text-white mb-6 text-5xl">Welcome Back!</h1>
         <form onSubmit={handleSubmit}>
           <select
             id="userType"
             value={formData.userType}
-            onChange={handleInputChange}
+            onChange={handleUserTypeChange}
             className="w-full p-3 mb-4 border rounded"
             required
           >
@@ -65,26 +60,6 @@ const SignupForm = () => {
             <option value="community">Community User</option>
             <option value="expert">Expert User</option>
           </select>
-          <div className="flex mb-4">
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Full name"
-              className="w-1/2 p-3 mr-2 border rounded"
-              required
-            />
-          </div>
-          <input
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              placeholder="user name"
-              className="w-1/2 p-3 border rounded"
-              required
-            />
           <input
             type="email"
             id="email"
@@ -99,24 +74,16 @@ const SignupForm = () => {
             id="password"
             value={formData.password}
             onChange={handleInputChange}
-            placeholder="Set password"
+            placeholder="Password"
             className="w-full p-3 mb-4 border rounded"
             required
           />
-          <input
-            type="password"
-            id="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleInputChange}
-            placeholder="Confirm password"
-            className="w-full p-3 mb-4 border rounded"
-            required
-          />
-          <button className="w-full p-3 bg-blue-500 text-white rounded">Sign Up</button>
+          <p className="text-right text-blue-500 mb-4 cursor-pointer">Forgot Password?</p>
+          <button className="w-full p-3 bg-blue-500 text-white rounded">Log In</button>
         </form>
       </div>
     </div>
   );
 };
 
-export default SignupForm;
+export default LoginForm;

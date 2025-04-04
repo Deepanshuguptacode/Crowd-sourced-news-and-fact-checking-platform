@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../config";
-import NewsCard from "../components/NewsCard";
+import NewsCard from "./NewsCard";
 
 const NewsFeed = () => {
   const [news, setNews] = useState([]);
@@ -38,12 +38,14 @@ const NewsFeed = () => {
       {news.map((item) => (
         <NewsCard 
           key={item._id} 
+          postId={item._id} 
           title={item.title} 
           content={item.description}
           factStatus={item.status}
           upvotes={item.upvotes.length}
           downvotes={item.downvotes.length}
           comments={item.comments.map(comment => comment.comment)}
+          imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
         />
       ))}
     </div>
