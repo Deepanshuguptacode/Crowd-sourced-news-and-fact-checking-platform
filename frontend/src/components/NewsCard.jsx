@@ -2,6 +2,7 @@ import  { useState } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes, downvotes: initialDownvotes, comments: initialComments, imageUrl }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes || 0);
@@ -14,17 +15,24 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
 
   const handleAddComment = async (newComment,userType) => {
     try{
+       if(userType.toLowerCase() === "normal" ){
+        toast.error("you must become a community/expert user in order to comment");
+        return;
+      }
       let endpoint = `/api/news/community-comment/add`; // Default endpoint for normal users
       if (userType === "expert") {
         endpoint = `api/news/expert-comment/add`; // Endpoint for community users
       }
+      
       const response = await axios.post(endpoint,{newsId: postId,comment:newComment})
      console.log(response);
       if (response.status === 201) {
+        toast.success(response?.data?.message || "comment added successfully!")
         setComments([...comments, newComment]);
       }
     }catch(error){
       console.log(error);
+      toast.error(error?.response?.data?.message || "failed to add comment")
     }
   };
 
@@ -36,11 +44,13 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
     try {
       const response = await axios.post(`/api/news/vote/${postId}`, { voteType });
       if (!response.data.error) {
+        toast.success(response?.data?.message || "Successfully Voted!");
         setDownvotes(response.data.downvotes);
         setUpvotes(response.data.upvotes);
       }
     } catch (error) {
-      console.error("Error voting:", error);
+      // console.error("Error voting:", error);
+      toast.error(error?.response?.data?.message || `Error voting : ${error}`);
     }
   };
 
@@ -60,7 +70,7 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
     }
   };
 
-  console.log("NewsCard Props:", { postId, title, content, factStatus, upvotes, downvotes, comments, imageUrl }); // Debugging log
+  // console.log("NewsCard Props:", { postId, title, content, factStatus, upvotes, downvotes, comments, imageUrl }); // Debugging log
 
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full max-w-lg mx-auto">

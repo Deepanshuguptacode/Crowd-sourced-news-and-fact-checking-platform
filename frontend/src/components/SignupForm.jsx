@@ -2,6 +2,7 @@ import { useState,useContext } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; 
 import { UserContext } from "../context/userContext";
+import { toast } from "react-toastify";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -44,14 +45,17 @@ const SignupForm = () => {
 
     try {
       const response = await axios.post(endpoint, formData);
-      if (response.status === 200) {
+      if (response.status === 201) {
       setUserType(formData.userType); // Example: Set userType to "expert"
-      console.log("Signup successful:", response.data);
-      console.log("yo");
+      // console.log("Signup successful:", response.data);
+      // console.log("yo");
+      toast.success("Signup successful!"); // Success message
       navigate("/home");
       } // Navigate to the home page after successful signup
     } catch (error) {
-      console.error("Signup error:", error);
+      // console.error("Signup error:", error);
+      toast.error(error.response?.data?.message || "Signup failed!"); // Error message
+
     }
   };
 
