@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import  { useState,useContext } from "react";
 import PropTypes from "prop-types";
+import { UserContext } from "../context/userContext"; // Import UserContext
 
 const CommentSection = ({ comments, onAddComment, onClose }) => {
   const [newComment, setNewComment] = useState("");
+  const { userType } = useContext(UserContext); // Access userType from context
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      onAddComment(newComment);
+      onAddComment(newComment,userType);
       setNewComment("");
     }
   };

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from 'axios';
+
 
 const NewsSubmissionForm = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +10,7 @@ const NewsSubmissionForm = () => {
     link: '',
     screenshots: []
   });
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -45,6 +48,7 @@ const NewsSubmissionForm = () => {
       });
       console.log('News submitted successfully:', response.data);
       // Redirect or show success message
+      navigate('/home');
     } catch (error) {
       console.error('Error submitting news:', error);
     }

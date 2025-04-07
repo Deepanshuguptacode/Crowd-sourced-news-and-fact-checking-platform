@@ -36,6 +36,7 @@ const authenticateCommunityUser = async (req, res, next) => {
   }
 
   try {
+    
     const decoded = jwt.verify(token, "RAM"); // Replace with your JWT secret
     req.user = await CommunityUser.findById(`${decoded.id}`); // Attach user to the request object
     next();

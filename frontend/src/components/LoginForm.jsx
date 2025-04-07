@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; // Import axios
-
+import { useContext } from "react";
+import { UserContext } from "../context/userContext";
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
+  const { setUserType } = useContext(UserContext);
+
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
@@ -34,11 +37,16 @@ const LoginForm = () => {
     } else if (formData.userType === "expert") {
       endpoint = `/api/users/expert/login`; // Endpoint for expert users
     }
-
+    
     try {
       const response = await axios.post(endpoint, formData);
+      if (response.status === 200) {
+        
+        setUserType(formData.userType); // Example: Set userType to "expert"
+
       console.log("Login successful:", response.data);
       navigate("/home"); // Navigate to the home page after successful login
+      }
     } catch (error) {
       console.error("Login error:", error);
     }

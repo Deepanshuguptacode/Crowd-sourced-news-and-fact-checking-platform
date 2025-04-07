@@ -32,6 +32,17 @@ const signup = async (req, res, UserModel) => {
     });
 
     await newUser.save();
+      // Generate JWT
+      const token = jwt.sign(
+        { id: newUser._id, email: newUser.email, role: UserModel.modelName },
+        JWT_SECRET,
+        { expiresIn: "1d" }
+      );
+      res.cookie("token", token, {
+        httpOnly: true,
+        // secure: process.env.NODE_ENV === 'production', // true in production
+        maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+      });
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Signup failed!", error: error.message });
