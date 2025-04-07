@@ -16,5 +16,4 @@ router.post('/expert-comment/add', authenticateExpertUser, addExpertComment);
 router.get('/community-comment', getAllCommunityComments);
 router.get('/expert-comment', getAllExpertComments);
 
-
 module.exports = router;

@@ -11,8 +11,21 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
   const [currentPage, setCurrentPage] = useState(1);
   const imagesPerPage = 4;
 
-  const handleAddComment = (newComment) => {
-    setComments([...comments, newComment]);
+
+  const handleAddComment = async (newComment,userType) => {
+    try{
+      let endpoint = `/api/news/community-comment/add`; // Default endpoint for normal users
+      if (userType === "expert") {
+        endpoint = `api/news/expert-comment/add`; // Endpoint for community users
+      }
+      const response = await axios.post(endpoint,{newsId: postId,comment:newComment})
+     console.log(response);
+      if (response.status === 201) {
+        setComments([...comments, newComment]);
+      }
+    }catch(error){
+      console.log(error);
+    }
   };
 
   const toggleComments = () => {

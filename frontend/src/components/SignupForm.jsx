@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; 
+import { UserContext } from "../context/userContext";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ const SignupForm = () => {
     userType:"normal",
     confirmPassword:""
   });
+  const { setUserType } = useContext(UserContext);
+
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
@@ -41,9 +44,12 @@ const SignupForm = () => {
 
     try {
       const response = await axios.post(endpoint, formData);
+      if (response.status === 200) {
+      setUserType(formData.userType); // Example: Set userType to "expert"
       console.log("Signup successful:", response.data);
       console.log("yo");
-      navigate("/home"); // Navigate to the home page after successful signup
+      navigate("/home");
+      } // Navigate to the home page after successful signup
     } catch (error) {
       console.error("Signup error:", error);
     }
