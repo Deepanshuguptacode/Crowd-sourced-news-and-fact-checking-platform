@@ -57,7 +57,15 @@ const newsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ExpertUser'
   }], // Users who downvoted
-
+  aiReview:{
+    type: String,
+    enum:['FAKE','REAL','PENDING'],
+    default:'PENDING'
+  },
+  confidence:{
+    type: Number,
+    default:0
+  }
 });
 
 // Create the model from the schema

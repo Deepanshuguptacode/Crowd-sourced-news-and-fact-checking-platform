@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from 'axios';
+import { toast } from "react-toastify";
 
 
 const NewsSubmissionForm = () => {
@@ -46,11 +47,15 @@ const NewsSubmissionForm = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
+      if(response.status === 201){
       console.log('News submitted successfully:', response.data);
+        toast.success(`${response?.data?.message}` || `News submitted successfully` )
       // Redirect or show success message
       navigate('/home');
+      }
     } catch (error) {
       console.error('Error submitting news:', error);
+       toast.error(error.response?.data?.message || "News submission failed");
     }
   };
 

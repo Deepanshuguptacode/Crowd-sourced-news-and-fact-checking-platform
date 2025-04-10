@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import config from "../config";
 import NewsCard from "./NewsCard";
 
 const NewsFeed = () => {
@@ -46,6 +45,9 @@ const NewsFeed = () => {
           downvotes={item.downvotes.length}
           comments={item.comments.map(comment => comment.comment)}
           imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
+          link={item.link}
+          aiReview={item.aiReview}  // Add this line
+          confidence={item.confidence}  // Add this line
         />
       ))}
     </div>
