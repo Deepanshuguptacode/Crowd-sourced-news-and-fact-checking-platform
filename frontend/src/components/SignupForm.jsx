@@ -1,4 +1,4 @@
-import { useState,useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; 
 import { UserContext } from "../context/userContext";
@@ -10,8 +10,9 @@ const SignupForm = () => {
     username: "",
     email: "",
     password: "",
-    userType:"normal",
-    confirmPassword:""
+    userType: "normal",
+    confirmPassword: "",
+    profession: "" // new field for expert signup
   });
   const { setUserType } = useContext(UserContext);
 
@@ -24,13 +25,6 @@ const SignupForm = () => {
       [id]: value,
     });
   };
-
-  /*const handleUserTypeChange = (e) => {
-    setFormData({
-      ...formData,
-      userType: e.target.value,
-    });
-  };*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,16 +40,12 @@ const SignupForm = () => {
     try {
       const response = await axios.post(endpoint, formData);
       if (response.status === 201) {
-      setUserType(formData.userType); // Example: Set userType to "expert"
-      // console.log("Signup successful:", response.data);
-      // console.log("yo");
-      toast.success("Signup successful!"); // Success message
-      navigate("/home");
-      } // Navigate to the home page after successful signup
+        setUserType(formData.userType); // Example: Set userType to "expert"
+        toast.success("Signup successful!"); // Success message
+        navigate("/home"); // Navigate to the home page after successful signup
+      }
     } catch (error) {
-      // console.error("Signup error:", error);
       toast.error(error.response?.data?.message || "Signup failed!"); // Error message
-
     }
   };
 
@@ -87,14 +77,14 @@ const SignupForm = () => {
             />
           </div>
           <input
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              placeholder="user name"
-              className="w-1/2 p-3 border rounded"
-              required
-            />
+            type="text"
+            id="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            placeholder="user name"
+            className="w-1/2 p-3 border rounded"
+            required
+          />
           <input
             type="email"
             id="email"
@@ -122,6 +112,17 @@ const SignupForm = () => {
             className="w-full p-3 mb-4 border rounded"
             required
           />
+          {formData.userType === "expert" && (
+            <input
+              type="text"
+              id="profession"
+              value={formData.profession}
+              onChange={handleInputChange}
+              placeholder="Enter profession"
+              className="w-full p-3 mb-4 border rounded"
+              required
+            />
+          )}
           <button className="w-full p-3 bg-blue-500 text-white rounded">Sign Up</button>
         </form>
       </div>

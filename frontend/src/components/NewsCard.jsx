@@ -1,10 +1,10 @@
-import  { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes, downvotes: initialDownvotes, comments: initialComments, imageUrl }) => {
+const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes, downvotes: initialDownvotes, comments: initialComments, imageUrl, username, link }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes || 0);
   const [downvotes, setDownvotes] = useState(initialDownvotes || 0);
   const [comments, setComments] = useState(initialComments || []);
@@ -12,27 +12,26 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
   const [currentPage, setCurrentPage] = useState(1);
   const imagesPerPage = 4;
 
-
-  const handleAddComment = async (newComment,userType) => {
-    try{
-       if(userType.toLowerCase() === "normal" ){
-        toast.error("you must become a community/expert user in order to comment");
+  const handleAddComment = async (newComment, userType) => {
+    try {
+      if (userType.toLowerCase() === "normal") {
+        toast.error("You must become a community/expert user in order to comment");
         return;
       }
-      let endpoint = `/api/news/community-comment/add`; // Default endpoint for normal users
-      if (userType === "expert") {
-        endpoint = `api/news/expert-comment/add`; // Endpoint for community users
+      let endpoint = `/api/news/community-comment/add`; // Default endpoint for community users
+      if (userType.toLowerCase() === "expert") {
+        endpoint = `/api/news/expert-comment/add`;
       }
-      
-      const response = await axios.post(endpoint,{newsId: postId,comment:newComment})
-     console.log(response);
+
+      const response = await axios.post(endpoint, { newsId: postId, comment: newComment });
       if (response.status === 201) {
-        toast.success(response?.data?.message || "comment added successfully!")
-        setComments([...comments, newComment]);
+        toast.success(response?.data?.message || "Comment added successfully!");
+        // Append new comment along with its type
+        const type = userType.toLowerCase();
+        setComments([...comments, { text: newComment, type }]);
       }
-    }catch(error){
-      console.log(error);
-      toast.error(error?.response?.data?.message || "failed to add comment")
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to add comment");
     }
   };
 
@@ -49,8 +48,7 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
         setUpvotes(response.data.upvotes);
       }
     } catch (error) {
-      // console.error("Error voting:", error);
-      toast.error(error?.response?.data?.message || `Error voting : ${error}`);
+      toast.error(error?.response?.data?.message || `Error voting`);
     }
   };
 
@@ -59,22 +57,23 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
   const currentImages = imageUrl.slice(indexOfFirstImage, indexOfLastImage);
 
   const nextPage = () => {
-    if (indexOfLastImage < imageUrl.length) {
+    if (indexOfLastImage < imageUrl.length)
       setCurrentPage(currentPage + 1);
-    }
   };
 
   const prevPage = () => {
-    if (currentPage > 1) {
+    if (currentPage > 1)
       setCurrentPage(currentPage - 1);
-    }
   };
-
-  // console.log("NewsCard Props:", { postId, title, content, factStatus, upvotes, downvotes, comments, imageUrl }); // Debugging log
 
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full max-w-lg mx-auto">
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
+      <h3 className="text-lg font-semibold">
+        <a href={link} target="_blank" rel="noopener noreferrer">
+          {title}
+        </a>
+      </h3>
       <p className="text-gray-600">{content}</p>
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mt-2">
@@ -105,22 +104,13 @@ const NewsCard = ({ postId, title, content, factStatus, upvotes: initialUpvotes,
         {factStatus}
       </span>
       <div className="mt-3 flex items-center space-x-4">
-        <button
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => handleVotes('upvote')}
-        >
+        <button className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => handleVotes('upvote')}>
           👍 {upvotes}
         </button>
-        <button
-          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          onClick={() => handleVotes('downvote')}
-        >
+        <button className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600" onClick={() => handleVotes('downvote')}>
           👎 {downvotes}
         </button>
-        <p
-          className="text-gray-600 cursor-pointer"
-          onClick={toggleComments}
-        >
+        <p className="text-gray-600 cursor-pointer" onClick={toggleComments}>
           💬 {comments.length} Comments
         </p>
       </div>
@@ -138,8 +128,15 @@ NewsCard.propTypes = {
   factStatus: PropTypes.string.isRequired,
   upvotes: PropTypes.number,
   downvotes: PropTypes.number,
-  comments: PropTypes.arrayOf(PropTypes.string),
+  comments: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+      type: PropTypes.string.isRequired,
+    })
+  ),
   imageUrl: PropTypes.arrayOf(PropTypes.string),
+  username: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
 };
 
 NewsCard.defaultProps = {

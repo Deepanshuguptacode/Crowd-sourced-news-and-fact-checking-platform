@@ -1,28 +1,34 @@
-import  { useState,useContext } from "react";
+import { useState, useContext } from "react";
 import PropTypes from "prop-types";
-import { UserContext } from "../context/userContext"; // Import UserContext
+import { UserContext } from "../context/userContext";
 
 const CommentSection = ({ comments, onAddComment, onClose }) => {
   const [newComment, setNewComment] = useState("");
-  const { userType } = useContext(UserContext); // Access userType from context
+  const { userType } = useContext(UserContext);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      onAddComment(newComment,userType);
+      onAddComment(newComment, userType);
       setNewComment("");
     }
   };
 
   return (
-    <div className="mt-4">
-      <div className="flex justify-between items-center">
+    <div className="mt-4 p-4 bg-white rounded shadow">
+      <div className="flex justify-between items-center border-b pb-2">
         <h4 className="text-lg font-semibold">Comments</h4>
         <button onClick={onClose} className="text-gray-600 hover:text-gray-800">Close</button>
       </div>
-      <div className="mt-2">
-        {comments.map((comment, index) => (
-          <div key={index} className="border-b border-gray-200 py-2">
-            <p className="text-gray-800">{comment}</p>
+      <div className="mt-3 space-y-3 max-h-64 overflow-y-auto">
+        {comments.map((item, index) => (
+          <div
+            key={index}
+            className="p-3 bg-gray-50 border border-gray-300 rounded shadow-sm"
+          >
+            <p className="text-sm text-gray-600 font-bold">
+              {item.type === "expert" ? "Expert" : "Community"} - {item.username}
+            </p>
+            <p className="text-gray-800">{item.text}</p>
           </div>
         ))}
       </div>
@@ -31,7 +37,7 @@ const CommentSection = ({ comments, onAddComment, onClose }) => {
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="flex-grow border border-gray-300 rounded-l px-4 py-2"
+          className="flex-grow border border-gray-300 rounded-l px-4 py-2 focus:outline-none"
           placeholder="Add a comment..."
         />
         <button
@@ -46,7 +52,13 @@ const CommentSection = ({ comments, onAddComment, onClose }) => {
 };
 
 CommentSection.propTypes = {
-  comments: PropTypes.arrayOf(PropTypes.string).isRequired,
+  comments: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+      type: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+    })
+  ).isRequired,
   onAddComment: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
 };

@@ -35,19 +35,35 @@ const NewsFeed = () => {
 
   return (
     <div className="w-full max-w-full mx-auto p-4">
-      {news.map((item) => (
-        <NewsCard 
-          key={item._id} 
-          postId={item._id} 
-          title={item.title} 
-          content={item.description}
-          factStatus={item.status}
-          upvotes={item.upvotes.length}
-          downvotes={item.downvotes.length}
-          comments={item.comments.map(comment => comment.comment)}
-          imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
-        />
-      ))}
+      {news.map((item) => {
+        const allComments = [
+          ...((item.comments.community || []).map(c => ({
+            text: c.comment,
+            type: 'community',
+            username: c.commenter.username
+          }))),
+          ...((item.comments.expert || []).map(c => ({
+            text: c.comment,
+            type: 'expert',
+            username: c.expert.username
+          }))),
+        ];
+        return (
+          <NewsCard
+            key={item._id}
+            postId={item._id}
+            title={item.title}
+            content={item.description}
+            factStatus={item.status}
+            link={item.link}
+            upvotes={item.upvotes.length}
+            downvotes={item.downvotes.length}
+            comments={allComments}
+            imageUrl={item.screenshots.map((screenshot) => `/api${screenshot}`)}
+            username={item.uploadedBy.username}
+          />
+        );
+      })}
     </div>
   );
 };

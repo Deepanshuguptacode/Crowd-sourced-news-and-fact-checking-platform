@@ -19,7 +19,7 @@ const addCommunityComment = async (req, res) => {
     });
 
     await newComment.save();
-    news.comments.push(newComment._id);
+    news.comments.community.push(newComment._id);
     await news.save();
 
     res.status(201).json({
@@ -35,12 +35,19 @@ const addCommunityComment = async (req, res) => {
 const addExpertComment = async (req, res) => {
   try {
     const { newsId, comment } = req.body;
+    console.log(newsId, comment);
 
     // Check if news exists
     const news = await News.findById(newsId);
+    console.log(news);
     if (!news) {
       return res.status(404).json({ message: 'News not found' });
     }
+
+    // // Check if user is authenticated
+    // if (!req.user || !req.user.id) {
+    //   return res.status(401).json({ message: 'User not authenticated' });
+    // }
 
     // Create the comment
     const newComment = new ExpertComment({
@@ -50,8 +57,7 @@ const addExpertComment = async (req, res) => {
     });
 
     await newComment.save();
-    news.comments.push(newComment._id);
-    // Add missing save step
+    news.comments.expert.push(newComment._id);
     await news.save();
 
     res.status(201).json({
@@ -65,10 +71,11 @@ const addExpertComment = async (req, res) => {
 
 const getAllCommunityComments = async (req, res) => {
   try {
-    const { newsId } = req.params;
-    const comments = await CommunityComment.find( newsId)
-      .populate('commenter', 'username') // Populate commenter details
-      .sort({ createdAt: -1 }); // Sort by newest first
+    const { newsId } = req.body;
+
+    const comments = await CommunityComment.find({ newsId })
+      .populate('commenter', 'username')
+      .sort({ createdAt: -1 });
 
     if (comments.length === 0) {
       return res.status(404).json({ message: 'No comments found for this news' });
@@ -86,10 +93,10 @@ const getAllCommunityComments = async (req, res) => {
 
 const getAllExpertComments = async (req, res) => {
   try {
-    const { newsId } = req.params;
-    const comments = await ExpertComment.find( newsId)
-      .populate('expert', 'username') // Populate commenter details
-      .sort({ createdAt: -1 }); // Sort by newest first
+    const { newsId } = req.body;
+    const comments = await ExpertComment.find({ newsId })
+      .populate('expert', 'username')
+      .sort({ createdAt: -1 });
 
     if (comments.length === 0) {
       return res.status(404).json({ message: 'No comments found for this news' });
