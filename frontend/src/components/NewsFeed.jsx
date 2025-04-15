@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import config from "../config";
 import NewsCard from "./NewsCard";
 
 const NewsFeed = () => {
@@ -11,8 +10,8 @@ const NewsFeed = () => {
     const fetchNews = async () => {
       try {
         const response = await axios.get(`/api/news/posts`);
-        console.log("Response Data:", response.data); // Debugging log
-        setNews(response.data.news); // Ensure you are setting the correct data
+        console.log("Response Data:", response.data);
+        setNews(response.data.news);
       } catch (error) {
         setError("Failed to fetch news data. Please try again later.");
         console.error("Fetch news error:", error);
@@ -20,17 +19,17 @@ const NewsFeed = () => {
     };
 
     fetchNews();
-  }, []); // Empty dependency array means this effect runs once when the component mounts
+  }, []);
 
   console.log("NewsFeed Component Loaded!");
-  console.log("News Data:", news); // Debugging to ensure news is defined
+  console.log("News Data:", news);
 
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
 
   if (!news.length) {
-    return <p>Loading news...</p>; // Show a loading message while data is being fetched
+    return <p>Loading news...</p>;
   }
 
   return (
@@ -46,7 +45,7 @@ const NewsFeed = () => {
             text: c.comment,
             type: 'expert',
             username: c.expert.username
-          }))),
+          })))
         ];
         return (
           <NewsCard
@@ -59,8 +58,10 @@ const NewsFeed = () => {
             upvotes={item.upvotes.length}
             downvotes={item.downvotes.length}
             comments={allComments}
-            imageUrl={item.screenshots.map((screenshot) => `/api${screenshot}`)}
+            imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
             username={item.uploadedBy.username}
+            aiReview={item.aiReview}
+            confidence={item.confidence}
           />
         );
       })}
