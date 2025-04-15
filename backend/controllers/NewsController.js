@@ -3,7 +3,8 @@ const News = require('../models/News');
 const User = require('../models/NormalUser');
 const multer = require('multer');
 const path = require('path');
-
+const axios = require('axios');
+require('dotenv').config()
 // Setup multer for file uploads (storing screenshots in 'uploads/screenshots/')
 const storage = multer.diskStorage({
   // Called once for each file being uploaded, providing an opportunity to
@@ -37,6 +38,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).array('screenshots', 5); // allows up to 5 screenshots
 
+const getAiReview = async (text)=>{
+const url = process.env.MODEL_URL || 'https://0f1b-34-125-251-211.ngrok-free.app/predict'
+const response = await axios.post(url,{text});
+if(!response.error){
+  return response;
+}
+}
 // Controller function to handle the news upload
 const uploadNews = async (req, res) => {
   try {
@@ -64,7 +72,12 @@ const uploadNews = async (req, res) => {
         screenshots: req.files.map(file => `/uploads/screenshots/${file.filename}`),
         uploadedBy: req.user._id, // assuming the user is in the req.user object (set by middleware)
       });
-
+      const response = await getAiReview(title);
+      if(response){
+        console.log(response)
+      news.aiReview = response?.data?.prediction
+      news.confidence = response?.data?.confidence
+       }   
       await news.save();
 
       // Step 5: Respond with the saved news article
@@ -80,18 +93,22 @@ const uploadNews = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    // Fetch all news articles and populate the 'uploadedBy' field to include the user's username
     const news = await News.find()
-    //what populate does
-    //The populate() function is used to replace the specified path in the document with the document from other collection. It is used to link documents from other collections.
-      .populate('comments','name username comment')// Populate comments
-      .populate('uploadedBy', 'name username')// Populate uploader's username
-      .populate('upvotes', 'name username') // Populate upvoters' usernames
-      .populate('downvotes', 'name username') // Populate downvoters' usernames
-      .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
-
-    // Respond with the fetched news articles
-
+      .populate('uploadedBy', 'name username')
+      .populate({
+        path: 'comments.community',
+        select: 'comment',
+        populate: { path: 'commenter', select: 'username name' }
+      })
+      .populate({
+        path: 'comments.expert',
+        select: 'comment',
+        populate: { path: 'expert', select: 'username name' }
+      })
+      // .populate('upvotes', 'name username')
+      // .populate('downvotes', 'name username')
+      .sort({ uploadedAt: -1 });
+    
     res.status(200).json({
       message: 'News posts fetched successfully',
       news,
@@ -129,6 +146,11 @@ const voteNews = async (req, res) => {
       // console.log(post.downvotes);
     }
 
+    // added to update status
+if(post.upvotes>=12 || post.downvotes >=12 ){
+  if(post.upvotes-post.downvote > 12) post.status = "Verified";
+  else post.status = "fake";
+}
     await post.save();
     
     res.status(200).json({

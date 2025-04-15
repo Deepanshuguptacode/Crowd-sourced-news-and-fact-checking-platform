@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import axios from "axios"; // Import axios
 import { useContext } from "react";
 import { UserContext } from "../context/userContext";
+import { toast } from "react-toastify";
+
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -43,12 +45,15 @@ const LoginForm = () => {
       if (response.status === 200) {
         
         setUserType(formData.userType); // Example: Set userType to "expert"
+        toast.success("Login successful!");
 
-      console.log("Login successful:", response.data);
+      // console.log("Login successful:", response.data);
       navigate("/home"); // Navigate to the home page after successful login
       }
     } catch (error) {
-      console.error("Login error:", error);
+      // console.error("Login error:", error);
+      toast.error(error.response?.data?.message || "Login failed!");
+
     }
   };
 

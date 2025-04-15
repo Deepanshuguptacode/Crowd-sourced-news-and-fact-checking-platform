@@ -13,7 +13,7 @@ router.get('/posts',getAllPosts);
 router.post('/vote/:postId', authenticateCommunityOrExpertUser, voteNews);
 router.post('/community-comment/add', authenticateCommunityUser, addCommunityComment);
 router.post('/expert-comment/add', authenticateExpertUser, addExpertComment);
-router.get('/community-comment', getAllCommunityComments);
-router.get('/expert-comment', getAllExpertComments);
+router.post('/community-comment', getAllCommunityComments);
+router.post('/expert-comment', getAllExpertComments);
 
 module.exports = router;

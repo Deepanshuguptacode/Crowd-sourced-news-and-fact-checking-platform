@@ -4,7 +4,6 @@ const NormalUser = require('./NormalUser');
 const { CommunityComment, ExpertComment } = require('./Comments');
 const { communityUserLogin } = require('../controllers/UserController');
 
-
 // Define the schema for News
 const newsSchema = new mongoose.Schema({
   title: {
@@ -36,13 +35,16 @@ const newsSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  comments: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CommunityComment', // reference to CommunityComment model
-  }, {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ExpertComment', // reference to ExpertComment model
-  }],
+  comments: {
+    community: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'CommunityComment', // reference to CommunityComment model
+    }],
+    expert: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ExpertComment', // reference to ExpertComment model
+    }]
+  },
   upvotes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'CommunityUser'
@@ -57,7 +59,15 @@ const newsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ExpertUser'
   }], // Users who downvoted
-
+  aiReview:{
+    type: String,
+    enum:['FAKE','REAL','PENDING'],
+    default:'PENDING'
+  },
+  confidence:{
+    type: Number,
+    default:0
+  }
 });
 
 // Create the model from the schema
