@@ -39,7 +39,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }).array('screenshots', 5); // allows up to 5 screenshots
 
 const getAiReview = async (text)=>{
-const url = process.env.MODEL_URL || 'https://0f1b-34-125-251-211.ngrok-free.app/predict'
+const url = process.env.MODEL_URL ;
 const response = await axios.post(url,{text});
 if(!response.error){
   return response;
@@ -72,9 +72,9 @@ const uploadNews = async (req, res) => {
         screenshots: req.files.map(file => `/uploads/screenshots/${file.filename}`),
         uploadedBy: req.user._id, // assuming the user is in the req.user object (set by middleware)
       });
-      const response = await getAiReview(title);
+      const response = await getAiReview(title+" "+description);
       if(response){
-        console.log(response)
+        // console.log(response.data)
       news.aiReview = response?.data?.prediction
       news.confidence = response?.data?.confidence
        }   
