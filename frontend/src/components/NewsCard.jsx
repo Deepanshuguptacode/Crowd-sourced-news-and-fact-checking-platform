@@ -24,7 +24,7 @@ const NewsCard = ({
   const [showComments, setShowComments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const imagesPerPage = 4;
-  const [customLink, setCustomLink] = useState(initiallink || "");
+  const [customLink, setCustomLink] = useState(link || "");
   const [showAiAnalysis, setShowAiAnalysis] = useState(false);
   const [isReading, setIsReading] = useState(false);
   const synthRef = useRef(window.speechSynthesis);
@@ -101,13 +101,13 @@ const NewsCard = ({
 
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full max-w-lg mx-auto">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
+  
       <h3 className="text-lg font-semibold">
         <a href={customLink} target="_blank" rel="noopener noreferrer">
           {title}
         </a>
       </h3>
+      <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
       <p className="text-gray-600">{content}</p>
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mt-2">

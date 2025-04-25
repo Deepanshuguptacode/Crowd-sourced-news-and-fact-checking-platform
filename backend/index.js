@@ -1,3 +1,4 @@
+const serverless = require('serverless-http')
 const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoute');
@@ -6,6 +7,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser'); // Add this line
 const path = require('path');
 const app = express();
+require("dotenv").config()
+const dbUrl = process.env.DB_URL || ""
 app.use(cors());
 // Middleware
 app.use(express.json());
@@ -17,10 +20,17 @@ app.use('/users', userRoutes);
 app.use('/news', NewsRoutes);
 
 // MongoDB Connection
+
+try {
 mongoose
-  .connect('mongodb://localhost:27017/DBMS', { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(`${dbUrl}DBMS`, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen(3000, () => console.log("Server running on port 3000"));
+    // app.listen(3000, () => console.log("Server running on port 3000"));
   })
   .catch((error) => console.log("MongoDB connection failed:", error.message));
+}catch(err){
+  console.log(`Error Occured : ${err}`)
+}finally{
+  module.exports = serverless(app);
+}
