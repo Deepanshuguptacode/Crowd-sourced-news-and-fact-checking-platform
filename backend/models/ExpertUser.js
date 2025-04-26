@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const expertUserSchema = new mongoose.Schema({
   name: {
@@ -37,4 +37,5 @@ const expertUserSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('ExpertUser', expertUserSchema);
+const ExpertUser = mongoose.model('ExpertUser', expertUserSchema);
+export default ExpertUser;

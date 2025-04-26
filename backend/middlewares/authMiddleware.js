@@ -1,9 +1,8 @@
 // middleware/authMiddleware.js
-const jwt = require('jsonwebtoken');
-const NormalUser = require('../models/NormalUser');
-const CommunityUser = require('../models/CommunityUser');
-const ExpertUser = require('../models/ExpertUser');
-
+import jwt from 'jsonwebtoken'
+import NormalUser from '../models/NormalUser.js';
+import CommunityUser from '../models/CommunityUser.js';
+import ExpertUser from '../models/ExpertUser.js'
 
 // Middleware to authenticate the user
 const authenticateNormalUser = async (req, res, next) => {
@@ -86,5 +85,4 @@ const authenticateCommunityOrExpertUser = async (req, res, next) => {
   }
 };
 
-
-module.exports = { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser , authenticateCommunityOrExpertUser};
+export { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser , authenticateCommunityOrExpertUser};

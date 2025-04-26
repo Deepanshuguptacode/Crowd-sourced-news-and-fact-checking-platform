@@ -1,13 +1,12 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   normalUserSignup,
   communityUserSignup,
   expertUserSignup,
   normalUserLogin,
   communityUserLogin,
   expertUserLogin,
-} = require('../controllers/UserController');
-
+} from '../controllers/UserController.js'
 const router = express.Router();
 
 // Normal User Routes
@@ -22,4 +21,4 @@ router.post('/community/login', communityUserLogin);
 router.post('/expert/signup', expertUserSignup);
 router.post('/expert/login', expertUserLogin);
 
-module.exports = router;
+export default router;

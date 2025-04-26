@@ -37,9 +37,10 @@ This project is a robust crowd-sourced news and fact-checking platform designed 
    *Run two terminal in parallel*
 
 2. Setup cloud setup 
- - signup/login to ngrok website and get/save your authkoken
- - [Click here](https://colab.research.google.com/drive/1jaNeOdERQ68UuJqOLXsALVSgsfhuVzp7?usp=sharing) 
-  - Got to "run model interface section"
+ - signup/login to [ngrok website](https://ngrok.com/) and get/save your authkoken
+ - [Click here](https://colab.research.google.com/drive/1jaNeOdERQ68UuJqOLXsALVSgsfhuVzp7?usp=sharing) to access colab file
+  - Go to `Run the Model interface` section
+  - Paste your ngrok token in that
   - upload the two files present in the 'AI model' to colab
   - run the model interface and copy the public url
 

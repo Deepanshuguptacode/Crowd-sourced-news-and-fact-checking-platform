@@ -108,7 +108,7 @@ const NewsCard = ({
         </a>
       </h3>
       <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
-      <p className="text-gray-600">{content}</p>
+      {/* <p className="text-gray-600">{content}</p> */}
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mt-2">
           {currentImages.map((url, index) => (
