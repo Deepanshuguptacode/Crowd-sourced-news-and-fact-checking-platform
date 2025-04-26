@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // app.use((req,res,next)=>{res.send("hiFromServer");next()})
-app.get('/',"connected succesfully")
+app.get('/',(req,res)=> res.send("connected succesfully"))
 // Routes
 app.use('/users', userRoutes);
 app.use('/news', NewsRoutes);
