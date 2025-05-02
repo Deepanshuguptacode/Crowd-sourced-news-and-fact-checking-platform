@@ -1,11 +1,10 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 // Import Models
-const NormalUser = require('../models/NormalUser');
-const CommunityUser = require('../models/CommunityUser');
-const ExpertUser = require('../models/ExpertUser');
-
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import NormalUser from '../models/NormalUser.js';
+import CommunityUser from '../models/CommunityUser.js';
+import ExpertUser from '../models/ExpertUser.js'
 // JWT Secret Key
 const JWT_SECRET = "RAM"; // Replace with a secure secret key
 
@@ -85,11 +84,19 @@ const login = async (req, res, UserModel) => {
 };
 
 // Export Functions
-module.exports = {
-  normalUserSignup: (req, res) => signup(req, res, NormalUser),
-  communityUserSignup: (req, res) => signup(req, res, CommunityUser),
-  expertUserSignup: (req, res) => signup(req, res, ExpertUser),
-  normalUserLogin: (req, res) => login(req, res, NormalUser),
-  communityUserLogin: (req, res) => login(req, res, CommunityUser),
-  expertUserLogin: (req, res) => login(req, res, ExpertUser),
-};
+// module.exports = {
+//   normalUserSignup: (req, res) => signup(req, res, NormalUser),
+//   communityUserSignup: (req, res) => signup(req, res, CommunityUser),
+//   expertUserSignup: (req, res) => signup(req, res, ExpertUser),
+//   normalUserLogin: (req, res) => login(req, res, NormalUser),
+//   communityUserLogin: (req, res) => login(req, res, CommunityUser),
+//   expertUserLogin: (req, res) => login(req, res, ExpertUser),
+// };
+
+// Export Functions (ESM syntax)
+export const normalUserSignup = (req, res) => signup(req, res, NormalUser);
+export const communityUserSignup = (req, res) => signup(req, res, CommunityUser);
+export const expertUserSignup = (req, res) => signup(req, res, ExpertUser);
+export const normalUserLogin = (req, res) => login(req, res, NormalUser);
+export const communityUserLogin = (req, res) => login(req, res, CommunityUser);
+export const expertUserLogin = (req, res) => login(req, res, ExpertUser);

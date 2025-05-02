@@ -1,6 +1,5 @@
-const { CommunityComment, ExpertComment } = require('../models/Comments');
-const News = require('../models/News');
-
+import { CommunityComment, ExpertComment } from '../models/Comments.js';
+import News from '../models/News.js';
 const addCommunityComment = async (req, res) => {
   try {
     const { newsId, comment } = req.body;
@@ -112,5 +111,9 @@ const getAllExpertComments = async (req, res) => {
   }
 };
 
-module.exports = { addCommunityComment, addExpertComment ,getAllCommunityComments,getAllExpertComments};
-//latest
+export { 
+  addCommunityComment, 
+  addExpertComment,
+  getAllCommunityComments,
+  getAllExpertComments
+};

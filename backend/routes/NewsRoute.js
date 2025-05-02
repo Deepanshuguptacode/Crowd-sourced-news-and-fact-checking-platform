@@ -1,12 +1,10 @@
 // routes/newsRoutes.js
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { uploadNews, getAllPosts, voteNews } = require('../controllers/NewsController');
-
+import { uploadNews, getAllPosts, voteNews } from '../controllers/NewsController.js'
 // Middleware for authentication (you can implement this based on your auth system)
-const { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser, authenticateCommunityOrExpertUser } = require('../middlewares/authMiddleware');
-const { addCommunityComment, addExpertComment, getAllCommunityComments, getAllExpertComments } = require('../controllers/CommentsController');
-
+import { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser, authenticateCommunityOrExpertUser } from '../middlewares/authMiddleware.js'
+import { addCommunityComment, addExpertComment, getAllCommunityComments, getAllExpertComments } from '../controllers/CommentsController.js'
 // Route for uploading news (protected route, only authenticated users can upload)
 router.post('/upload', authenticateNormalUser , uploadNews);
 router.get('/posts',getAllPosts);
@@ -16,4 +14,4 @@ router.post('/expert-comment/add', authenticateExpertUser, addExpertComment);
 router.post('/community-comment', getAllCommunityComments);
 router.post('/expert-comment', getAllExpertComments);
 
-module.exports = router;
+export default router;

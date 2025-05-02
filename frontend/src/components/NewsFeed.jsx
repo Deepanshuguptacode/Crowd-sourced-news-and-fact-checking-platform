@@ -58,7 +58,8 @@ const NewsFeed = () => {
             upvotes={item.upvotes.length}
             downvotes={item.downvotes.length}
             comments={allComments}
-            imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
+            imageUrl={item.screenshots.map(screenshot => `${screenshot}`)}
+            // imageUrl={item.screenshots.map(screenshot => `/api${screenshot}`)}
             username={item.uploadedBy.username}
             aiReview={item.aiReview}
             confidence={item.confidence}

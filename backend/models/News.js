@@ -1,8 +1,8 @@
 // models/news.js
-const mongoose = require('mongoose');
-const NormalUser = require('./NormalUser');
-const { CommunityComment, ExpertComment } = require('./Comments');
-const { communityUserLogin } = require('../controllers/UserController');
+import mongoose from "mongoose";
+import NormalUser from "./NormalUser.js";
+import {CommunityComment, ExpertComment} from './Comments.js';
+import {communityUserLogin} from '../controllers/UserController.js'
 
 // Define the schema for News
 const newsSchema = new mongoose.Schema({
@@ -72,5 +72,4 @@ const newsSchema = new mongoose.Schema({
 
 // Create the model from the schema
 const News = mongoose.model('News', newsSchema);
-
-module.exports = News;
+export default News;

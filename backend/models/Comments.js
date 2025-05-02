@@ -1,5 +1,5 @@
 // models/expertComment.js
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const expertCommentSchema = new mongoose.Schema({
   newsId: {
@@ -44,8 +44,8 @@ const communityCommentSchema = new mongoose.Schema({
   },
 });
 
-const CommunityComment = mongoose.model('CommunityComment', communityCommentSchema);
 
-const ExpertComment = mongoose.model('ExpertComment', expertCommentSchema);
 
-module.exports = { CommunityComment, ExpertComment };
+
+export  const CommunityComment = mongoose.model('CommunityComment', communityCommentSchema);
+export const ExpertComment = mongoose.model('ExpertComment', expertCommentSchema);

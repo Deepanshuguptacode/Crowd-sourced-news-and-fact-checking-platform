@@ -32,26 +32,41 @@ This project is a robust crowd-sourced news and fact-checking platform designed 
 ### **Setup Instructions**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/dbms-news-platform.git
+   git clone https://github.com/yourusername/dbms-news-platform.
    ```
-2. Navigate to the project directory:
-   ```bash
-   cd dbms-news-platform
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Configure environment variables in `.env`:
+   *Run two terminal in parallel*
+
+2. Setup cloud setup 
+ - signup/login to [ngrok website](https://ngrok.com/) and get/save your authkoken
+ - [Click here](https://colab.research.google.com/drive/1jaNeOdERQ68UuJqOLXsALVSgsfhuVzp7?usp=sharing) to access colab file
+  - Go to `Run the Model interface` section
+  - Paste your ngrok token in that
+  - upload the two files present in the 'AI model' to colab
+  - run the model interface and copy the public url
+
+3. Configure environment variables in `/backend/.env`:
    ```plaintext
-   MONGO_URI=<your-mongodb-connection-string>
-   JWT_SECRET=<your-secret-key>
+   DB_URI=<your-mongodb-connection-string>
+   MODEL_URL=<YOUR-Public-URL>
    ```
-5. Start the server:
+4. Navigate to the project directory:
    ```bash
-   npm start
+   cd Crowd-sourced-news-and-fact-checking-platform
    ```
-6. Access the platform at `http://localhost:3000`.
+   *Terminal 1 - run backend*
+   ```
+   cd backend
+   npm install
+   npm run start
+  ```
+  *Terminal 2 - run frontend*
+   ```
+   cd backend
+   npm install
+   npm run start
+  ```
+
+4. Access the platform at `http://localhost:5173`.
 
 ### **Future Enhancements**
 - Advanced AI models for automated fact-checking.

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
 import axios from "axios";
@@ -24,28 +24,31 @@ const NewsCard = ({
   const [showComments, setShowComments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const imagesPerPage = 4;
+  const [customLink, setCustomLink] = useState(link || "");
   const [showAiAnalysis, setShowAiAnalysis] = useState(false);
+  const [isReading, setIsReading] = useState(false);
+  const synthRef = useRef(window.speechSynthesis);
 
   const handleAddComment = async (newComment, userType) => {
     try {
       if (userType.toLowerCase() === "normal") {
-        toast.error("You must become a community/expert user in order to comment");
+        toast.error("You must upgrade to a Community or Expert user to add comments on this post.");
         return;
       }
-      let endpoint = `/api/news/community-comment/add`; // Default endpoint for community users
-      if (userType.toLowerCase() === "expert") {
-        endpoint = `/api/news/expert-comment/add`;
+      let endpoint = `/api/news/community-comment/add`;
+      if (userType === "expert") {
+        endpoint = `api/news/expert-comment/add`;
       }
 
       const response = await axios.post(endpoint, { newsId: postId, comment: newComment });
+      console.log(response);
       if (response.status === 201) {
-        toast.success(response?.data?.message || "Comment added successfully!");
-        // Append new comment along with its type
-        const type = userType.toLowerCase();
-        setComments([...comments, { text: newComment, type }]);
+        toast.success(response?.data?.message || "comment added successfully!");
+        setComments([...comments, newComment]);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to add comment");
+      console.log(error);
+      toast.error(error?.response?.data?.message || "failed to add comment");
     }
   };
 
@@ -62,7 +65,7 @@ const NewsCard = ({
         setUpvotes(response.data.upvotes);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || `Error voting`);
+      toast.error(error?.response?.data?.message || `Error voting : ${error}`);
     }
   };
 
@@ -80,16 +83,32 @@ const NewsCard = ({
       setCurrentPage(currentPage - 1);
   };
 
+  const handleReadAloud = () => {
+    if (!isReading) {
+      const utterance = new window.SpeechSynthesisUtterance(`${title}. ${content}`);
+      synthRef.current.speak(utterance);
+      setIsReading(true);
+      utterance.onend = () => setIsReading(false);
+    }
+  };
+
+  const handlePause = () => {
+    if (synthRef.current.speaking && !synthRef.current.paused) {
+      synthRef.current.pause();
+      setIsReading(false);
+    }
+  };
+
   return (
     <div className="bg-white p-4 mb-4 rounded-lg shadow-md w-full max-w-lg mx-auto">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
+  
       <h3 className="text-lg font-semibold">
-        <a href={link} target="_blank" rel="noopener noreferrer">
+        <a href={customLink} target="_blank" rel="noopener noreferrer">
           {title}
         </a>
       </h3>
-      <p className="text-gray-600">{content}</p>
+      <p className="text-gray-800 text-xl font-bold mb-2">Posted by {username}</p>
+      {/* <p className="text-gray-600">{content}</p> */}
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mt-2">
           {currentImages.map((url, index) => (
@@ -108,8 +127,7 @@ const NewsCard = ({
         </div>
       )}
       <p className="text-gray-600">{content}<a href={link} className="m-10">Read more...</a></p>
-     {/* Status and AI analysis button row */}
-     <div className="flex space-x-2 mt-2">
+      <div className="flex space-x-2 mt-2">
         <span
           className={`inline-block px-2 py-1 text-sm font-bold rounded ${
             factStatus === "Verified"
@@ -121,8 +139,6 @@ const NewsCard = ({
         >
           {factStatus}
         </span>
-        
-        {/* AI Analysis Button - only show if AI review is available */}
         {aiReview && aiReview !== "PENDING" && (
           <button 
             onClick={() => setShowAiAnalysis(!showAiAnalysis)}
@@ -136,9 +152,15 @@ const NewsCard = ({
             </div>
           </button>
         )}
+        <div className="flex-1 flex justify-end space-x-2">
+          <button
+            className={`px-4 py-2 rounded ${isReading ? "bg-yellow-500 text-white" : "bg-blue-500 text-white"}`}
+            onClick={isReading ? handlePause : handleReadAloud}
+          >
+            {isReading ? "⏸️" : "🔊"}
+          </button>
+        </div>
       </div>
-      
-      {/* Display AI Review when showAiAnalysis is true */}
       {aiReview && aiReview !== "PENDING" && showAiAnalysis && (
         <div className="mt-2 mb-2 p-2 bg-gray-50 rounded border border-gray-200">
           <div className="flex items-center">
@@ -150,8 +172,6 @@ const NewsCard = ({
             }`}>
               {aiReview === "REAL" ? "Likely Real" : "Potential Misinformation"}
             </span>
-            
-            {/* Confidence bar */}
             {confidence > 0 && (
               <div className="ml-2 flex items-center">
                 <span className="text-xs mr-1">Confidence:</span>
@@ -167,7 +187,6 @@ const NewsCard = ({
           </div>
         </div>
       )}
-      
       <div className="mt-3 flex items-center space-x-4">
         <button className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => handleVotes('upvote')}>
           👍 {upvotes}
