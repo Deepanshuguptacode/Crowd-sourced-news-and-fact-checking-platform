@@ -1,37 +1,17 @@
-// controllers/newsController.js
-const News = require('../models/News');
-const User = require('../models/NormalUser');
-const multer = require('multer');
-const path = require('path');
-const axios = require('axios');
-require('dotenv').config()
+import News from '../models/News.js';
+import User from '../models/NormalUser.js';
+import multer from 'multer';
+import path from 'path';
+import axios from 'axios';
+import { uploadOnCloudinary } from '../utils/uploadOnCloud.js';
+import dotenv from 'dotenv';
+dotenv.config();
 // Setup multer for file uploads (storing screenshots in 'uploads/screenshots/')
 const storage = multer.diskStorage({
-  // Called once for each file being uploaded, providing an opportunity to
-  // modify the destination path for the file.
-  //
-  // cb(null, path) - Saves the file to the specified path and calls
-  // `next()`.
-  //
-  // cb(err) - Saves the file to the default path and calls `next(err)`.
-  //
-  // cb(null, false) - Does not save the file to disk and calls `next()`.
-  //
-  // For more information, see:
-  // https://github.com/expressjs/multer#diskstorage
   destination: function (req, file, cb) {
     cb(null, 'uploads/screenshots/');
   },
-/**
- * Generates a unique filename for the uploaded file by appending the current timestamp to the original file's extension.
- *
- * @param {Object} req - The HTTP request object.
- * @param {Object} file - The file object containing information about the uploaded file.
- * @param {Function} cb - A callback function to pass the generated filename.
- */
-
   filename: function (req, file, cb) {
-    
     cb(null, Date.now() + path.extname(file.originalname)); // adding timestamp to filename to avoid collision
   },
 });
@@ -39,10 +19,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }).array('screenshots', 5); // allows up to 5 screenshots
 
 const getAiReview = async (text)=>{
-const url = process.env.MODEL_URL || 'https://0f1b-34-125-251-211.ngrok-free.app/predict'
+const url = process.env.MODEL_URL ;
+if (!url) return null;
+try{
 const response = await axios.post(url,{text});
 if(!response.error){
   return response;
+}
+} catch(err){
+  return null;
 }
 }
 // Controller function to handle the news upload
@@ -60,21 +45,33 @@ const uploadNews = async (req, res) => {
       } else if (err) {
         return res.status(500).json({ message: 'Something went wrong during file upload' });
       }
-
+      
       // Step 3: Get the form data from the request
       const { title, description, link } = req.body;
 
+      // Upload each file to Cloudinary and collect URLs
+      let screenshots = [];
+      console.log(req.files)
+      for (const file of req.files) {
+        const normalizedPath = file.path.replace(/\\/g, '/');
+        const result = await uploadOnCloudinary(normalizedPath);
+        console.log(result);
+        if (result && result.secure_url) {
+          screenshots.push(result.secure_url);
+        }
+      }
       // Step 4: Create a new News document and save it to the database
       const news = new News({
         title,
         description,
         link,
-        screenshots: req.files.map(file => `/uploads/screenshots/${file.filename}`),
+        screenshots,
         uploadedBy: req.user._id, // assuming the user is in the req.user object (set by middleware)
       });
-      const response = await getAiReview(title);
+
+      const response = await getAiReview(title+" "+description);
       if(response){
-        console.log(response)
+        // console.log(response.data)
       news.aiReview = response?.data?.prediction
       news.confidence = response?.data?.confidence
        }   
@@ -163,7 +160,7 @@ if(post.upvotes>=12 || post.downvotes >=12 ){
   }
 };
 
-module.exports = {
+export {
   uploadNews,
   getAllPosts,
   voteNews,

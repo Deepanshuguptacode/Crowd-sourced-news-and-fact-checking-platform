@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const communityUserSchema = new mongoose.Schema({
   name: {
@@ -33,4 +33,5 @@ const communityUserSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('CommunityUser', communityUserSchema);
+const CommunityUser = mongoose.model('CommunityUser', communityUserSchema);
+export default CommunityUser;
