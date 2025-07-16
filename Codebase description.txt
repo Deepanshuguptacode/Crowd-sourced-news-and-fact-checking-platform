@@ -1,0 +1,206 @@
+
+---
+
+## 1. **Project Overview**
+
+This project is a full-stack web application designed to combat misinformation by allowing users to submit, discuss, and fact-check news articles. It supports multiple user roles (Normal, Community, Expert), a voting system, commenting, and image uploads. The stack includes **React** (frontend), **Node.js/Express** (backend), and **MongoDB** (database).
+
+---
+
+## 2. **Frontend (React + Vite + TailwindCSS)**
+
+### **Structure**
+- Located in: frontend
+- Uses **Vite** for fast development and build.
+- Uses **TailwindCSS** for styling.
+- Uses **React Router** for navigation.
+- Uses **Axios** for HTTP requests.
+- Uses **React Toastify** for notifications.
+
+### **Key Components**
+
+#### **App.jsx**
+- Main entry point for routing.
+- Routes:
+  - `/login`: Login/Signup page.
+  - `/home`: Main dashboard (Header, NewsFeed, Sidebar, RightBar, Footer).
+  - `/submit-news`: News submission form.
+
+#### **Login & Signup**
+- Login.jsx: Tabbed interface for login and signup.
+- LoginForm.jsx & SignupForm.jsx: Handle authentication for all user types (Normal, Community, Expert). On success, sets user type in context and navigates to `/home`.
+
+#### **User Context**
+- userContext.jsx: Provides `userType` and setter via React Context for role-based UI and API logic.
+
+#### **NewsFeed & NewsCard**
+- NewsFeed.jsx: Fetches all news posts from `/api/news/posts`, maps them into `NewsCard` components.
+- NewsCard.jsx: Displays a single news post with:
+  - Title, content, images (with pagination), fact status badge.
+  - Upvote/downvote buttons (calls `/api/news/vote/:postId`).
+  - Comments count and toggle.
+  - Shows `CommentSection` for adding/viewing comments (only Community/Expert users can comment).
+
+#### **CommentSection**
+- CommentSection.jsx: Shows all comments for a post, allows adding new comments (calls `/api/news/community-comment/add` or `/api/news/expert-comment/add` based on user type).
+
+#### **NewsSubmissionForm**
+- NewsSubmissionForm.jsx: Allows users to submit news with title, description, link, and up to 5 screenshots. Uses multipart form data and posts to `/api/news/upload`.
+
+#### **Other UI Components**
+- Header.jsx: App title and search bar.
+- Sidebar.jsx: Trending news and top contributors.
+- RightBar.jsx: Navigation buttons and "Post" button.
+- Footer.jsx: Copyright.
+
+#### **Styling**
+- Uses TailwindCSS for all styling.
+- Custom fonts configured in tailwind.config.js.
+
+#### **Configuration**
+- API base URL set in .env and config.js.
+- Vite proxy in vite.config.js forwards `/api` requests to backend.
+
+---
+
+## 3. **Backend (Node.js + Express + MongoDB)**
+
+### **Structure**
+- Located in: backend
+- Uses **Express** for API.
+- Uses **Mongoose** for MongoDB models.
+- Uses **JWT** for authentication.
+- Uses **Multer** for file uploads.
+- Uses **cookie-parser** for JWT in cookies.
+
+### **Key Models**
+
+#### **User Models**
+- NormalUser.js: Basic user, can upload news.
+- CommunityUser.js: Can vote and comment (requires admin approval).
+- ExpertUser.js: Can comment as expert (requires admin approval, must be journalist).
+
+#### **News Model**
+- News.js: Stores news post with title, description, link, screenshots, status, uploader, comments (community/expert), upvotes, downvotes.
+
+#### **Comments Model**
+- Comments.js: Separate schemas for community and expert comments, linked to news and user.
+
+#### **Admin Model**
+- Admin.js: For future admin features.
+
+### **Controllers**
+
+#### **UserController.js**
+- Handles signup and login for all user types.
+- Passwords hashed with bcrypt.
+- JWT issued on login/signup, stored in HTTP-only cookie.
+
+#### **NewsController.js**
+- `uploadNews`: Handles news submission with file uploads.
+- `getAllPosts`: Returns all news posts, populating uploader and comments.
+- `voteNews`: Handles upvote/downvote logic, ensures user can only vote once per post.
+
+#### **CommentsController.js**
+- `addCommunityComment`/`addExpertComment`: Add comments to news, only for authenticated users of correct type.
+- `getAllCommunityComments`/`getAllExpertComments`: Fetch comments for a news post.
+
+### **Routes**
+
+#### **userRoute.js**
+- `/normal/signup`, `/normal/login`
+- `/community/signup`, `/community/login`
+- `/expert/signup`, `/expert/login`
+
+#### **NewsRoute.js**
+- `/upload`: News submission (Normal users).
+- `/posts`: Get all news.
+- `/vote/:postId`: Upvote/downvote (Community/Expert users).
+- `/community-comment/add`: Add community comment (Community users).
+- `/expert-comment/add`: Add expert comment (Expert users).
+- `/community-comment`: Get all community comments.
+- `/expert-comment`: Get all expert comments.
+
+### **Middleware**
+
+#### **authMiddleware.js**
+- Authenticates users by role using JWT from cookies.
+- Provides `req.user` for downstream handlers.
+
+### **Server Setup**
+- index.js: Connects to MongoDB, sets up middleware, serves static uploads, mounts routes, starts server on port 3000.
+
+---
+
+## 4. **How It Works (User Flow)**
+
+1. **Signup/Login**:  
+   - User selects role and signs up or logs in.
+   - JWT is set in cookie, user type is set in React context.
+
+2. **News Submission**:  
+   - Normal users can submit news with images.
+   - News is stored in MongoDB, images saved on server.
+
+3. **Viewing News**:  
+   - All users can view news feed.
+   - Each post shows title, content, images, status, votes, and comments.
+
+4. **Voting**:  
+   - Community and Expert users can upvote/downvote posts.
+   - Vote counts update in real time.
+
+5. **Commenting**:  
+   - Community and Expert users can comment.
+   - Comments are shown with user type and username.
+
+6. **Fact Status**:  
+   - Each news post displays its verification status (e.g., Verified, Needs Review, Fake).
+
+---
+
+## 5. **Tech Stack**
+
+- **Frontend**: React, Vite, TailwindCSS, Axios, React Toastify, React Router.
+- **Backend**: Node.js, Express, Mongoose, Multer, JWT, cookie-parser.
+- **Database**: MongoDB.
+- **Authentication**: JWT (stored in HTTP-only cookies).
+- **File Uploads**: Multer (images for news posts).
+
+---
+
+## 6. **Security & Best Practices**
+
+- Passwords are hashed before storage.
+- JWT is stored in HTTP-only cookies for security.
+- Role-based authentication for all sensitive actions.
+- Only approved users can comment/vote as community/expert.
+- File uploads are limited and stored in a dedicated directory.
+
+---
+
+## 7. **Extensibility & Future Enhancements**
+
+- AI-powered fact-checking can be integrated (hooks are present).
+- Admin dashboard for user/news management.
+- Notification system for news updates and discussions.
+- More granular permissions and moderation tools.
+
+---
+
+## 8. **Summary**
+
+This codebase provides a robust foundation for a crowd-sourced news and fact-checking platform, supporting multiple user roles, secure authentication, rich interactivity (voting, commenting, image uploads), and a clean, modern UI. The architecture is modular and extensible, making it suitable for further enhancements and scaling.
+
+---
+
+**For more details, see:**  
+- README.md  
+- README.md  
+- src/components/NewsCard.jsx  
+- src/components/NewsFeed.jsx  
+- NewsController.js  
+- CommentsController.js  
+- News.js  
+- Comments.js  
+- authMiddleware.js
