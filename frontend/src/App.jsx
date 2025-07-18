@@ -11,6 +11,9 @@ import RightBar from './components/RightBar';
 import NewsSubmissionForm from './pages/NewsSubmissionForm';
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
+import DebateRoomsList from './components/DebateRoomsList';
+import DebateRoom from './components/DebateRoom';
+import AdvancedDebateRoom from './components/AdvancedDebateRoom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { UserProvider } from './context/userContext';
 import { ToastContainer } from 'react-toastify';
@@ -38,6 +41,30 @@ function App() {
               element={
                 <ProtectedRoute allowedUserTypes={['normal']}>
                   <NewsSubmissionForm />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/debate-rooms" 
+              element={
+                <ProtectedRoute>
+                  <DebateRoomsList />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/debate-room/:roomId" 
+              element={
+                <ProtectedRoute>
+                  <DebateRoom />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/advanced-debate-room/:roomId" 
+              element={
+                <ProtectedRoute>
+                  <AdvancedDebateRoom />
                 </ProtectedRoute>
               } 
             />

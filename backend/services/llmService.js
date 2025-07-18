@@ -10,15 +10,74 @@ class LLMService {
 
   async classifyComment(comment, existingLabels) {
     try {
-      // Try Gemini AI first, fallback to simple classification
-      if (this.apiKey && this.apiKey !== "your-gemini-api-key") {
-        return await this.classifyCommentWithGemini(comment, existingLabels);
-      } else {
-        return await this.simpleClassifyComment(comment, existingLabels);
-      }
+      // Use the working DebateRoom classification logic
+      return await this.classifyCommentWithGemini(comment, existingLabels);
     } catch (error) {
       console.error('Error in comment classification, falling back to simple classification:', error);
       return await this.simpleClassifyComment(comment, existingLabels);
+    }
+  }
+
+  async classifyCommentWithGemini(text, existingLabels) {
+    try {
+      const { GoogleGenAI, Type } = require('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: this.apiKey });
+
+      const classifyCommentFn = {
+        name: 'classify_comment',
+        description: 'Assigns a comment to an existing group or, if none match, suggests a concise group title that summarizes all comments in that group.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            comment: { type: Type.STRING, description: 'The single user comment to classify.' },
+            matchedGroup: { type: Type.STRING, description: 'The label of the matching group, or an empty string if no existing group matches.' },
+            newLabel: { type: Type.STRING, description: 'A concise label that best summarizes all comments in this group (including the incoming one).' }
+          },
+          required: ['comment', 'matchedGroup', 'newLabel']
+        }
+      };
+
+      const systemPrompt = [
+        `Here's a new user comment:
+"${text}"
+
+`,
+        `1) Compare it against these existing groups: ${existingLabels.join(', ')}.
+`,
+        `   • If it fits one, set matchedGroup to that label.
+`,
+        `   • Otherwise, matchedGroup should be an empty string.
+
+`,
+        `2) Then generate newLabel: a single, concise phrase that best summarizes all comments in the matched group, including this one.
+`,
+        `
+Return only the JSON arguments for the function invocation.`
+      ].join('');
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt }] }
+        ],
+        config: { tools: [{ functionDeclarations: [classifyCommentFn] }], functionInvocation: 'auto' }
+      });
+
+      const call = response.functionCalls?.[0];
+      const { comment: incoming, matchedGroup, newLabel } =
+        call?.name === 'classify_comment'
+          ? call.args
+          : { comment: text, matchedGroup: '', newLabel: text };
+
+      const exists = existingLabels.includes(matchedGroup);
+      return {
+        matchedGroup: exists ? matchedGroup : null,
+        shouldCreateNew: !exists,
+        newLabel
+      };
+    } catch (error) {
+      console.error('Error with Gemini AI classification:', error);
+      return await this.simpleClassifyComment(text, existingLabels);
     }
   }
 
@@ -64,48 +123,60 @@ class LLMService {
 
   async classifyCommentWithGemini(comment, existingLabels) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
-
-      const prompt = `
-        Analyze this comment: "${comment}"
-        
-        Existing comment groups: ${existingLabels.join(', ')}
-        
-        Task:
-        1. If this comment fits into one of the existing groups, return the group name exactly as provided.
-        2. If it doesn't fit any existing group, suggest a concise, descriptive new group label (2-4 words) that captures the main topic/theme of the comment.
-        
-        Guidelines for new group names:
-        - Be specific and descriptive
-        - Use 2-4 words maximum
-        - Capture the main theme or topic
-        - Avoid generic terms unless necessary
-        
-        Response format (JSON only):
-        {
-          "matchedGroup": "existing_group_name_or_null",
-          "shouldCreateNew": true_or_false,
-          "newLabel": "suggested_label"
+      const { Type } = require('@google/genai');
+      
+      const classifyCommentFn = {
+        name: 'classify_comment',
+        description: 'Assigns a comment to an existing group or, if none match, suggests a concise group title that summarizes all comments in that group.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            comment: { type: Type.STRING, description: 'The single user comment to classify.' },
+            matchedGroup: { type: Type.STRING, description: 'The label of the matching group, or an empty string if no existing group matches.' },
+            newLabel: { type: Type.STRING, description: 'A concise label that best summarizes all comments in this group (including the incoming one).' }
+          },
+          required: ['comment', 'matchedGroup', 'newLabel']
         }
-      `;
+      };
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const systemPrompt = [
+        `Here's a new user comment:
+"${comment}"
 
-      // Try to parse JSON response
-      try {
-        const parsed = JSON.parse(text.replace(/```json\n?|\n?```/g, ''));
-        return {
-          matchedGroup: parsed.matchedGroup === 'null' ? null : parsed.matchedGroup,
-          shouldCreateNew: parsed.shouldCreateNew,
-          newLabel: parsed.newLabel || this.generateLabel(comment)
-        };
-      } catch (parseError) {
-        console.error('Error parsing Gemini response, using fallback:', parseError);
-        return await this.simpleClassifyComment(comment, existingLabels);
-      }
+`,
+        `1) Compare it against these existing groups: ${existingLabels.join(', ')}.
+`,
+        `   • If it fits one, set matchedGroup to that label.
+`,
+        `   • Otherwise, matchedGroup should be an empty string.
 
+`,
+        `2) Then generate newLabel: a single, concise phrase that best summarizes all comments in the matched group, including this one.
+`,
+        `
+Return only the JSON arguments for the function invocation.`
+      ].join('');
+
+      const response = await this.genAI.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt }] }
+        ],
+        config: { tools: [{ functionDeclarations: [classifyCommentFn] }], functionInvocation: 'auto' }
+      });
+
+      const call = response.functionCalls?.[0];
+      const { comment: incoming, matchedGroup, newLabel } =
+        call?.name === 'classify_comment'
+          ? call.args
+          : { comment: comment, matchedGroup: '', newLabel: comment };
+
+      const exists = existingLabels.includes(matchedGroup);
+      return {
+        matchedGroup: exists ? matchedGroup : null,
+        shouldCreateNew: !exists,
+        newLabel
+      };
     } catch (error) {
       console.error('Error with Gemini AI classification:', error);
       return await this.simpleClassifyComment(comment, existingLabels);

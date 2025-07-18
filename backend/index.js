@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoute');
 const NewsRoutes = require('./routes/NewsRoute');
 const commentFilterRoutes = require('./routes/commentFilterRoute');
+const debateRoomRoutes = require('./routes/debateRoomRoute');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -48,6 +49,7 @@ app.use('/uploads', express.static(path.join(__dirname,'uploads')));
 app.use('/users', userRoutes);
 app.use('/news', NewsRoutes);
 app.use('/comment-filter', commentFilterRoutes);
+app.use('/debate-rooms', debateRoomRoutes);
 
 // Security headers
 app.use((req, res, next) => {

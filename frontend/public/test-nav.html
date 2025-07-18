@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter-Matching Test Navigation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: #f9f9f9; padding: 20px; margin: 10px; border-radius: 8px; }
+        .button { display: inline-block; padding: 15px 30px; margin: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .button:hover { background: #0056b3; }
+        .test-btn { background: #28a745; }
+        .test-btn:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Counter-Matching Test Navigation</h1>
+        
+        <div class="card">
+            <h3>Test Room: AI Impact Debate</h3>
+            <p>Room ID: 6879467673b53ba283ba6527</p>
+            <p>This room contains 4 groups with perfect counter-matching:</p>
+            <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
+                <li><strong>FOR:</strong> AI Creates New Opportunities ↔ <strong>AGAINST:</strong> AI Causes Job Displacement</li>
+                <li><strong>FOR:</strong> AI Enhances Human Capabilities ↔ <strong>AGAINST:</strong> AI Reduces Human Value</li>
+            </ul>
+        </div>
+
+        <div style="margin: 30px 0;">
+            <a href="/test-counter.html" class="button test-btn">Test Counter API</a>
+            <a href="/debate-rooms/6879467673b53ba283ba6527" class="button">Go to Debate Room</a>
+        </div>
+
+        <div class="card">
+            <h3>🔧 Development Tools</h3>
+            <p>Backend: <a href="http://localhost:3000">http://localhost:3000</a></p>
+            <p>Frontend: <a href="http://localhost:5173">http://localhost:5173</a></p>
+            <p>Test API: <a href="http://localhost:3001">http://localhost:3001</a></p>
+        </div>
+
+        <div class="card">
+            <h3>📊 Counter-Matching Features</h3>
+            <ul style="text-align: left;">
+                <li>✅ AI-powered semantic analysis for grouping</li>
+                <li>✅ Bidirectional counter-argument linking</li>
+                <li>✅ Thread-based counter-chat view</li>
+                <li>✅ Debug tools for counter-matching status</li>
+                <li>✅ Counter analysis with confidence scoring</li>
+            </ul>
+        </div>
+
+        <script>
+            // Check if servers are running
+            async function checkServers() {
+                const servers = [
+                    { name: 'Backend', url: 'http://localhost:3000' },
+                    { name: 'Test API', url: 'http://localhost:3001' }
+                ];
+
+                for (const server of servers) {
+                    try {
+                        const response = await fetch(server.url + '/health');
+                        console.log(`${server.name}: ✅ Running`);
+                    } catch (error) {
+                        console.log(`${server.name}: ❌ Not responding`);
+                    }
+                }
+            }
+
+            checkServers();
+        </script>
+    </div>
+</body>
+</html>
