@@ -71,6 +71,12 @@ export const newsAPI = {
     return response.data;
   },
 
+  // Get combined feed (news + reposts)
+  getCombinedFeed: async () => {
+    const response = await api.get('/news/combined-feed');
+    return response.data;
+  },
+
   // Upload news (requires authentication)
   uploadNews: async (newsData) => {
     const response = await api.post('/news/upload', newsData, {
@@ -205,6 +211,21 @@ export const apiUtils = {
   // Check if user is authenticated
   isAuthenticated: () => {
     return !!localStorage.getItem('authToken');
+  },
+};
+
+// Expert APIs
+export const expertAPI = {
+  // Get all approved experts
+  getAllExperts: async () => {
+    const response = await api.get('/users/experts');
+    return response.data;
+  },
+
+  // Get expert by ID
+  getExpertById: async (id) => {
+    const response = await api.get(`/users/experts/${id}`);
+    return response.data;
   },
 };
 

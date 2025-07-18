@@ -84,6 +84,64 @@ const login = async (req, res, UserModel) => {
   }
 };
 
+// Get all approved experts
+const getAllExperts = async (req, res) => {
+  try {
+    const experts = await ExpertUser.find({ isApproved: true })
+      .select('name username email profession createdAt') // Simplified selection
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: 'Experts fetched successfully',
+      experts: experts,
+      count: experts.length
+    });
+  } catch (error) {
+    console.error('Error fetching experts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch experts',
+      error: error.message
+    });
+  }
+};
+
+// Get expert by ID
+const getExpertById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expert = await ExpertUser.findById(id)
+      .select('name username email profession createdAt');
+
+    if (!expert) {
+      return res.status(404).json({
+        success: false,
+        message: 'Expert not found'
+      });
+    }
+
+    if (!expert.isApproved) {
+      return res.status(403).json({
+        success: false,
+        message: 'Expert not approved'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      expert: expert
+    });
+  } catch (error) {
+    console.error('Error fetching expert:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch expert',
+      error: error.message
+    });
+  }
+};
+
 // Export Functions
 module.exports = {
   normalUserSignup: (req, res) => signup(req, res, NormalUser),
@@ -92,4 +150,6 @@ module.exports = {
   normalUserLogin: (req, res) => login(req, res, NormalUser),
   communityUserLogin: (req, res) => login(req, res, CommunityUser),
   expertUserLogin: (req, res) => login(req, res, ExpertUser),
+  getAllExperts,
+  getExpertById,
 };

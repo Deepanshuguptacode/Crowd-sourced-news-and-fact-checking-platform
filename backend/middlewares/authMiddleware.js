@@ -88,7 +88,14 @@ const authenticateCommunityOrExpertUser = async (req, res, next) => {
 
 // General authentication middleware for all user types
 const authenticateAnyUser = async (req, res, next) => {
-  const token = req.cookies.token;
+  // Check for token in cookies first, then Authorization header
+  let token = req.cookies.token;
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
 
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });

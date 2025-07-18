@@ -15,7 +15,7 @@ const NewsFeed = () => {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        const response = await newsAPI.getAllPosts();
+        const response = await newsAPI.getAllPosts(); // Use getAllPosts since reposts are now regular news
         console.log("Response Data:", response);
         setNews(response.news || []);
       } catch (error) {
@@ -153,6 +153,7 @@ const NewsFeed = () => {
         </div>
       ) : (
         news.map((item, index) => {
+          // Handle all posts as regular news (including reposts which are now news posts)
           const allComments = [
             ...((item.comments?.community || []).map(c => ({
               text: c.comment,
@@ -165,6 +166,17 @@ const NewsFeed = () => {
               username: c.expert?.username || 'Expert'
             })))
           ];
+
+          // Handle image URLs - check if already complete URLs or need base URL prepending
+          const processedImageUrls = (item.screenshots || []).map(screenshot => {
+            // If screenshot already starts with http:// or https://, use as is
+            if (screenshot.startsWith('http://') || screenshot.startsWith('https://')) {
+              return screenshot;
+            }
+            // Otherwise, prepend base URL for local uploads
+            return `${config.BASE_URL}${screenshot}`;
+          });
+          
           return (
             <div key={item._id} className={index === 0 ? 'pt-0' : 'pt-0'}>
               <NewsCard
@@ -176,7 +188,7 @@ const NewsFeed = () => {
                 upvotes={item.upvotes?.length || 0}
                 downvotes={item.downvotes?.length || 0}
                 comments={allComments}
-                imageUrl={(item.screenshots || []).map(screenshot => `${config.BASE_URL}${screenshot}`)}
+                imageUrl={processedImageUrls}
                 username={item.uploadedBy?.username || 'Anonymous'}
                 aiReview={item.aiReview}
                 confidence={item.confidence}

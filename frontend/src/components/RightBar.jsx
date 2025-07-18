@@ -48,7 +48,7 @@ const RightBar = () => {
 
   const menuItems = [
     { icon: HomeIcon, label: 'Home', color: 'blue', action: () => navigate('/home') },
-    { icon: TrendingIcon, label: 'Trending', color: 'orange', action: () => {} },
+    { icon: TrendingIcon, label: 'Trending', color: 'orange', action: () => navigate('/trending') },
     { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms') },
     { icon: SettingsIcon, label: 'Settings', color: 'gray', action: () => {} },
     { icon: HelpIcon, label: 'Help', color: 'purple', action: () => {} },

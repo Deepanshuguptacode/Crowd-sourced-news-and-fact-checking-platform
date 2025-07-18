@@ -164,8 +164,104 @@ const voteNews = async (req, res) => {
   }
 };
 
+// Get combined feed (regular news + reposts from trending news)
+const getCombinedFeed = async (req, res) => {
+  try {
+    const { CommunityComment, ExpertComment } = require('../models/Comments');
+    const TrendingNews = require('../models/TrendingNews');
+    const CommunityUser = require('../models/CommunityUser');
+    const ExpertUser = require('../models/ExpertUser');
+    const NormalUser = require('../models/NormalUser');
+    
+    // Fetch regular news posts
+    const news = await News.find()
+      .populate('uploadedBy', 'name username')
+      .populate('upvotes', 'name username')
+      .populate('downvotes', 'name username')
+      .sort({ uploadedAt: -1 });
+
+    // Fetch trending news with reposts
+    const trendingNews = await TrendingNews.find({ 
+      isActive: true,
+      'reposts.0': { $exists: true } // Only get trending news that have reposts
+    })
+    .populate('reposts.userId', 'username email name')
+    .sort({ fetchedAt: -1 });
+
+    // Convert regular news to feed format
+    const newsFeedItems = await Promise.all(
+      news.map(async (newsItem) => {
+        const communityComments = await CommunityComment.find({ newsId: newsItem._id })
+          .populate('commenter', 'username')
+          .sort({ createdAt: -1 });
+
+        const expertComments = await ExpertComment.find({ newsId: newsItem._id })
+          .populate('expert', 'username')
+          .sort({ createdAt: -1 });
+
+        return {
+          ...newsItem.toObject(),
+          feedType: 'news',
+          timestamp: newsItem.uploadedAt,
+          comments: {
+            community: communityComments,
+            expert: expertComments
+          }
+        };
+      })
+    );
+
+    // Convert reposts to feed format
+    const repostFeedItems = [];
+    for (const trendingItem of trendingNews) {
+      for (const repost of trendingItem.reposts) {
+        repostFeedItems.push({
+          _id: `repost_${trendingItem._id}_${repost._id}`,
+          feedType: 'repost',
+          timestamp: repost.repostedAt,
+          repostedBy: repost.userId,
+          repostComment: repost.comment,
+          originalNews: {
+            _id: trendingItem._id,
+            title: trendingItem.title,
+            description: trendingItem.description,
+            link: trendingItem.link,
+            image: trendingItem.image,
+            source: trendingItem.source,
+            category: trendingItem.category
+          },
+          upvotes: [], // Reposts don't have votes yet
+          downvotes: [],
+          comments: { community: [], expert: [] } // Reposts don't have comments yet
+        });
+      }
+    }
+
+    // Combine and sort by timestamp
+    const combinedFeed = [...newsFeedItems, ...repostFeedItems]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    res.status(200).json({
+      message: 'Combined feed fetched successfully',
+      news: combinedFeed,
+      stats: {
+        newsCount: newsFeedItems.length,
+        repostCount: repostFeedItems.length,
+        totalCount: combinedFeed.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching combined feed:', error);
+    res.status(500).json({
+      message: 'Failed to fetch combined feed',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   uploadNews,
   getAllPosts,
+  getCombinedFeed,
   voteNews,
 };

@@ -11,6 +11,8 @@ import RightBar from './components/RightBar';
 import NewsSubmissionForm from './pages/NewsSubmissionForm';
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
+import TrendingPage from './pages/TrendingPage';
+import ExpertsPage from './pages/ExpertsPage';
 import DebateRoomsList from './components/DebateRoomsList';
 import DebateRoom from './components/DebateRoom';
 import AdvancedDebateRoom from './components/AdvancedDebateRoom';
@@ -41,6 +43,22 @@ function App() {
               element={
                 <ProtectedRoute allowedUserTypes={['normal']}>
                   <NewsSubmissionForm />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/trending" 
+              element={
+                <ProtectedRoute>
+                  <TrendingPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/experts" 
+              element={
+                <ProtectedRoute>
+                  <ExpertsPage />
                 </ProtectedRoute>
               } 
             />

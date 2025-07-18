@@ -4,6 +4,8 @@ const userRoutes = require('./routes/userRoute');
 const NewsRoutes = require('./routes/NewsRoute');
 const commentFilterRoutes = require('./routes/commentFilterRoute');
 const debateRoomRoutes = require('./routes/debateRoomRoute');
+const trendingNewsRoutes = require('./routes/trendingNewsRoute');
+const trendingNewsScheduler = require('./services/trendingNewsScheduler');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -50,6 +52,7 @@ app.use('/users', userRoutes);
 app.use('/news', NewsRoutes);
 app.use('/comment-filter', commentFilterRoutes);
 app.use('/debate-rooms', debateRoomRoutes);
+app.use('/trending-news', trendingNewsRoutes);
 
 // Security headers
 app.use((req, res, next) => {
@@ -83,6 +86,10 @@ mongoose
   .connect('mongodb://localhost:27017/DBMS', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected to MongoDB");
+    
+    // Start trending news scheduler
+    trendingNewsScheduler.start();
+    
     app.listen(3000, () => console.log("Server running on port 3000"));
   })
   .catch((error) => console.log("MongoDB connection failed:", error.message));
