@@ -23,6 +23,47 @@ const expertUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  bio: {
+    type: String,
+    default: null,
+  },
+  interests: {
+    type: [String],
+    default: null,
+  },
+  verificationId: {
+    type: String,
+    default: null,
+  },
+  photo: {
+    type: String,
+    default: null,
+  },
+  location: {
+    type: String,
+    default: null,
+  },
+  socialLinks: {
+    twitter: { type: String, default: null },
+    linkedin: { type: String, default: null },
+    website: { type: String, default: null }
+  },
+  areaOfExpertise: {
+    type: [String],
+    default: null,
+  },
+  credentials: {
+    type: [String],
+    default: null,
+  },
+  experience: {
+    type: Number,
+    default: null,
+  },
+  joinedAt: {
+    type: Date,
+    default: Date.now,
+  },
   isApproved: {
     type: Boolean,
     default: false, // Admin approval required

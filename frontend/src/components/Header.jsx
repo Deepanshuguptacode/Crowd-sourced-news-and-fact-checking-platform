@@ -13,6 +13,7 @@ const Header = ({ onMenuToggle }) => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    setShowUserMenu(false)
     logout()
     toast.success('Logged out successfully')
     navigate('/login')
@@ -163,7 +164,7 @@ const Header = ({ onMenuToggle }) => {
 
 
               {/* Profile */}
-              <div className="flex items-center space-x-3 relative">
+              <div className="flex items-center space-x-3 relative user-menu-container">
                 {isAuthenticated ? (
                   <>
                     <div className="hidden sm:block text-right">
@@ -197,14 +198,21 @@ const Header = ({ onMenuToggle }) => {
                           </p>
                         </div>
                         <button 
-                          onClick={() => navigate('/profile')}
+                          onClick={() => {
+                            console.log('Profile button clicked');
+                            setShowUserMenu(false);
+                            navigate('/profile');
+                          }}
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           Profile Settings
                         </button>
-                        {userType === 'normal' && (
+                        {(userType === 'normal' || userType === 'community' || userType === 'expert') && (
                           <button 
-                            onClick={() => navigate('/submit-news')}
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              navigate('/submit-news');
+                            }}
                             className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             Submit News

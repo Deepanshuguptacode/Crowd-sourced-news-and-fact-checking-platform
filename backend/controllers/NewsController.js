@@ -40,7 +40,7 @@ const upload = multer({ storage: storage }).array('screenshots', 5); // allows u
 // Controller function to handle the news upload
 const uploadNews = async (req, res) => {
   try {
-    // Step 1: Check if the user is authenticated and is a normal user
+    // Step 1: Check if the user is authenticated (allow all user types)
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized access' });
     }
@@ -53,46 +53,111 @@ const uploadNews = async (req, res) => {
         return res.status(500).json({ message: 'Something went wrong during file upload' });
       }
 
-      // Step 3: Get the form data from the request
-      const { title, description, link } = req.body;
+      try {
+        // Step 3: Get the form data from the request
+        const { title, description, link, imageUrls } = req.body;
 
-      // Step 4: Create a new News document and save it to the database
-      const news = new News({
-        title,
-        description,
-        link,
-        screenshots: req.files.map(file => `/uploads/screenshots/${file.filename}`),
-        uploadedBy: req.user._id, // assuming the user is in the req.user object (set by middleware)
-      });
+        // Step 4: Process image sources (uploaded files + URLs)
+        let screenshots = [];
+        
+        // Add uploaded file paths
+        if (req.files && req.files.length > 0) {
+          screenshots = req.files.map(file => `/uploads/screenshots/${file.filename}`);
+        }
+        
+        // Add image URLs if provided
+        if (imageUrls) {
+          try {
+            const urls = JSON.parse(imageUrls);
+            if (Array.isArray(urls)) {
+              // Validate URLs
+              const validUrls = urls.filter(url => {
+                try {
+                  const urlObj = new URL(url);
+                  return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+                } catch {
+                  return false;
+                }
+              });
+              screenshots = [...screenshots, ...validUrls];
+            }
+          } catch (parseError) {
+            console.error('Error parsing image URLs:', parseError);
+          }
+        }
 
-      await news.save();
+        // Step 5: Create a new News document and save it to the database
+        const news = new News({
+          title,
+          description,
+          link,
+          screenshots: screenshots,
+          uploadedBy: req.user._id, // Works for all user types
+        });
 
-      // Step 5: Respond with the saved news article
-      res.status(201).json({
-        message: 'News uploaded successfully',
-        news: news,
-      });
+        await news.save();
+
+        // Step 6: Respond with the saved news article
+        res.status(201).json({
+          message: 'News uploaded successfully',
+          news: news,
+        });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        res.status(500).json({ 
+          message: 'Error saving news to database', 
+          error: dbError.message 
+        });
+      }
     });
   } catch (err) {
+    console.error('Upload error:', err);
     res.status(500).json({ message: 'Error uploading news', error: err.message });
   }
 };
 
 const getAllPosts = async (req, res) => {
   try {
-    // Import comment models
+    // Import comment models and user models
     const { CommunityComment, ExpertComment } = require('../models/Comments');
+    const CommunityUser = require('../models/CommunityUser');
+    const ExpertUser = require('../models/ExpertUser');
+    const NormalUser = require('../models/NormalUser');
     
-    // Fetch all news articles and populate the 'uploadedBy' field to include the user's username
-    const news = await News.find()
-      .populate('uploadedBy', 'name username')// Populate uploader's username
-      .populate('upvotes', 'name username') // Populate upvoters' usernames
-      .populate('downvotes', 'name username') // Populate downvoters' usernames
+    // Fetch all news articles
+    let news = await News.find()
       .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
 
-    // Fetch comments for each news article separately
+    // Manually populate uploadedBy field for different user types and get comments
     const newsWithComments = await Promise.all(
       news.map(async (newsItem) => {
+        // Find the user across all user types
+        let uploader = await NormalUser.findById(newsItem.uploadedBy);
+        if (!uploader) {
+          uploader = await CommunityUser.findById(newsItem.uploadedBy);
+        }
+        if (!uploader) {
+          uploader = await ExpertUser.findById(newsItem.uploadedBy);
+        }
+
+        // Populate vote arrays across all user types  
+        const upvotes = [];
+        const downvotes = [];
+        
+        for (const voteId of newsItem.upvotes) {
+          let voter = await NormalUser.findById(voteId, 'name username');
+          if (!voter) voter = await CommunityUser.findById(voteId, 'name username');
+          if (!voter) voter = await ExpertUser.findById(voteId, 'name username');
+          if (voter) upvotes.push(voter);
+        }
+        
+        for (const voteId of newsItem.downvotes) {
+          let voter = await NormalUser.findById(voteId, 'name username');
+          if (!voter) voter = await CommunityUser.findById(voteId, 'name username');
+          if (!voter) voter = await ExpertUser.findById(voteId, 'name username');
+          if (voter) downvotes.push(voter);
+        }
+
         // Fetch community comments
         const communityComments = await CommunityComment.find({ newsId: newsItem._id })
           .populate('commenter', 'username')
@@ -103,9 +168,12 @@ const getAllPosts = async (req, res) => {
           .populate('expert', 'username')
           .sort({ createdAt: -1 });
 
-        // Structure the news item with comments
+        // Structure the news item with comments and populated fields
         return {
           ...newsItem.toObject(),
+          uploadedBy: uploader || { username: 'Unknown', name: 'Unknown User' },
+          upvotes: upvotes,
+          downvotes: downvotes,
           comments: {
             community: communityComments,
             expert: expertComments
@@ -120,6 +188,7 @@ const getAllPosts = async (req, res) => {
       news: newsWithComments,
     });
   } catch (err) {
+    console.error('Error fetching news posts:', err);
     res.status(500).json({
       message: 'Error fetching news posts',
       error: err.message,

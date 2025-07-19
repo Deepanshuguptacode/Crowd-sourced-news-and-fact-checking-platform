@@ -23,6 +23,14 @@ const normalUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  bio: {
+    type: String,
+    default: null,
+  },
+  interests: {
+    type: [String],
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
 import TrendingPage from './pages/TrendingPage';
 import ExpertsPage from './pages/ExpertsPage';
+import ProfilePage from './pages/ProfilePage';
 import DebateRoomsList from './components/DebateRoomsList';
 import DebateRoom from './components/DebateRoom';
 import AdvancedDebateRoom from './components/AdvancedDebateRoom';
@@ -41,8 +42,16 @@ function App() {
             <Route 
               path="/submit-news" 
               element={
-                <ProtectedRoute allowedUserTypes={['normal']}>
+                <ProtectedRoute allowedUserTypes={['normal', 'community', 'expert']}>
                   <NewsSubmissionForm />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               } 
             />

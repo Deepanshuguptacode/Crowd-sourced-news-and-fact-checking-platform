@@ -5,6 +5,7 @@ const NewsRoutes = require('./routes/NewsRoute');
 const commentFilterRoutes = require('./routes/commentFilterRoute');
 const debateRoomRoutes = require('./routes/debateRoomRoute');
 const trendingNewsRoutes = require('./routes/trendingNewsRoute');
+const profileRoutes = require('./routes/profileRoute');
 const trendingNewsScheduler = require('./services/trendingNewsScheduler');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -53,6 +54,7 @@ app.use('/news', NewsRoutes);
 app.use('/comment-filter', commentFilterRoutes);
 app.use('/debate-rooms', debateRoomRoutes);
 app.use('/trending-news', trendingNewsRoutes);
+app.use('/profile', profileRoutes);
 
 // Security headers
 app.use((req, res, next) => {

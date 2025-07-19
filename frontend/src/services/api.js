@@ -229,4 +229,29 @@ export const expertAPI = {
   },
 };
 
+// Profile APIs
+export const profileAPI = {
+  // Get user profile
+  getProfile: async () => {
+    const response = await api.get('/profile/me');
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (formData) => {
+    const response = await api.put('/profile/update', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Change password
+  changePassword: async (passwordData) => {
+    const response = await api.put('/profile/change-password', passwordData);
+    return response.data;
+  },
+};
+
 export default api;

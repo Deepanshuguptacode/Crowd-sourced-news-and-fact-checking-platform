@@ -63,6 +63,7 @@ const UserProvider = ({ children = "" }) => {
     loading,
     login,
     logout,
+    updateUserInfo, // Add this for direct access
   };
 
   return (

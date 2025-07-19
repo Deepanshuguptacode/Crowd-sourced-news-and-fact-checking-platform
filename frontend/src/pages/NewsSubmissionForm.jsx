@@ -11,8 +11,10 @@ const NewsSubmissionForm = () => {
     title: '',
     description: '',
     link: '',
-    screenshots: []
+    screenshots: [],
+    imageUrls: '' // New field for image URLs
   });
+  const [imageInputType, setImageInputType] = useState('upload'); // 'upload' or 'url'
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleInputChange = (e) => {
@@ -33,13 +35,26 @@ const NewsSubmissionForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
-    for (const key in formData) {
-      if (key === 'screenshots') {
-        for (let i = 0; i < formData.screenshots.length; i++) {
-          formDataToSend.append('screenshots', formData.screenshots[i]);
-        }
-      } else {
-        formDataToSend.append(key, formData[key]);
+    
+    // Add text fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('link', formData.link);
+    
+    // Add image URLs if provided
+    if (formData.imageUrls.trim()) {
+      // Split by lines and filter out empty lines
+      const urls = formData.imageUrls
+        .split('\n')
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+      formDataToSend.append('imageUrls', JSON.stringify(urls));
+    }
+    
+    // Add uploaded files
+    if (formData.screenshots && formData.screenshots.length > 0) {
+      for (let i = 0; i < formData.screenshots.length; i++) {
+        formDataToSend.append('screenshots', formData.screenshots[i]);
       }
     }
 
@@ -185,36 +200,95 @@ const NewsSubmissionForm = () => {
                       </div>
                     </div>
 
-                    {/* File Upload */}
+                    {/* Image Input Section */}
                     <div>
                       <label className="block text-slate-300 text-sm font-medium mb-2">
-                        Supporting Screenshots
+                        Images (Optional)
                       </label>
-                      <div className="relative">
-                        <div className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-blue-500/50 transition-colors duration-200">
-                          <Upload className="mx-auto w-8 h-8 text-slate-400 mb-2" />
-                          <p className="text-slate-400 text-sm mb-2">
-                            Click to upload or drag and drop
-                          </p>
-                          <p className="text-slate-500 text-xs">
-                            PNG, JPG, GIF up to 10MB each
-                          </p>
-                          <input
-                            type="file"
-                            id="screenshots"
-                            onChange={handleFileChange}
-                            multiple
-                            accept="image/*"
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                        </div>
-                        {formData.screenshots && formData.screenshots.length > 0 && (
-                          <div className="mt-2 flex items-center space-x-2 text-sm text-blue-400">
-                            <Image className="w-4 h-4" />
-                            <span>{formData.screenshots.length} file(s) selected</span>
-                          </div>
-                        )}
+                      
+                      {/* Image Input Type Selector */}
+                      <div className="flex mb-4 bg-slate-700/30 rounded-lg p-1">
+                        <button
+                          type="button"
+                          onClick={() => setImageInputType('upload')}
+                          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                            imageInputType === 'upload'
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <Upload className="w-4 h-4 inline mr-2" />
+                          Upload Files
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImageInputType('url')}
+                          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                            imageInputType === 'url'
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <LinkIcon className="w-4 h-4 inline mr-2" />
+                          Image URLs
+                        </button>
                       </div>
+
+                      {/* File Upload Option */}
+                      {imageInputType === 'upload' && (
+                        <div className="relative">
+                          <div className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-blue-500/50 transition-colors duration-200">
+                            <Upload className="mx-auto w-8 h-8 text-slate-400 mb-2" />
+                            <p className="text-slate-400 text-sm mb-2">
+                              Click to upload or drag and drop
+                            </p>
+                            <p className="text-slate-500 text-xs">
+                              PNG, JPG, GIF up to 10MB each
+                            </p>
+                            <input
+                              type="file"
+                              id="screenshots"
+                              onChange={handleFileChange}
+                              multiple
+                              accept="image/*"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                          </div>
+                          {formData.screenshots && formData.screenshots.length > 0 && (
+                            <div className="mt-2 flex items-center space-x-2 text-sm text-blue-400">
+                              <Image className="w-4 h-4" />
+                              <span>{formData.screenshots.length} file(s) selected</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Image URL Option */}
+                      {imageInputType === 'url' && (
+                        <div className="relative">
+                          <textarea
+                            id="imageUrls"
+                            value={formData.imageUrls}
+                            onChange={handleInputChange}
+                            placeholder="Enter image URLs (one per line)
+https://example.com/image1.jpg
+https://example.com/image2.png"
+                            rows="4"
+                            className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 resize-none"
+                          />
+                          <div className="mt-2 text-xs text-slate-500">
+                            Enter each image URL on a separate line. URLs should start with http:// or https://
+                          </div>
+                          {formData.imageUrls && (
+                            <div className="mt-2 flex items-center space-x-2 text-sm text-blue-400">
+                              <Image className="w-4 h-4" />
+                              <span>
+                                {formData.imageUrls.split('\n').filter(url => url.trim().length > 0).length} URL(s) entered
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Submit Button */}
