@@ -85,7 +85,7 @@ app.use('*', (req, res) => {
 
 // MongoDB Connection
 mongoose
-  .connect('mongodb://localhost:27017/DBMS', { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect('mongodb://127.0.0.1:27017/DBMS', )
   .then(() => {
     console.log("Connected to MongoDB");
     

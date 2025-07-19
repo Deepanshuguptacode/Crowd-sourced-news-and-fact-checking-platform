@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
 import { toast } from 'react-toastify';
-import CounterChatView from './CounterChatView';
+import CounterChatView from '../components/CounterChatView';
+import NavigationHeader from '../components/NavigationHeader';
 import { 
   ArrowLeftIcon,
   PaperAirplaneIcon,
@@ -176,10 +177,12 @@ const DebateRoom = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <NavigationHeader title="Debate Rooms" />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-8">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
               <button
@@ -395,6 +398,7 @@ const DebateRoom = () => {
         )}
       </div>
     </div>
+  </>
   );
 };
 

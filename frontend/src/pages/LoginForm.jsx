@@ -61,11 +61,7 @@ const LoginForm = () => {
 
   return (
     <div 
-      className="min-h-screen stage-1-background relative overflow-x-hidden"
-      style={{
-        background: '#0f172a',
-        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-      }}
+      className="min-h-screen bg-gray-50 dark:bg-slate-900 stage-1-background relative overflow-x-hidden transition-colors duration-300"
     >
       {/* Stage 2: Animated Logo */}
       <div className="fixed top-8 left-8 z-50 stage-2-logo">
@@ -73,15 +69,15 @@ const LoginForm = () => {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">N</span>
           </div>
-          <span className="text-white font-semibold text-xl">NewsCheck</span>
+          <span className="text-gray-900 dark:text-white font-semibold text-xl">NewsCheck</span>
         </div>
       </div>
 
       {/* Stage 3: Main Login Form */}
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-4 stage-3-form">
         <div className="w-full max-w-5xl mx-auto">
-          <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden">
-            <div className="grid lg:grid-cols-2 min-h-[480px]">              {/* Left Panel - Welcome Content */}
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
+            <div className="grid lg:grid-cols-2 min-h-[480px]">{              /* Left Panel - Welcome Content */}
               <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 lg:p-8 flex flex-col justify-center text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/10"></div>
                 <div className="relative z-10">
@@ -113,20 +109,20 @@ const LoginForm = () => {
               {/* Right Panel - Login Form */}
               <div className="p-4 lg:p-6 flex flex-col justify-center">
                 <div className="max-w-sm mx-auto w-full">
-                  <h2 className="text-xl lg:text-2xl font-bold text-white mb-1">Sign In</h2>
-                  <p className="text-slate-400 mb-4 text-sm">Access your NewsCheck account</p>
+                  <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Sign In</h2>
+                  <p className="text-gray-600 dark:text-slate-400 mb-4 text-sm">Access your NewsCheck account</p>
 
                   <form onSubmit={handleSubmit} className="space-y-3">
                   {/* User Type Selection */}
                   <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-1">
+                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
                       Account Type
                     </label>
                     <select
                       id="userType"
                       value={formData.userType}
                       onChange={handleUserTypeChange}
-                      className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                      className="w-full px-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                       required
                     >
                       <option value="normal">Normal User</option>
@@ -137,17 +133,17 @@ const LoginForm = () => {
 
                   {/* Email Field */}
                   <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-1">
+                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
                       <input
                         type="email"
                         id="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                        className="w-full pl-10 pr-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                         placeholder="Enter your email"
                         required
                       />
@@ -156,24 +152,24 @@ const LoginForm = () => {
 
                   {/* Password Field */}
                   <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-1">
+                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         id="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-10 py-2.5 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                        className="w-full pl-10 pr-10 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                         placeholder="Enter your password"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -200,11 +196,11 @@ const LoginForm = () => {
                 {/* Stage 4: Navigation Links */}
                 <div className="mt-4 stage-4-details">
                   <div className="text-center">
-                    <p className="text-slate-400 mb-2 text-sm">
+                    <p className="text-gray-600 dark:text-slate-400 mb-2 text-sm">
                       Don't have an account?{' '}
                       <Link 
                         to="/signup" 
-                        className="text-blue-400 hover:text-blue-300 font-medium transition-colors inline-flex items-center space-x-1"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors inline-flex items-center space-x-1"
                       >
                         <UserPlus className="w-4 h-4" />
                         <span>Create Account</span>
@@ -213,7 +209,7 @@ const LoginForm = () => {
                     
                     <Link 
                       to="/" 
-                      className="text-slate-500 hover:text-slate-300 text-sm transition-colors inline-flex items-center space-x-1"
+                      className="text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 text-sm transition-colors inline-flex items-center space-x-1"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Back to Home</span>

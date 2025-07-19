@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { profileAPI } from '../services/api';
 import { UserContext } from '../context/userContext';
 import { User, Mail, MapPin, Link as LinkIcon, Camera, Save, Lock, Edit3 } from 'lucide-react';
-import Header from '../components/Header';
+import NavigationHeader from '../components/NavigationHeader';
 import Footer from '../components/Footer';
 import config from '../config';
 
@@ -164,9 +164,7 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="fixed top-0 left-0 w-full z-50">
-          <Header />
-        </div>
+        <NavigationHeader title="User Profile" />
         <div className="pt-16 flex items-center justify-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
@@ -177,9 +175,7 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700">
-        <Header />
-      </div>
+        <NavigationHeader title="User Profile" />
 
       {/* Main Content */}
       <div className="pt-16 pb-16">

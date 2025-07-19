@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import NavigationHeader from '../components/NavigationHeader';
 import { useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
 import { toast } from 'react-toastify';
@@ -80,10 +81,12 @@ const DebateRoomsList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
+    <>
+      <NavigationHeader title="Debate Rooms List" />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -251,7 +254,7 @@ const DebateRoomsList = () => {
               <button
                 onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                 disabled={pagination.page === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -263,7 +266,7 @@ const DebateRoomsList = () => {
                   className={`px-3 py-2 text-sm font-medium rounded-lg ${
                     pagination.page === index + 1
                       ? 'bg-blue-600 text-white'
-                      : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                      : 'text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {index + 1}
@@ -273,7 +276,7 @@ const DebateRoomsList = () => {
               <button
                 onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                 disabled={pagination.page === pagination.pages}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -281,18 +284,18 @@ const DebateRoomsList = () => {
           </div>
         )}
       </div>
-
-      {/* Create Form Modal */}
-      {showCreateForm && (
-        <CreateDebateRoomModal
-          onClose={() => setShowCreateForm(false)}
-          onSuccess={() => {
-            setShowCreateForm(false);
-            fetchDebateRooms();
-          }}
-        />
-      )}
-    </div>
+        {/* Create Form Modal */}
+        {showCreateForm && (
+          <CreateDebateRoomModal
+            onClose={() => setShowCreateForm(false)}
+            onSuccess={() => {
+              setShowCreateForm(false);
+              fetchDebateRooms();
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 };
 

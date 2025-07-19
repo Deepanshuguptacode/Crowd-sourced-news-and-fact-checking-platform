@@ -1,131 +1,181 @@
 // src/components/HeroSection.jsx
+
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { FaSearch, FaUsers } from 'react-icons/fa';
-import CountUp from 'react-countup';
-import VisibilitySensor from 'react-visibility-sensor';
+import { useTheme } from './NavBar';
 import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection({ scrollToHow }) {
-  const [startCount, setStartCount] = useState(false);
+  const { isDarkMode } = useTheme();
+  const taglines = [
+    'Because the Truth Deserves a Second Opinion.',
+    'Verified by the People, Backed by Experts.',
+    'Debate It. Discuss It. Decide It.'
+  ];
+  const [taglineIndex, setTaglineIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-  
-  // Start count animation when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => setStartCount(true), 500);
-    return () => clearTimeout(timer);
+
+
+  // Add CSS animation styles
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap');
+      
+      @keyframes slideUpOut {
+        0% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-60px);
+        }
+      }
+      
+      @keyframes slideUpIn {
+        0% {
+          opacity: 0;
+          transform: translateY(60px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
   }, []);
 
-  return (
-    <section className="relative bg-gradient-to-r from-teal to-charcoal py-24 text-white overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div
-          className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] bg-[url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%23fff\' fill-opacity=\'0.05\'/%3E%3C/svg%3E')] animate-spin-slow"
-        />
-      </div>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Start slide up out
+      setIsVisible(false);
       
-      <div className="container mx-auto px-4 relative z-10 text-center">
-        <motion.h1 
-          className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          Fight <span className="text-gold">Misinformation</span> Together
-        </motion.h1>
-        
-        <motion.p 
-          className="text-xl mb-10 max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-        >
-          A community-powered platform where truth prevails through collective verification
-        </motion.p>
-        
-        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-          <motion.button 
+      // After slide out completes, change tagline and slide in from bottom
+      setTimeout(() => {
+        setTaglineIndex((prev) => (prev + 1) % taglines.length);
+        setIsVisible(true);
+      }, 800); // Wait for slide out to complete
+    }, 5000); // 5 seconds total cycle
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Helper to highlight key words in taglines with gradient
+  function renderTagline(text) {
+    // Highlight different key words based on the tagline
+    if (text.includes('Truth')) {
+      const [before, after] = text.split('Truth');
+      return (
+        <>
+          {before}
+          <span className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
+            Truth
+          </span>
+          {after}
+        </>
+      );
+    } else if (text.includes('People')) {
+      const [before, after] = text.split('People');
+      return (
+        <>
+          {before}
+          <span className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
+            People
+          </span>
+          {after}
+        </>
+      );
+    } else if (text.includes('Debate')) {
+      const parts = text.split(/(\bDebate\b|\bDiscuss\b|\bDecide\b)/);
+      return (
+        <>
+          {parts.map((part, index) => {
+            if (part === 'Debate' || part === 'Discuss' || part === 'Decide') {
+              return (
+                <span
+                  key={index}
+                  className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent"
+                >
+                  {part}
+                </span>
+              );
+            }
+            return part;
+          })}
+        </>
+      );
+    }
+    return text;
+  }
+
+  return (
+    <section
+      className={`py-8 relative overflow-hidden transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
+      }`}
+    >
+    
+      {/* Taglines */}
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-8 min-h-[280px] md:min-h-[320px] xl:min-h-[340px] flex items-center justify-center overflow-hidden">
+          <h1 
+            className={`text-5xl md:text-7xl xl:text-8xl font-extrabold leading-tight tracking-tight ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}
+            key={taglineIndex}
+            style={{
+              animation: isVisible ? 'slideUpIn 0.8s ease-out' : 'slideUpOut 1.2s ease-in',
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              lineHeight: '0.9'
+            }}
+          >
+            {renderTagline(taglines[taglineIndex])}
+          </h1>
+        </div>
+        {/* small description */}
+        <div className='flex justify-center mb-16 px-4'>
+          <p className={`text-base md:text-lg max-w-3xl text-center font-bold leading-relaxed transition-colors duration-300 ${
+            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`} 
+          style={{
+            fontFamily: "'Inter', 'system-ui', sans-serif",
+            fontWeight: 600,
+            letterSpacing: '0.01em'
+          }}>
+            From public reports to expert verification, from clustered insights to live debates — everything you need to cut through misinformation.
+          </p>
+        </div>
+
+
+        <div className="flex justify-center space-x-6 mb-12">
+          <button
             onClick={scrollToHow}
-            className="bg-gold text-charcoal px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-all shadow-xl transform hover:-translate-y-1 flex items-center justify-center"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold px-6 py-3 rounded-lg transition-colors duration-300"
           >
-            <FaSearch className="mr-2" /> Learn How It Works
-          </motion.button>
-          
-          <motion.button 
-            className="border-2 border-gold text-gold px-8 py-4 rounded-xl font-bold hover:bg-gold hover:text-charcoal transition-all flex items-center justify-center"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/login')}
+            How It Works
+          </button>
+          <button
+            className={`px-8 py-4 rounded-lg transition-colors duration-300 font-bold ${
+              isDarkMode
+                ? 'bg-gray-700 hover:bg-gray-800 text-white'
+                : 'bg-white hover:bg-gray-100 text-purple-600 border-4 border-purple-400 '
+            }`}
+            onClick={() => navigate("/login")}
           >
-            <FaUsers className="mr-2" /> Join the Movement
-          </motion.button>
+            Get Started
+          </button>
         </div>
         
-        {/* Stats Section with CountUp */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <StatCard 
-            end={10} 
-            suffix="k+" 
-            label="Articles reviewed by our community" 
-            startCount={startCount} 
-          />
-          <StatCard 
-            end={93} 
-            suffix="%" 
-            label="Accuracy in AI-powered detection" 
-            startCount={startCount} 
-          />
-          <StatCard 
-            end={4.8} 
-            suffix="★" 
-            decimals={1}
-            label="Average trust score from our users" 
-            startCount={startCount} 
-          />
-        </div>
       </div>
     </section>
   );
 }
 
-const StatCard = ({ end, suffix, label, startCount, decimals = 0 }) => {
-  const [isVisible, setIsVisible] = useState(false);
 
-  return (
-    <VisibilitySensor 
-      onChange={(visible) => visible && setIsVisible(true)}
-      partialVisibility
-      offset={{ bottom: 100 }}
-    >
-      <motion.div 
-        className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-      >
-        <div className="text-3xl font-bold text-gold mb-1">
-          {(isVisible || startCount) ? (
-            <CountUp
-              start={0}
-              end={end}
-              suffix={suffix}
-              decimals={decimals}
-              duration={2.5}
-              separator=","
-              decimal="."
-              delay={0.1}
-              className="count-up"
-              key={isVisible || startCount ? 'countup-animate' + end : 'countup-static' + end}
-            />
-          ) : (
-            decimals > 0 ? `0.${'0'.repeat(decimals)}` : "0"
-          )}
-        </div>
-        <div className="text-sm text-white/80">{label}</div>
-      </motion.div>
-    </VisibilitySensor>
-  );
-};
+

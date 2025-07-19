@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Briefcase, Calendar, Search, Filter } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { expertAPI } from '../services/api';
+import NavigationHeader from '../components/NavigationHeader';
 
 const ExpertCard = ({ expert }) => {
   const formatDate = (dateString) => {
@@ -14,7 +15,7 @@ const ExpertCard = ({ expert }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200">
       {/* Expert Header */}
       <div className="flex items-center space-x-4 mb-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -111,21 +112,26 @@ const ExpertsList = () => {
 
   if (loading) {
     return (
+      <>
+      <NavigationHeader title="Expert Network" />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="pt-16 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-400">Loading experts...</p>
           </div>
         </div>
       </div>
+      </>
+      
     );
   }
 
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="flex items-center justify-center min-h-screen">
+        <NavigationHeader title="Expert Network" />
+        <div className="pt-16 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-12 h-12 text-red-500 mx-auto mb-4">
               <User className="w-full h-full" />
@@ -149,7 +155,8 @@ const ExpertsList = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <NavigationHeader title="Expert Network" />
+      <div className="pt-16 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">

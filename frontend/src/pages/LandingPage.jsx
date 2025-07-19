@@ -1,15 +1,20 @@
 import React, { useRef } from 'react';
-import NavBar from '../components/NavBar';
+import Navbar, { ThemeProvider, useTheme } from '../components/NavBar';
 import HeroSection from '../components/HeroSection';
 import WhySection from '../components/WhySection';
 import HowItWorks from '../components/HowItWorks';
 import TeamSection from '../components/TeamSection';
-import Footer from '../components/Footer';
-import FooterNew from '../components/FooterNew';
+import Footer from '../components/FooterNew';
+import About from '../components/About';
+import KeyFeature from '../components/KeyFeature';
 
-export default function LandingPage() {
-  const whyRef = useRef(null);
+function LandingPageContent() {
+  const { isDarkMode } = useTheme();
+  const heroRef = useRef(null);
+  const aboutRef = useRef(null);
+  const featuresRef = useRef(null);
   const howRef = useRef(null);
+  const problemRef = useRef(null);
   const teamRef = useRef(null);
 
   const scrollToSection = (ref) => {
@@ -20,17 +25,30 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-offwhite">
-      <NavBar 
-        scrollToWhy={() => scrollToSection(whyRef)} 
-        scrollToHow={() => scrollToSection(howRef)} 
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
+      <Navbar 
+        scrollToHero={() => scrollToSection(heroRef)}
+        scrollToAbout={() => scrollToSection(aboutRef)}
+        scrollToFeatures={() => scrollToSection(featuresRef)} 
+        scrollToProblem={() => scrollToSection(problemRef)}
         scrollToTeam={() => scrollToSection(teamRef)} 
       />
-      <HeroSection scrollToHow={() => scrollToSection(howRef)} />
-      <div ref={whyRef}><WhySection /></div>
-      <div ref={howRef}><HowItWorks /></div>
-      <div ref={teamRef}><TeamSection /></div>
-      <FooterNew />
+      <div ref={heroRef}><HeroSection scrollToHow={() => scrollToSection(howRef)} /></div>
+      <div ref={aboutRef}><About scrollToAbout={() => scrollToSection(aboutRef)} /></div>
+      <div ref={featuresRef}><KeyFeature scrollToFeatures={() => scrollToSection(featuresRef)} /></div>
+      <div ref={problemRef}><WhySection scrollToProblem={() => scrollToSection(problemRef)}/></div>
+      <div ref={teamRef}><TeamSection scrollToTeam={() => scrollToSection(teamRef)} /></div>
+      <Footer />
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <ThemeProvider>
+      <LandingPageContent />
+    </ThemeProvider>
   );
 }

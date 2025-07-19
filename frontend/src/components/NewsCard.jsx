@@ -132,6 +132,13 @@ const NewsCard = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 group p-6">
+      
+      {/* Title */}
+      <h3 className="text-lg md:text-xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <a href={link} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            {title}
+          </a>
+        </h3>
       {/* Header */}
       <div className="pb-3">
         <div className="flex items-start justify-between mb-3">
@@ -162,101 +169,128 @@ const NewsCard = ({
               {factStatus}
             </span>
           </div>
-        </div>
-
-        {/* Title */}
-        <h3 className="text-lg md:text-xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-          <a href={link} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            {title}
-          </a>
-        </h3>
+        </div> 
       </div>
 
       {/* Content Area - 2 Column Layout */}
-      <div className="px-6 pb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column - Images */}
-          <div className="w-full">
-            {currentImages.length > 0 ? (
-              <div className="relative">
-                <div className="grid grid-cols-2 gap-2">
-                  {currentImages.map((url, index) => (
-                    <div key={index} className="relative overflow-hidden rounded-xl group/image">
-                      <img 
-                        src={url} 
-                        alt={`News image ${index + 1}`} 
-                        className="w-full h-24 object-cover transition-transform duration-300 group-hover/image:scale-105" 
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors duration-300"></div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Image Pagination */}
-                {imageUrl.length > imagesPerPage && (
-                  <div className="flex justify-center space-x-2 mt-3">
-                    <button 
-                      onClick={prevPage} 
-                      disabled={currentPage === 1} 
-                      className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      ←
-                    </button>
-                    <span className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg">
-                      {currentPage} / {Math.ceil(imageUrl.length / imagesPerPage)}
-                    </span>
-                    <button 
-                      onClick={nextPage} 
-                      disabled={indexOfLastImage >= imageUrl.length} 
-                      className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      →
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="w-full h-32 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-400">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            )}
+      <div className="pb-4">
+        {/* Text Content (was right column, now row 1) */}
+        <div className="w-full flex flex-col justify-between p-4">
+          <div className="flex-1">
+            <div className="prose prose-sm max-w-none">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                {showFullText ? content : content.slice(0, maxTextLength)}
+                {isLongText && !showFullText && '...'}
+              </p>
+            </div>
           </div>
-
-          {/* Right Column - Text Content */}
-          <div className="w-full flex flex-col justify-between">
-            <div className="flex-1">
-              <div className="prose prose-sm max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                  {showFullText ? content : content.slice(0, maxTextLength)}
-                  {isLongText && !showFullText && '...'}
-                </p>
+          {/* Read More/Less Button */}
+          {isLongText && (
+            <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+              <button 
+                onClick={() => setShowFullText(!showFullText)}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors flex items-center space-x-1 group"
+              >
+                <span>{showFullText ? 'Show less' : 'Read more'}</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-200 ${showFullText ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+        {/* Images (was left column, now row 2) */}
+<div className="w-full px-4 sm:px-10">
+  {currentImages.length > 0 ? (
+    <div className="relative">
+      <div 
+        className={`grid gap-3 ${
+          currentImages.length === 1 ? 'grid-cols-1' : 
+          currentImages.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : 
+          'grid-cols-1 sm:grid-cols-2'
+        }`}
+      >
+        {currentImages.map((url, index) => (
+          <div 
+            key={index} 
+            className="relative group/image bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
+          >
+            {/* Dynamic image container */}
+            <div className="w-full h-0 pb-[56.25%] relative"> {/* Default 16:9 aspect ratio */}
+              <img 
+                src={url} 
+                alt={`News image ${index + 1}`} 
+                className="absolute inset-0 w-full h-full object-contain transition-transform duration-300 group-hover/image:scale-105"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+                onLoad={(e) => {
+                  // Dynamically adjust container based on image aspect ratio
+                  const img = e.target;
+                  const aspectRatio = img.naturalWidth / img.naturalHeight;
+                  img.parentElement.style.paddingBottom = `${100 / aspectRatio}%`;
+                }}
+              />
+              {/* Fallback placeholder for broken images */}
+              <div 
+                className="absolute inset-0 flex items-center justify-center text-gray-400"
+                style={{ display: 'none' }}
+              >
+                <div className="text-center p-4">
+                  <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-xs">Image unavailable</p>
+                </div>
               </div>
             </div>
-            
-            {/* Read More/Less Button */}
-            {isLongText && (
-              <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
-                <button 
-                  onClick={() => setShowFullText(!showFullText)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors flex items-center space-x-1 group"
-                >
-                  <span>{showFullText ? 'Show less' : 'Read more'}</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${showFullText ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            )}
+            <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors duration-300 pointer-events-none"></div>
           </div>
-        </div>
+        ))}
       </div>
+      
+      {/* Image Pagination (unchanged) */}
+      {imageUrl.length > imagesPerPage && (
+        <div className="flex justify-center space-x-2 mt-4">
+          <button 
+            onClick={prevPage} 
+            disabled={currentPage === 1} 
+            className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            ←
+          </button>
+          <span className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg">
+            {currentPage} / {Math.ceil(imageUrl.length / imagesPerPage)}
+          </span>
+          <button 
+            onClick={nextPage} 
+            disabled={indexOfLastImage >= imageUrl.length} 
+            className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            →
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <div 
+      className="w-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-lg py-16"
+    >
+      <div className="text-center">
+        <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <p className="text-sm">No images available</p>
+      </div>
+    </div>
+  )}
+</div>
 
       {/* AI Analysis Section */}
       {aiReview && aiReview !== "PENDING" && (
@@ -378,6 +412,7 @@ const NewsCard = ({
           />
         </div>
       )}
+    </div>
     </div>
   );
 };
