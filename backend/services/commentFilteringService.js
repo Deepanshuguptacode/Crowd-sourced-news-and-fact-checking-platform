@@ -5,12 +5,11 @@ class CommentFilteringService {
   
   async processComment(commentText, originalCommentId, commentType, newsId) {
     try {
-      // Get existing groups for this news item
+      // Get existing groups for this news item with descriptions
       const existingGroups = await CommentGroup.find({ newsId });
-      const existingLabels = existingGroups.map(group => group.label);
 
-      // Classify the comment
-      const classification = await llmService.classifyComment(commentText, existingLabels);
+      // Classify the comment using both labels and descriptions
+      const classification = await llmService.classifyCommentWithDescriptions(commentText, existingGroups);
       
       let group = null;
 
@@ -28,8 +27,12 @@ class CommentFilteringService {
         }
       } else if (classification.shouldCreateNew) {
         // Create new group
+        // Generate description for the new group
+        const description = await llmService.generateGroupDescription(commentText);
+        
         group = new CommentGroup({
           label: classification.newLabel,
+          description: description || `Group discussing: ${classification.newLabel}`,
           newsId,
           embedding: [], // TODO: Add embedding generation
           comments: []
@@ -54,9 +57,9 @@ class CommentFilteringService {
         group.comments.push(commentFilter._id);
         await group.save();
 
-        // Check if group now has 3 or more comments and regenerate name
+        // Check if group now has 3 or more comments and regenerate name and description
         if (group.comments.length >= 3) {
-          await this.regenerateGroupNameIfNeeded(group);
+          await this.regenerateGroupNameAndDescriptionIfNeeded(group);
         }
       }
 
@@ -209,6 +212,21 @@ class CommentFilteringService {
     }
   }
 
+  async updateGroupDescription(groupId, newDescription) {
+    try {
+      const group = await CommentGroup.findByIdAndUpdate(
+        groupId,
+        { description: newDescription },
+        { new: true }
+      );
+
+      return group;
+    } catch (error) {
+      console.error('Error updating group description:', error);
+      throw error;
+    }
+  }
+
   async deleteGroup(groupId) {
     try {
       // Remove group reference from all comments in the group
@@ -227,7 +245,7 @@ class CommentFilteringService {
     }
   }
 
-  async regenerateGroupNameIfNeeded(group) {
+  async regenerateGroupNameAndDescriptionIfNeeded(group) {
     try {
       // Get all comments in this group
       const groupWithComments = await CommentGroup.findById(group._id)
@@ -240,23 +258,39 @@ class CommentFilteringService {
       // Extract comment texts
       const commentTexts = groupWithComments.comments.map(comment => comment.text);
       
-      // Generate new group name based on all comments
-      const newGroupName = await llmService.regenerateGroupName(commentTexts, group.label);
+      // Generate new group name and description based on all comments
+      const [newGroupName, newDescription] = await Promise.all([
+        llmService.regenerateGroupName(commentTexts, group.label),
+        llmService.generateGroupDescription(commentTexts.join(' | '))
+      ]);
+      
+      let updated = false;
       
       // Update group name if it's different
       if (newGroupName && newGroupName !== group.label) {
         console.log(`Updating group name from "${group.label}" to "${newGroupName}"`);
         group.label = newGroupName;
+        updated = true;
+      }
+
+      // Update group description
+      if (newDescription && newDescription !== group.description) {
+        console.log(`Updating group description for "${group.label}"`);
+        group.description = newDescription;
+        updated = true;
+      }
+
+      if (updated) {
         await group.save();
       }
 
     } catch (error) {
-      console.error('Error regenerating group name:', error);
+      console.error('Error regenerating group name and description:', error);
       // Don't throw error - this is not critical for the main functionality
     }
   }
 
-  // Method to manually regenerate all group names for a news item
+  // Method to manually regenerate all group names and descriptions for a news item
   async regenerateAllGroupNames(newsId) {
     try {
       const groups = await CommentGroup.find({ newsId })
@@ -268,17 +302,34 @@ class CommentFilteringService {
         if (group.comments.length >= 2) { // Allow regeneration with 2+ comments for manual trigger
           const commentTexts = group.comments.map(comment => comment.text);
           const oldLabel = group.label;
+          const oldDescription = group.description || '';
           
-          const newGroupName = await llmService.regenerateGroupName(commentTexts, group.label);
+          const [newGroupName, newDescription] = await Promise.all([
+            llmService.regenerateGroupName(commentTexts, group.label),
+            llmService.generateGroupDescription(commentTexts.join(' | '))
+          ]);
+          
+          let updated = false;
           
           if (newGroupName && newGroupName !== group.label) {
             group.label = newGroupName;
+            updated = true;
+          }
+
+          if (newDescription && newDescription !== group.description) {
+            group.description = newDescription;
+            updated = true;
+          }
+
+          if (updated) {
             await group.save();
             
             results.push({
               groupId: group._id,
               oldLabel,
-              newLabel: newGroupName,
+              newLabel: group.label,
+              oldDescription,
+              newDescription: group.description,
               commentCount: group.comments.length
             });
           }

@@ -378,6 +378,7 @@ const likeComment = async (req, res) => {
   try {
     const { roomId, commentId } = req.params;
     const userId = req.user._id;
+    const userModel = req.user.userType; // Get user type from auth middleware
 
     const comment = await DebateComment.findOne({ 
       _id: commentId, 
@@ -391,8 +392,8 @@ const likeComment = async (req, res) => {
       });
     }
 
-    // Check if user already liked this comment
-    const hasLiked = comment.likes && comment.likes.includes(userId);
+    // Check if user already liked this comment (check for userId in the nested structure)
+    const hasLiked = comment.likes && comment.likes.some(like => like.userId.toString() === userId.toString());
     if (hasLiked) {
       return res.status(400).json({
         success: false,
@@ -404,8 +405,8 @@ const likeComment = async (req, res) => {
     const updatedComment = await DebateComment.findByIdAndUpdate(
       commentId,
       { 
-        $addToSet: { likes: userId },
-        $pull: { dislikes: userId }
+        $addToSet: { likes: { userId, userModel } },
+        $pull: { dislikes: { userId } }
       },
       { new: true }
     );
@@ -430,6 +431,7 @@ const dislikeComment = async (req, res) => {
   try {
     const { roomId, commentId } = req.params;
     const userId = req.user._id;
+    const userModel = req.user.userType; // Get user type from auth middleware
 
     const comment = await DebateComment.findOne({ 
       _id: commentId, 
@@ -443,8 +445,8 @@ const dislikeComment = async (req, res) => {
       });
     }
 
-    // Check if user already disliked this comment
-    const hasDisliked = comment.dislikes && comment.dislikes.includes(userId);
+    // Check if user already disliked this comment (check for userId in the nested structure)
+    const hasDisliked = comment.dislikes && comment.dislikes.some(dislike => dislike.userId.toString() === userId.toString());
     if (hasDisliked) {
       return res.status(400).json({
         success: false,
@@ -456,8 +458,8 @@ const dislikeComment = async (req, res) => {
     const updatedComment = await DebateComment.findByIdAndUpdate(
       commentId,
       { 
-        $addToSet: { dislikes: userId },
-        $pull: { likes: userId }
+        $addToSet: { dislikes: { userId, userModel } },
+        $pull: { likes: { userId } }
       },
       { new: true }
     );

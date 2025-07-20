@@ -10,6 +10,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId }) => {
   const [showGroupedComments, setShowGroupedComments] = useState(false);
   const [groupedComments, setGroupedComments] = useState([]);
   const [loadingGrouped, setLoadingGrouped] = useState(false);
+  const [regeneratingGroups, setRegeneratingGroups] = useState(false);
   const { userType, isAuthenticated } = useContext(UserContext);
 
   const handleAddComment = async () => {
@@ -91,6 +92,24 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId }) => {
     }
   };
 
+  const handleRegenerateGroups = async () => {
+    setRegeneratingGroups(true);
+    try {
+      const response = await commentFilterAPI.regenerateGroupNames(newsId);
+      toast.success(`Updated ${response.updatedGroups?.length || 0} groups with better descriptions`);
+      
+      // Refresh grouped comments if they're currently shown
+      if (showGroupedComments) {
+        await handleShowGroupedComments();
+      }
+    } catch (error) {
+      console.error('Error regenerating groups:', error);
+      toast.error('Failed to regenerate group descriptions');
+    } finally {
+      setRegeneratingGroups(false);
+    }
+  };
+
   return (
     <div className="mt-4 p-4 bg-white rounded shadow">
       <div className="flex justify-between items-center border-b pb-2">
@@ -107,8 +126,21 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId }) => {
                 : 'bg-green-500 hover:bg-green-600 text-white'
             }`}
           >
-            {loadingGrouped ? 'Loading...' : showGroupedComments ? 'Hide Grouped' : 'Show Grouped'}
+            {loadingGrouped ? 'Loading...' : showGroupedComments ? 'Hide Grouped' : 'Group by Topic'}
           </button>
+          {showGroupedComments && (
+            <button
+              onClick={handleRegenerateGroups}
+              disabled={regeneratingGroups}
+              className={`px-3 py-1 text-sm rounded ${
+                regeneratingGroups
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {regeneratingGroups ? 'Improving...' : 'Improve Groups'}
+            </button>
+          )}
           <button onClick={onClose} className="text-gray-600 hover:text-gray-800">Close</button>
         </div>
       </div>
@@ -131,17 +163,22 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId }) => {
           groupedComments.length > 0 ? (
             groupedComments.map((group, groupIndex) => (
               <div key={groupIndex} className="mb-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-t p-2">
-                  <h5 className="font-semibold text-blue-800">
+                <div className="bg-blue-50 border border-blue-200 rounded-t p-3">
+                  <h5 className="font-semibold text-blue-800 mb-1">
                     Group {groupIndex + 1}: {group.label || 'Unlabeled'}
                   </h5>
+                  {group.description && (
+                    <p className="text-sm text-blue-700 mb-2 italic bg-blue-100 p-2 rounded">
+                      {group.description}
+                    </p>
+                  )}
                   <p className="text-sm text-blue-600">
-                    {group.comments?.length || 0} comments | Similarity: {((group.averageSimilarity || 0) * 100).toFixed(1)}%
+                    {group.commentCount || group.comments?.length || 0} comments • Created {new Date(group.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-b p-2 space-y-2">
                   {group.comments?.map((comment, commentIndex) => (
-                    <div key={commentIndex} className="p-2 bg-gray-50 rounded">
+                    <div key={commentIndex} className="p-2 bg-gray-50 rounded border-l-4 border-blue-300">
                       <p className="text-sm text-gray-600 font-bold">
                         {comment.commentType === "expert" ? "Expert" : "Community"} - {comment.username || 'Anonymous'}
                       </p>

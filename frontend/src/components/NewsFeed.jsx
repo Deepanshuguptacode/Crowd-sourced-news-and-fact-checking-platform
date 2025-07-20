@@ -9,7 +9,7 @@ const NewsFeed = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { isAuthenticated } = useContext(UserContext);
+  const { isAuthenticated, userType } = useContext(UserContext);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -37,22 +37,23 @@ const NewsFeed = () => {
     }
 
     try {
+      console.log('NewsFeed: Starting vote process for postId:', postId, 'voteType:', voteType);
       const response = await newsAPI.voteNews(postId, voteType);
+      console.log('NewsFeed: Vote API response:', response.data);
       
       // Update local state immediately with response data
-      setNews(prevNews => 
-        prevNews.map(post => {
+      setNews(prevNews => {
+        console.log('NewsFeed: Updating news state, current count:', prevNews.length);
+        return prevNews.map(post => {
           if (post._id === postId) {
+            console.log('NewsFeed: Found matching post, updating vote counts');
             const updatedPost = { ...post };
             
-            // Update vote counts from server response
-            updatedPost.upvotes = Array.isArray(updatedPost.upvotes) ? 
-              new Array(response.data.upvotes || 0).fill('vote') : 
-              new Array(response.data.upvotes || 0).fill('vote');
+            // Update vote counts from server response - backend returns numbers
+            updatedPost.upvotes = response.data.upvotes || 0;
+            updatedPost.downvotes = response.data.downvotes || 0;
             
-            updatedPost.downvotes = Array.isArray(updatedPost.downvotes) ? 
-              new Array(response.data.downvotes || 0).fill('vote') : 
-              new Array(response.data.downvotes || 0).fill('vote');
+            console.log('NewsFeed: Updated vote counts - upvotes:', updatedPost.upvotes, 'downvotes:', updatedPost.downvotes);
             
             // Update status if it changed due to voting
             if (response.data.status) {
@@ -62,9 +63,10 @@ const NewsFeed = () => {
             return updatedPost;
           }
           return post;
-        })
-      );
+        });
+      });
       
+      console.log('NewsFeed: State update completed, showing success toast');
       toast.success(`${voteType === 'upvote' ? 'Upvoted' : 'Downvoted'} successfully`);
       
       // Show status change notification
@@ -73,6 +75,7 @@ const NewsFeed = () => {
       }
       
     } catch (error) {
+      console.error('NewsFeed: Vote error:', error);
       toast.error(error.response?.data?.message || "Failed to vote");
     }
   };
@@ -199,8 +202,8 @@ const NewsFeed = () => {
                 content={item.description}
                 factStatus={item.status}
                 link={item.link}
-                upvotes={item.upvotes?.length || 0}
-                downvotes={item.downvotes?.length || 0}
+                upvotes={typeof item.upvotes === 'number' ? item.upvotes : (item.upvotes?.length || 0)}
+                downvotes={typeof item.downvotes === 'number' ? item.downvotes : (item.downvotes?.length || 0)}
                 comments={allComments}
                 imageUrl={processedImageUrls}
                 username={item.uploadedBy?.username || 'Anonymous'}

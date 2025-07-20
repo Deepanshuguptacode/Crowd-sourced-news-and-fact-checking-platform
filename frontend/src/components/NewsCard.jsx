@@ -34,8 +34,20 @@ const NewsCard = ({
 
   // Sync comments state with prop changes
   useEffect(() => {
+    console.log('NewsCard: Comments useEffect triggered, initialComments:', initialComments);
     setComments(initialComments || []);
   }, [initialComments]);
+
+  // Sync vote counts with prop changes
+  useEffect(() => {
+    console.log('NewsCard: Upvotes useEffect triggered, initialUpvotes:', initialUpvotes);
+    setUpvotes(initialUpvotes || 0);
+  }, [initialUpvotes]);
+
+  useEffect(() => {
+    console.log('NewsCard: Downvotes useEffect triggered, initialDownvotes:', initialDownvotes);
+    setDownvotes(initialDownvotes || 0);
+  }, [initialDownvotes]);
 
   const handleAddComment = async (commentData) => {
     try {
@@ -99,20 +111,28 @@ const NewsCard = ({
   };
 
   const handleVotes = async (voteType) => {
-    if (onVote) {
-      await onVote(postId, voteType);
-    } else {
-      // Fallback to direct API call if onVote not provided
-      try {
-        const response = await axios.post(`/api/news/vote/${postId}`, { voteType });
-        if (!response.data.error) {
-          toast.success(response?.data?.message || "Successfully Voted!");
-          setDownvotes(response.data.downvotes);
-          setUpvotes(response.data.upvotes);
-        }
-      } catch (error) {
-        toast.error(error?.response?.data?.message || `Error voting`);
+    console.log('NewsCard: Testing API call only, voteType:', voteType);
+    
+    try {
+      // Test 1: Skip parent callback, use direct API call only
+      console.log('NewsCard: Making direct API call without parent callback');
+      const response = await axios.post(`/api/news/vote/${postId}`, { voteType });
+      
+      console.log('NewsCard: API response:', response.data);
+      
+      if (!response.data.error) {
+        // Update local state only (no parent callback)
+        console.log('NewsCard: Updating local state only');
+        setUpvotes(response.data.upvotes || upvotes);
+        setDownvotes(response.data.downvotes || downvotes);
+        
+        toast.success("Vote registered successfully!");
+        console.log('NewsCard: Local state updated successfully');
       }
+      
+    } catch (error) {
+      console.error('NewsCard: API call error:', error);
+      toast.error("Error voting - API call failed");
     }
   };
 
@@ -205,7 +225,7 @@ const NewsCard = ({
           )}
         </div>
         {/* Images (was left column, now row 2) */}
-<div className="w-full px-4 sm:px-10">
+        <div className="w-full px-4 sm:px-10">
   {currentImages.length > 0 ? (
     <div className="relative">
       <div 
@@ -291,6 +311,7 @@ const NewsCard = ({
     </div>
   )}
 </div>
+      </div>
 
       {/* AI Analysis Section */}
       {aiReview && aiReview !== "PENDING" && (
@@ -412,7 +433,6 @@ const NewsCard = ({
           />
         </div>
       )}
-    </div>
     </div>
   );
 };

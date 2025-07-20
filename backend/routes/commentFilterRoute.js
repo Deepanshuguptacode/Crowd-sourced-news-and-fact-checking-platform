@@ -15,6 +15,9 @@ router.get('/group/:groupId', authenticateCommunityOrExpertUser, commentFilterCo
 // Update group label
 router.put('/group/:groupId/label', authenticateCommunityOrExpertUser, commentFilterController.updateGroupLabel);
 
+// Update group description
+router.put('/group/:groupId/description', authenticateCommunityOrExpertUser, commentFilterController.updateGroupDescription);
+
 // Delete a comment group
 router.delete('/group/:groupId', authenticateCommunityOrExpertUser, commentFilterController.deleteGroup);
 

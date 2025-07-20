@@ -98,6 +98,38 @@ const updateGroupLabel = async (req, res) => {
   }
 };
 
+// Update group description
+const updateGroupDescription = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { newDescription } = req.body;
+
+    if (!newDescription || newDescription.trim() === '') {
+      return res.status(400).json({ message: 'New description is required' });
+    }
+
+    const updatedGroup = await commentFilteringService.updateGroupDescription(
+      groupId, 
+      newDescription.trim()
+    );
+
+    if (!updatedGroup) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    res.status(200).json({
+      message: 'Group description updated successfully',
+      group: updatedGroup
+    });
+  } catch (error) {
+    console.error('Error in updateGroupDescription:', error);
+    res.status(500).json({ 
+      message: 'Error updating group description', 
+      error: error.message 
+    });
+  }
+};
+
 // Delete a comment group
 const deleteGroup = async (req, res) => {
   try {
@@ -192,6 +224,7 @@ module.exports = {
   getAllFilteredComments,
   getCommentsByGroup,
   updateGroupLabel,
+  updateGroupDescription,
   deleteGroup,
   getFilteringSummary,
   testIntegration,

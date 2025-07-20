@@ -42,6 +42,10 @@ const CommentGroupSchema = new Schema({
     type: String, 
     required: true 
   },
+  description: {
+    type: String,
+    default: ''
+  },
   newsId: {
     type: Schema.Types.ObjectId,
     ref: 'News',

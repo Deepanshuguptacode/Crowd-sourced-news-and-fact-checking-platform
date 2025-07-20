@@ -147,6 +147,18 @@ export const commentFilterAPI = {
     return response.data;
   },
 
+  // Update group description
+  updateGroupDescription: async (groupId, newDescription) => {
+    const response = await api.put(`/comment-filter/group/${groupId}/description`, { newDescription });
+    return response.data;
+  },
+
+  // Regenerate group names and descriptions
+  regenerateGroupNames: async (newsId) => {
+    const response = await api.post(`/comment-filter/regenerate-names/${newsId}`);
+    return response.data;
+  },
+
   // Delete a comment group
   deleteGroup: async (groupId) => {
     const response = await api.delete(`/comment-filter/group/${groupId}`);

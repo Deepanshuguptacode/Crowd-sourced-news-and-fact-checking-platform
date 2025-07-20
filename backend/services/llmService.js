@@ -18,6 +18,93 @@ class LLMService {
     }
   }
 
+  async generateGroupDescription(commentText) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+      
+      const prompt = `Generate a brief, descriptive explanation (2-3 sentences) for a comment group based on this comment:
+
+"${commentText}"
+
+The description should explain what type of comments would be grouped together with this one. Make it informative and specific to help users understand the group's theme. Focus on the main topic, sentiment, or perspective being discussed.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const description = response.text().trim();
+      
+      return description;
+    } catch (error) {
+      console.error('Error generating group description:', error);
+      // Fallback to simple description
+      const topic = commentText.split(' ').slice(0, 5).join(' ');
+      return `Comments related to: ${topic}${topic.length < commentText.length ? '...' : ''}`;
+    }
+  }
+
+  async classifyCommentWithDescriptions(text, existingGroups) {
+    try {
+      // If no existing groups, create new
+      if (existingGroups.length === 0) {
+        return {
+          matchedGroup: null,
+          shouldCreateNew: true,
+          newLabel: text.substring(0, 30) + (text.length > 30 ? '...' : ''),
+          confidence: 1.0
+        };
+      }
+
+      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+      
+      // Create a detailed prompt with group descriptions
+      const groupDescriptions = existingGroups.map((group, index) => 
+        `${index + 1}. "${group.label}": ${group.description || 'No description'}`
+      ).join('\n');
+
+      const prompt = `Given this comment: "${text}"
+
+Existing comment groups:
+${groupDescriptions}
+
+Task: Determine if this comment fits into any existing group based on topic similarity and thematic coherence.
+
+Respond with JSON in this format:
+{
+  "matchedGroup": "exact label name if it fits (or null if no good match)",
+  "newLabel": "concise label for this comment's theme",
+  "confidence": 0.85,
+  "reasoning": "brief explanation of the decision"
+}
+
+Only match to an existing group if there's strong thematic similarity (confidence > 0.7).`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const responseText = response.text().trim();
+      
+      try {
+        // Try to parse JSON response
+        const parsed = JSON.parse(responseText.replace(/```json\n?|\n?```/g, ''));
+        
+        const exists = existingGroups.some(group => group.label === parsed.matchedGroup);
+        
+        return {
+          matchedGroup: exists && parsed.confidence > 0.7 ? parsed.matchedGroup : null,
+          shouldCreateNew: !exists || parsed.confidence <= 0.7,
+          newLabel: parsed.newLabel || text.substring(0, 30) + '...',
+          confidence: parsed.confidence || 0.5
+        };
+      } catch (parseError) {
+        console.error('Error parsing classification response:', parseError);
+        // Fallback to simple classification
+        return await this.classifyComment(text, existingGroups.map(g => g.label));
+      }
+    } catch (error) {
+      console.error('Error in description-based classification:', error);
+      // Fallback to simple classification
+      return await this.classifyComment(text, existingGroups.map(g => g.label));
+    }
+  }
+
   async classifyCommentWithGemini(text, existingLabels) {
     try {
       const { GoogleGenAI, Type } = require('@google/genai');
