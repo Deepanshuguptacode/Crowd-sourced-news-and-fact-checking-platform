@@ -31,26 +31,34 @@ const NewsFeed = () => {
   }, []);
 
   const handleVote = async (postId, voteType) => {
-    if (!isAuthenticated) {
-      toast.error("Please login to vote");
+    if (!isAuthenticated || userType === 'guest') {
+      toast.error(userType === 'guest' ? "Guests cannot vote. Please create an account." : "Please login to vote");
       return;
     }
 
     try {
-      await newsAPI.voteNews(postId, voteType);
+      const response = await newsAPI.voteNews(postId, voteType);
       
-      // Update local state
+      // Update local state immediately with response data
       setNews(prevNews => 
         prevNews.map(post => {
           if (post._id === postId) {
             const updatedPost = { ...post };
-            if (voteType === 'upvote') {
-              updatedPost.upvotes = [...(post.upvotes || []), 'current_user'];
-              updatedPost.downvotes = (post.downvotes || []).filter(id => id !== 'current_user');
-            } else {
-              updatedPost.downvotes = [...(post.downvotes || []), 'current_user'];
-              updatedPost.upvotes = (post.upvotes || []).filter(id => id !== 'current_user');
+            
+            // Update vote counts from server response
+            updatedPost.upvotes = Array.isArray(updatedPost.upvotes) ? 
+              new Array(response.data.upvotes || 0).fill('vote') : 
+              new Array(response.data.upvotes || 0).fill('vote');
+            
+            updatedPost.downvotes = Array.isArray(updatedPost.downvotes) ? 
+              new Array(response.data.downvotes || 0).fill('vote') : 
+              new Array(response.data.downvotes || 0).fill('vote');
+            
+            // Update status if it changed due to voting
+            if (response.data.status) {
+              updatedPost.status = response.data.status;
             }
+            
             return updatedPost;
           }
           return post;
@@ -58,6 +66,12 @@ const NewsFeed = () => {
       );
       
       toast.success(`${voteType === 'upvote' ? 'Upvoted' : 'Downvoted'} successfully`);
+      
+      // Show status change notification
+      if (response.data.status && response.data.status !== 'Pending') {
+        toast.info(`News status updated to: ${response.data.status}`, { autoClose: 3000 });
+      }
+      
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to vote");
     }

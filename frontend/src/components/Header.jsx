@@ -172,9 +172,10 @@ const Header = ({ onMenuToggle }) => {
                         {userInfo?.name || userInfo?.username || 'User'}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                        {userType === 'normal' ? 'News Contributor' : 
+                        {userType === 'normal' ? 'Onlooker' : 
                          userType === 'community' ? 'Community Member' : 
-                         userType === 'expert' ? 'Expert' : 'User'}
+                         userType === 'expert' ? 'Expert' : 
+                         userType === 'guest' ? 'Guest Explorer' : 'User'}
                       </p>
                     </div>
                     <button 

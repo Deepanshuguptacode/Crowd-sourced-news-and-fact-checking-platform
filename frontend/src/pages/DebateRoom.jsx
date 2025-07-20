@@ -475,10 +475,27 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {formatDate(comment.createdAt)}
                     </span>
+                    {/* Off-topic label */}
+                    {comment.topicRelevanceLabel && comment.topicRelevanceLabel !== 'Relevant' && (
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        comment.topicRelevanceLabel === 'Off-Topic' 
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                      }`}>
+                        {comment.topicRelevanceLabel === 'Off-Topic' ? '🚫 Off-Topic' : '📍 Tangential'}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
+                  <p className={`text-gray-700 dark:text-gray-300 text-sm mb-3 ${
+                    comment.isOffTopic ? 'opacity-60 italic' : ''
+                  }`}>
                     {comment.text}
                   </p>
+                  {comment.isOffTopic && comment.offTopicReason && (
+                    <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400">
+                      <strong>Moderator Note:</strong> {comment.offTopicReason}
+                    </div>
+                  )}
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => onLike(comment._id)}

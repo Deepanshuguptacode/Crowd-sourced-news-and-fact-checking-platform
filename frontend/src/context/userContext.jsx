@@ -30,6 +30,19 @@ const UserProvider = ({ children = "" }) => {
 
   // Login function
   const login = (userData, token) => {
+    // Handle guest login differently
+    if (userData.userType === 'guest') {
+      setUserType('guest');
+      setUserInfo({ 
+        name: 'Guest User',
+        email: 'guest@example.com',
+        userType: 'guest'
+      });
+      setIsAuthenticated(true);
+      // Don't store guest session in localStorage
+      return;
+    }
+    
     apiUtils.setAuthToken(token);
     apiUtils.setUserInfo(userData);
     setUserType(userData.userType);

@@ -41,7 +41,7 @@ const KeyFeature = ({ scrollToFeatures }) => {
       id: 2,
       icon: <FaShieldAlt className="text-3xl" />,
       title: "Multi-Tier Verification",
-      description: "Normal users submit → Community users review → Experts give final sign-off.",
+      description: "Onlookers submit → Community users review → Experts give final sign-off.",
       color: "from-blue-500 to-blue-600"
     },
     {

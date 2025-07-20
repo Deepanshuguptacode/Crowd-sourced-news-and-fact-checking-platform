@@ -49,7 +49,7 @@ const RightBar = () => {
   const menuItems = [
     { icon: HomeIcon, label: 'Home', color: 'blue', action: () => navigate('/home') },
     { icon: TrendingIcon, label: 'Trending', color: 'orange', action: () => navigate('/trending') },
-    { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms') },
+    { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms'), tooltip: 'Vox Space' },
     { icon: SettingsIcon, label: 'Settings', color: 'gray', action: () => {} },
     { icon: HelpIcon, label: 'Help', color: 'purple', action: () => {} },
   ];
@@ -64,6 +64,7 @@ const RightBar = () => {
             <button
               key={index}
               onClick={item.action}
+              title={item.tooltip || item.label} // Show Vox Space on hover
               className={`flex items-center w-full px-3 py-3 text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group ${
                 item.label === 'Home' 
                   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 

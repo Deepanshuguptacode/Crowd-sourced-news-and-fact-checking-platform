@@ -140,7 +140,7 @@ const SignupForm = () => {
                       className="w-full px-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
                       required
                     >
-                      <option value="normal">Normal User</option>
+                      <option value="normal">Onlooker</option>
                       <option value="community">Community User</option>
                       <option value="expert">Expert User</option>
                     </select>

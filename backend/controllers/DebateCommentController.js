@@ -4,6 +4,7 @@ const DebateRoom = require('../models/DebateRoom');
 const llmService = require('../services/llmService');
 const { generateGroupContent } = require('../services/generateGroupContent');
 const { findCounterGroup } = require('../services/findCounterGroup');
+const OffTopicDetectionService = require('../services/offTopicDetectionService');
 
 // Create a new debate comment
 const createDebateComment = async (req, res) => {
@@ -33,6 +34,9 @@ const createDebateComment = async (req, res) => {
       });
     }
 
+    // Check for off-topic content before proceeding
+    const offTopicAnalysis = await OffTopicDetectionService.checkOffTopic(text, roomId);
+
     // Create the comment
     const comment = new DebateComment({ 
       debateRoomId: roomId,
@@ -40,7 +44,10 @@ const createDebateComment = async (req, res) => {
       stance, 
       author,
       authorModel,
-      authorName
+      authorName,
+      isOffTopic: offTopicAnalysis.isOffTopic,
+      offTopicReason: offTopicAnalysis.reason,
+      topicRelevanceLabel: offTopicAnalysis.label
     });
     await comment.save();
 

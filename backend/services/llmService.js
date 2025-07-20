@@ -298,6 +298,206 @@ Return only the JSON arguments for the function invocation.`
       return currentGroupName || 'General Discussion';
     }
   }
+
+  // New method for off-topic detection
+  async analyzeCommentRelevance(comment, debateTitle, debateDescription) {
+    try {
+      if (this.apiKey && this.apiKey == "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8") {
+        return await this.analyzeRelevanceWithGemini(comment, debateTitle, debateDescription);
+      } else {
+        return await this.simpleRelevanceAnalysis(comment, debateTitle, debateDescription);
+      }
+    } catch (error) {
+      console.error('Error analyzing comment relevance:', error);
+      return {
+        isOffTopic: false,
+        reason: 'Analysis failed, defaulting to relevant',
+        label: 'Relevant'
+      };
+    }
+  }
+
+  async analyzeRelevanceWithGemini(comment, debateTitle, debateDescription) {
+    try {
+      const { GoogleGenAI, Type } = require('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: this.apiKey });
+
+      const analyzeRelevanceFn = {
+        name: 'analyze_comment_relevance',
+        description: 'Analyze if a comment is relevant to a debate topic and classify its relevance level.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            isOffTopic: { 
+              type: Type.BOOLEAN, 
+              description: 'True if the comment is off-topic or completely unrelated to the debate' 
+            },
+            reason: { 
+              type: Type.STRING, 
+              description: 'Clear explanation of why the comment is relevant, tangential, or off-topic' 
+            },
+            label: { 
+              type: Type.STRING, 
+              description: 'Classification label for the comment relevance',
+              enum: ['Relevant', 'Tangential', 'Off-Topic']
+            }
+          },
+          required: ['isOffTopic', 'reason', 'label']
+        }
+      };
+
+      const systemPrompt = `
+        Debate Topic: "${debateTitle}"
+        Debate Description: "${debateDescription}"
+        Comment to analyze: "${comment}"
+
+        Analyze if this comment is relevant to the debate topic:
+
+        1. RELEVANT: Directly addresses the debate topic with meaningful contribution
+        2. TANGENTIAL: Somewhat related but goes off-topic or only loosely connects
+        3. OFF-TOPIC: Completely unrelated, spam, or doesn't contribute to debate
+
+        Also check for:
+        - Spam patterns (repeated chars, all caps, promotional content)
+        - Personal attacks or inappropriate content  
+        - Comments that don't engage with the debate
+
+        Return only the JSON arguments for the function invocation.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt }] }
+        ],
+        config: { 
+          tools: [{ functionDeclarations: [analyzeRelevanceFn] }], 
+          functionInvocation: 'auto' 
+        }
+      });
+
+      const call = response.functionCalls?.[0];
+      const { isOffTopic, reason, label } = call?.name === 'analyze_comment_relevance'
+        ? call.args
+        : { isOffTopic: false, reason: 'Failed to analyze comment', label: 'Relevant' };
+
+      return {
+        isOffTopic: isOffTopic || label === 'Off-Topic',
+        reason: reason || 'AI analysis completed',
+        label: label || 'Relevant'
+      };
+
+    } catch (error) {
+      console.error('Error with Gemini relevance analysis:', error);
+      return await this.simpleRelevanceAnalysis(comment, debateTitle, debateDescription);
+    }
+  }
+
+  async simpleRelevanceAnalysis(comment, debateTitle, debateDescription) {
+    try {
+      const commentLower = comment.toLowerCase();
+      const titleWords = debateTitle.toLowerCase().split(' ');
+      const descriptionWords = debateDescription.toLowerCase().split(' ');
+      
+      // Combine topic keywords
+      const topicKeywords = [...titleWords, ...descriptionWords]
+        .filter(word => word.length > 3) // Filter short words
+        .slice(0, 10); // Take top 10 keywords
+
+      // Check for spam patterns
+      const spamPatterns = [
+        /(.)\1{4,}/g, // Repeated characters
+        /^[A-Z\s!]{10,}$/g, // All caps
+        /(buy|sell|click|visit|www\.|http)/gi // Commercial content
+      ];
+
+      // Check for common off-topic patterns
+      const offTopicPatterns = [
+        /\b(pizza|food|recipe|cooking|eat|meal)\b/gi, // Food topics
+        /\b(cat|dog|pet|animal|cute|fluffy)\b/gi, // Pet topics
+        /\b(movie|film|music|song|artist|band)\b/gi, // Entertainment
+        /\b(weather|sunny|rain|snow|hot|cold)\b/gi, // Weather
+        /\b(vacation|holiday|travel|trip|beach)\b/gi, // Travel
+        /\b(love|hate|like|dislike)\s+(you|me|this|that)\b/gi, // Personal preferences
+        /^(lol|haha|omg|wow|cool|nice|good|bad|ok|okay)\s*[!.]*$/gi, // Simple reactions
+        /\b(first|second|third|last)\s*[!.]*$/gi // Position comments
+      ];
+
+      const hasSpam = spamPatterns.some(pattern => pattern.test(comment));
+      const hasOffTopicContent = offTopicPatterns.some(pattern => pattern.test(comment));
+      
+      if (hasSpam) {
+        return {
+          isOffTopic: true,
+          reason: 'Comment appears to be spam or promotional content',
+          label: 'Off-Topic'
+        };
+      }
+
+      if (hasOffTopicContent) {
+        return {
+          isOffTopic: true,
+          reason: 'Comment contains off-topic content unrelated to the debate',
+          label: 'Off-Topic'
+        };
+      }
+
+      // Check topic relevance with improved logic
+      const relevantWords = topicKeywords.filter(keyword => 
+        commentLower.includes(keyword)
+      );
+
+      // More strict off-topic detection
+      // Short comments with no relevant words
+      if (relevantWords.length === 0 && comment.length > 20) {
+        return {
+          isOffTopic: true,
+          reason: 'Comment does not address the debate topic',
+          label: 'Off-Topic'
+        };
+      }
+
+      // Long comments with very few relevant words (less than 15% relevance)
+      if (comment.length > 100 && relevantWords.length < Math.max(1, Math.ceil(topicKeywords.length * 0.15))) {
+        return {
+          isOffTopic: true,
+          reason: 'Comment appears to be off-topic with minimal relevance to the debate',
+          label: 'Off-Topic'
+        };
+      }
+
+      // Medium comments with insufficient relevant words
+      if (comment.length > 50 && relevantWords.length === 0) {
+        return {
+          isOffTopic: true,
+          reason: 'Comment does not contain any topic-relevant keywords',
+          label: 'Off-Topic'
+        };
+      }
+
+      // Tangential detection - some relevance but not strong
+      if (relevantWords.length === 1 && comment.length > 80) {
+        return {
+          isOffTopic: false,
+          reason: 'Comment has minimal topic relevance but may be tangential',
+          label: 'Tangential'
+        };
+      }
+
+      return {
+        isOffTopic: false,
+        reason: 'Comment appears relevant to the debate topic',
+        label: 'Relevant'
+      };
+    } catch (error) {
+      console.error('Error in simple relevance analysis:', error);
+      return {
+        isOffTopic: false,
+        reason: 'Analysis failed, defaulting to relevant',
+        label: 'Relevant'
+      };
+    }
+  }
 }
 
 module.exports = new LLMService();

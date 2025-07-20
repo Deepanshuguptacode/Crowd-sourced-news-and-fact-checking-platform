@@ -124,9 +124,17 @@ const getAllPosts = async (req, res) => {
     const ExpertUser = require('../models/ExpertUser');
     const NormalUser = require('../models/NormalUser');
     
-    // Fetch all news articles
+    // Get pagination parameters with a limit of 4 pages max
+    const page = Math.min(parseInt(req.query.page) || 1, 4); // Max 4 pages
+    const limit = parseInt(req.query.limit) || 10; // Default 10 items per page
+    const maxItems = 40; // 4 pages × 10 items = 40 max items
+    const skip = (page - 1) * limit;
+    
+    // Fetch all news articles with pagination limit
     let news = await News.find()
-      .sort({ uploadedAt: -1 }); // Sort by latest uploaded news
+      .sort({ uploadedAt: -1 }) // Sort by latest uploaded news
+      .limit(maxItems) // Hard limit to 40 items total
+      .skip(Math.min(skip, maxItems - limit)); // Don't skip beyond our max items
 
     // Manually populate uploadedBy field for different user types and get comments
     const newsWithComments = await Promise.all(
@@ -202,6 +210,7 @@ const voteNews = async (req, res) => {
     const { postId } = req.params;
     const { voteType } = req.body; // 'upvote' or 'downvote'
     const userId = req.user.id;
+    const VerificationService = require('../services/verificationService');
 
     // Find the post
     const post = await News.findById(postId);
@@ -223,10 +232,14 @@ const voteNews = async (req, res) => {
 
     await post.save();
     
+    // Auto-update verification status based on voting
+    const updatedPost = await VerificationService.updateNewsStatus(postId);
+    
     res.status(200).json({
       message: 'Vote registered successfully',
       upvotes: post.upvotes.length,
       downvotes: post.downvotes.length,
+      status: updatedPost ? updatedPost.status : post.status
     });
   } catch (err) {
     res.status(500).json({ message: 'Error voting on post', error: err.message });

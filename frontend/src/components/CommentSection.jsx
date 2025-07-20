@@ -13,8 +13,8 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId }) => {
   const { userType, isAuthenticated } = useContext(UserContext);
 
   const handleAddComment = async () => {
-    if (!isAuthenticated) {
-      toast.error("Please login to add comments");
+    if (!isAuthenticated || userType === 'guest') {
+      toast.error(userType === 'guest' ? "Guests cannot comment. Please create an account." : "Please login to add comments");
       return;
     }
 

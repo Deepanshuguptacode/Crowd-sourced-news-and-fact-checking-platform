@@ -60,6 +60,20 @@ const DebateCommentSchema = new Schema({
       enum: ['NormalUser', 'CommunityUser', 'ExpertUser']
     }
   }],
+  // Off-topic detection fields
+  isOffTopic: {
+    type: Boolean,
+    default: false
+  },
+  offTopicReason: {
+    type: String,
+    default: ''
+  },
+  topicRelevanceLabel: {
+    type: String,
+    enum: ['Relevant', 'Tangential', 'Off-Topic'],
+    default: 'Relevant'
+  },
   createdAt: {
     type: Date,
     default: Date.now
