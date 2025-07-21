@@ -10,6 +10,10 @@ const trendingNewsScheduler = require('./services/trendingNewsScheduler');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+
+// Load environment variables
+require('dotenv').config();
+
 const app = express();
 
 // Enhanced CORS configuration
@@ -21,7 +25,9 @@ const corsOptions = {
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://localhost:4173', // Vite preview
-    'http://127.0.0.1:4173'
+    'http://127.0.0.1:4173',
+    // Add your Render frontend URL here when deployed
+    process.env.FRONTEND_URL || 'https://your-frontend-app.onrender.com'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
@@ -48,6 +54,17 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname,'uploads')));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Routes
 app.use('/users', userRoutes);
 app.use('/news', NewsRoutes);
@@ -85,13 +102,14 @@ app.use('*', (req, res) => {
 
 // MongoDB Connection
 mongoose
-  .connect('mongodb://127.0.0.1:27017/DBMS', )
+  .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/DBMS')
   .then(() => {
     console.log("Connected to MongoDB");
     
     // Start trending news scheduler
     trendingNewsScheduler.start();
     
-    app.listen(3000, () => console.log("Server running on port 3000"));
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
   })
   .catch((error) => console.log("MongoDB connection failed:", error.message));
