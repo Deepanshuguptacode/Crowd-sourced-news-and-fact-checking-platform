@@ -72,7 +72,7 @@ const NewsSubmissionForm = () => {
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 dark:bg-slate-900 relative overflow-x-hidden stage-1-background transition-colors duration-300"
+      className="min-h-screen bg-gray-50 dark:bg-[#0D1117] relative overflow-x-hidden stage-1-background transition-colors duration-300"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10 dark:opacity-10">
@@ -88,7 +88,7 @@ const NewsSubmissionForm = () => {
       {/* Main Content */}
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-16 relative z-10 mt-10 stage-3-form">
         <div className="w-full max-w-4xl mx-auto">
-          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
+          <div className="bg-white/80 dark:bg-[#0D1117] backdrop-blur-lg rounded-3xl shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
             <div className="grid lg:grid-cols-2">
               
               {/* Left Panel - Header Content */}

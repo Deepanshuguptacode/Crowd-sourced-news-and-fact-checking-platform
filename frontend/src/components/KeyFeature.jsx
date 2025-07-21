@@ -76,17 +76,15 @@ const KeyFeature = ({ scrollToFeatures }) => {
 
   return (
     <section className={`py-20 transition-colors duration-300 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+      isDarkMode ? 'bg-[#0D1117]' : 'bg-gray-50'
     }`}>
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           {/* Section Title */}
-          <motion.div 
+          <div 
             className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            data-scroll
+            data-scroll-speed="1"
           >
             <h2 className={`text-4xl md:text-5xl font-bold mb-6 transition-colors duration-300 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
@@ -98,22 +96,16 @@ const KeyFeature = ({ scrollToFeatures }) => {
             }`} style={{ fontFamily: "'Inter', sans-serif" }}>
               Discover the features that make VoxVeritas the most comprehensive fact-checking platform
             </p>
-          </motion.div>
+          </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.id}
                 className="group relative cursor-pointer h-64"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1,
-                  ease: "easeOut"
-                }}
-                viewport={{ once: true }}
+                data-scroll
+                data-scroll-speed={index % 3 + 2}
                 style={{ perspective: "1000px" }}
               >
                 {/* Card Container with 3D flip */}
@@ -169,7 +161,7 @@ const KeyFeature = ({ scrollToFeatures }) => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

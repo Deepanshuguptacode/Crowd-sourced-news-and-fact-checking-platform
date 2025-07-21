@@ -115,9 +115,9 @@ const TrendingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
       {/* Header */}
-      <div className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-700">
+      <div className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-[#0D1117]/95 border-b border-gray-200 dark:border-gray-600">
         <Header />
       </div>
 
@@ -290,7 +290,7 @@ const TrendingPage = () => {
       </div>
 
       {/* Footer */}
-      <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border-t border-gray-200 dark:border-gray-700">
+      <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-[#0D1117]/95 border-t border-gray-200 dark:border-gray-600">
         <Footer />
       </div>
     </div>

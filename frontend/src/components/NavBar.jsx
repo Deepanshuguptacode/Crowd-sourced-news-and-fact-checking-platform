@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import AnimatedLogo from './AnimatedLogo'; 
 
 // Theme Context
 const ThemeContext = createContext();
@@ -18,8 +19,14 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setIsDarkMode(savedTheme === 'dark');
+    const isDark = savedTheme ? savedTheme === 'dark' : true;
+    setIsDarkMode(isDark);
+    
+    // Set document class for real-time theme changes
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }, []);
 
@@ -27,51 +34,19 @@ export const ThemeProvider = ({ children }) => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    
+    // Update document class for real-time changes
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
-  );
-};
-
-const AnimatedLogo = () => {
-  const [showLogo, setShowLogo] = useState(true);
-  const { isDarkMode } = useTheme();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowLogo(prev => !prev);
-    }, 2500); // Switch every 2.5 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="relative w-12 h-12 flex items-center justify-center">
-      {/* Logo SVG */}
-      <div 
-        className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
-          showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-        }`}
-      >
-        <img 
-          src={isDarkMode ? 'src/assets/logo-dark.png' : 'src/assets/logo-light.png'}
-          alt="Logo"
-        />
-      </div>
-      {/* Brand Name */}
-      <div 
-        className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
-          !showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-        }`}
-      >
-        <span className="text-xl font-bold bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
-          VoxVeritas
-        </span>
-      </div>
-    </div>
   );
 };
 
@@ -147,15 +122,15 @@ export default function NavBar({
     <>
       <nav className={`${
         isDarkMode 
-          ? 'bg-gray-800/95 border-gray-700' 
+          ? 'bg-[#0D1117]/95 border-gray-700' 
           : 'bg-white/95 border-gray-200'
       } backdrop-blur-lg border-b sticky top-0 z-50 shadow-2xl transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-24">{/* Increased from h-20 to h-24 */}
             
             {/* Left - Animated Logo and Brand */}
             <div className="flex items-center group cursor-pointer hover:scale-105 transition-transform duration-300">
-              <AnimatedLogo />
+              <AnimatedLogo size="w-16 h-16" isDarkMode={isDarkMode} />
             </div>
 
             {/* Center - Navigation Links */}
@@ -164,19 +139,19 @@ export default function NavBar({
                 <button
                   key={index}
                   onClick={item.onClick}
-                  className={`relative px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ease-in-out group overflow-hidden ${
+                  className={`relative px-5 py-2.5 text-base font-semibold rounded-xl transition-all duration-300 ease-in-out group overflow-hidden ${
                     isDarkMode
-                      ? 'text-gray-200 hover:text-purple-400'
-                      : 'text-gray-700 hover:text-purple-600'
+                      ? 'text-[#C9D1D9] hover:text-sky-400'
+                      : 'text-gray-700 hover:text-sky-600'
                   }`}
                 >
                   <span className="relative z-10">{item.label}</span>
                   <div className={`absolute inset-0 bg-gradient-to-r rounded-xl scale-0 group-hover:scale-100 transition-transform duration-300 ease-out ${
                     isDarkMode
-                      ? 'from-purple-500/20 to-purple-400/20'
-                      : 'from-purple-500/10 to-purple-400/10'
+                      ? 'from-sky-500/20 to-emerald-400/20'
+                      : 'from-sky-500/10 to-emerald-400/10'
                   }`}></div>
-                  <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-400 group-hover:w-full group-hover:left-0 transition-all duration-300"></div>
+                  <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-sky-500 to-emerald-400 group-hover:w-full group-hover:left-0 transition-all duration-300"></div>
                 </button>
               ))}
             </div>
@@ -186,10 +161,10 @@ export default function NavBar({
               <ThemeToggle />
               <button
                 onClick={() => navigate("/login")}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-3 rounded-full font-bold hover:shadow-xl hover:shadow-purple-500/25 hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-purple-500/30 relative overflow-hidden group"
+                className="bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-8 py-3 rounded-full font-bold hover:shadow-xl hover:shadow-sky-500/25 hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-sky-500/30 relative overflow-hidden group"
               >
                 <span className="relative z-10">Get Started</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             </div>
 
@@ -197,10 +172,10 @@ export default function NavBar({
             <div className="lg:hidden">
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-3 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${
+                className={`p-3 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 ${
                   isDarkMode
-                    ? 'text-gray-200 hover:text-purple-400 hover:bg-gray-700'
-                    : 'text-gray-700 hover:text-purple-600 hover:bg-gray-100'
+                    ? 'text-[#C9D1D9] hover:text-sky-400 hover:bg-gray-700'
+                    : 'text-gray-700 hover:text-sky-600 hover:bg-gray-100'
                 }`}
               >
                 <svg 
@@ -224,7 +199,7 @@ export default function NavBar({
         <div className={`lg:hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
           <div className={`px-4 pt-2 pb-4 space-y-2 backdrop-blur-lg border-t ${
             isDarkMode
-              ? 'bg-gray-800/95 border-gray-700'
+              ? 'bg-[#0D1117]/95 border-gray-700'
               : 'bg-white/95 border-gray-200'
           }`}>
             {navItems.map((item, index) => (
@@ -233,8 +208,8 @@ export default function NavBar({
                 onClick={() => handleNavClick(item.onClick)}
                 className={`block w-full text-left px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
                   isDarkMode
-                    ? 'text-gray-200 hover:text-purple-400 hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-purple-400/20'
-                    : 'text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-purple-400/10'
+                    ? 'text-[#C9D1D9] hover:text-sky-400 hover:bg-gradient-to-r hover:from-sky-500/20 hover:to-emerald-400/20'
+                    : 'text-gray-700 hover:text-sky-600 hover:bg-gradient-to-r hover:from-sky-500/10 hover:to-emerald-400/10'
                 }`}
               >
                 {item.label}
@@ -242,7 +217,7 @@ export default function NavBar({
             ))}
             <div className="pt-2 flex space-x-2">
               <ThemeToggle />
-              <button className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-200" onClick={() => navigate("/login")}>
+              <button className="flex-1 bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-200" onClick={() => navigate("/login")}>
                 Get Started
               </button>
             </div>

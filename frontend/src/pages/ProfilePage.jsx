@@ -163,7 +163,7 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
         <NavigationHeader title="User Profile" />
         <div className="pt-16 flex items-center justify-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -173,7 +173,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
       {/* Header */}
         <NavigationHeader title="User Profile" />
 
@@ -377,7 +377,7 @@ const ProfilePage = () => {
       )}
 
       {/* Footer */}
-      <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-gray-900/95 border-t border-gray-200 dark:border-gray-700">
+      <div className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-[#0D1117]/95 border-t border-gray-200 dark:border-gray-600">
         <Footer />
       </div>
     </div>

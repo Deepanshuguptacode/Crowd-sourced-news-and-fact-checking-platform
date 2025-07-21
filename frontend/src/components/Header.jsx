@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/userContext'
 import { toast } from 'react-toastify'
+import AnimatedLogo from './AnimatedLogo'
 
 const Header = ({ onMenuToggle }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
@@ -79,11 +80,11 @@ const Header = ({ onMenuToggle }) => {
 
   return (
     <div className="w-full">
-      <header className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg text-gray-800 dark:text-white shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="w-full bg-white/95 dark:bg-[#0D1117] backdrop-blur-lg text-gray-800 dark:text-white shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300">
+        <div className="max-w-7xl  px-2 sm:px-2 lg:px-2">
+          <div className="flex justify-between items-center h-16 gap-4">
             {/* Left side - Logo and Navigation */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-12">
               <button 
                 onClick={onMenuToggle} 
                 className="text-2xl lg:hidden focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -91,20 +92,12 @@ const Header = ({ onMenuToggle }) => {
                 ☰
               </button>
               
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <VerifiedIcon />
-                </div>
-                <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                    TruthCheck
-                  </h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Community Verified</p>
-                </div>
+              <div className="flex ">
+                <AnimatedLogo size="w-10 h-10" brandName="VoxVeritas" showBrand={true} />
               </div>
 
               {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center space-x-1">
+              <nav className="hidden md:flex items-center space-x-3">
                 <button onClick={() => navigate('/home')} className="px-4 py-2 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 transition-colors">
                   Home
                 </button>
@@ -155,12 +148,7 @@ const Header = ({ onMenuToggle }) => {
               >
                 {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
               </button>
-              <button className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-colors relative">
-                <BellIcon />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs text-white font-bold">3</span>
-                </span>
-              </button>
+              
 
 
               {/* Profile */}

@@ -4,7 +4,7 @@
 
 /* Immediate dark background to prevent white flash */
 html, body, #root {
-  background-color: #0f172a !important;
+  background-color: 'bg-[#0D1117]' !important;
   margin: 0;
   padding: 0;
 }

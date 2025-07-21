@@ -151,7 +151,7 @@ const NewsCard = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 group p-6">
+    <div className="bg-white dark:bg-[#0D1117] transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 group p-6">
       
       {/* Title */}
       <h3 className="text-lg md:text-xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">

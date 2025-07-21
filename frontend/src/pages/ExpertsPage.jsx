@@ -15,7 +15,7 @@ const ExpertCard = ({ expert }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white dark:bg-[#0D1117] rounded-lg shadow-md border border-gray-200 dark:border-gray-600 p-6 hover:shadow-lg transition-shadow duration-200">
       {/* Expert Header */}
       <div className="flex items-center space-x-4 mb-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -114,7 +114,7 @@ const ExpertsList = () => {
     return (
       <>
       <NavigationHeader title="Expert Network" />
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
         <div className="pt-16 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -129,7 +129,7 @@ const ExpertsList = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
         <NavigationHeader title="Expert Network" />
         <div className="pt-16 flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -153,10 +153,10 @@ const ExpertsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
       {/* Header */}
       <NavigationHeader title="Expert Network" />
-      <div className="pt-16 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="pt-16 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-600">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">

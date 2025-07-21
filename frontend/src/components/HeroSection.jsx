@@ -68,25 +68,41 @@ export default function HeroSection({ scrollToHow }) {
   function renderTagline(text) {
     // Highlight different key words based on the tagline
     if (text.includes('Truth')) {
-      const [before, after] = text.split('Truth');
+      const parts = text.split(/(\bTruth\b|\bSecond\b|\bOpinion\b)/);
       return (
         <>
-          {before}
-          <span className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
-            Truth
-          </span>
-          {after}
+          {parts.map((part, index) => {
+            if (part === 'Truth' || part === 'Second' || part === 'Opinion') {
+              return (
+                <span
+                  key={index}
+                  className="bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent hover:from-sky-600 hover:to-emerald-600 glow-effect-text"
+                >
+                  {part}
+                </span>
+              );
+            }
+            return part;
+          })}
         </>
       );
     } else if (text.includes('People')) {
-      const [before, after] = text.split('People');
+      const parts = text.split(/(\bPeople\b|\bExperts\b)/);
       return (
         <>
-          {before}
-          <span className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
-            People
-          </span>
-          {after}
+          {parts.map((part, index) => {
+            if (part === 'People' || part === 'Experts') {
+              return (
+                <span
+                  key={index}
+                  className="bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent hover:from-sky-600 hover:to-emerald-600 glow-effect-text"
+                >
+                  {part}
+                </span>
+              );
+            }
+            return part;
+          })}
         </>
       );
     } else if (text.includes('Debate')) {
@@ -98,7 +114,7 @@ export default function HeroSection({ scrollToHow }) {
               return (
                 <span
                   key={index}
-                  className="bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent"
+                  className="bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent hover:from-sky-600 hover:to-emerald-600 glow-effect-text"
                 >
                   {part}
                 </span>
@@ -115,16 +131,16 @@ export default function HeroSection({ scrollToHow }) {
   return (
     <section
       className={`py-8 relative overflow-hidden transition-colors duration-300 ${
-        isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
+        isDarkMode ? 'bg-[#0D1117] text-[#C9D1D9]' : 'bg-gray-50 text-gray-900'
       }`}
     >
     
       {/* Taglines */}
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-8 min-h-[280px] md:min-h-[320px] xl:min-h-[340px] flex items-center justify-center overflow-hidden">
+        <div className="text-center mb-8 min-h-[280px] md:min-h-[320px] xl:min-h-[340px] flex items-center justify-center overflow-hidden" data-scroll>
           <h1 
-            className={`text-5xl md:text-7xl xl:text-8xl font-extrabold leading-tight tracking-tight ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
+            className={`text-5xl md:text-7xl xl:text-8xl font-extrabold leading-tight tracking-tight glow-effect ${
+              isDarkMode ? 'text-[#C9D1D9]' : 'text-gray-900'
             }`}
             key={taglineIndex}
             style={{
@@ -139,7 +155,7 @@ export default function HeroSection({ scrollToHow }) {
           </h1>
         </div>
         {/* small description */}
-        <div className='flex justify-center mb-16 px-4'>
+        <div className='flex justify-center mb-16 px-4' data-scroll data-scroll-speed="2">
           <p className={`text-base md:text-lg max-w-3xl text-center font-bold leading-relaxed transition-colors duration-300 ${
             isDarkMode ? 'text-gray-300' : 'text-gray-600'
           }`} 
@@ -153,21 +169,20 @@ export default function HeroSection({ scrollToHow }) {
         </div>
 
 
-        <div className="flex justify-center space-x-6 mb-12">
+        <div className="flex justify-center space-x-6 mb-12" data-scroll data-scroll-speed="3">
           <button
             onClick={scrollToHow}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-bold px-6 py-3 rounded-lg transition-colors duration-300"
+            className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-bold px-6 py-3 rounded-lg transition-colors duration-300"
           >
             How It Works
           </button>
           <button
             className={`px-8 py-4 rounded-lg transition-colors duration-300 font-bold ${
               isDarkMode
-                ? 'bg-gray-700 hover:bg-gray-800 text-white'
-                : 'bg-white hover:bg-gray-100 text-purple-600 border-4 border-purple-400 '
+                ? 'bg-gray-700 hover:bg-gray-800 text-[#C9D1D9]'
+                : 'bg-white hover:bg-gray-100 text-sky-600 border-4 border-sky-400 '
             }`}
-            onClick={() => navigate("/login")}
-          >
+            onClick={() => navigate("/login")}>
             Get Started
           </button>
         </div>

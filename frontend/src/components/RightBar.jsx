@@ -1,8 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+
 
 const RightBar = () => {
   const navigate = useNavigate();
+  const [showContactDropdown, setShowContactDropdown] = useState(false);
+
+  // Add CSS for 3D flip effect
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .transform-style-preserve-3d {
+        transform-style: preserve-3d;
+      }
+      .backface-hidden {
+        backface-visibility: hidden;
+      }
+      .rotate-x-180 {
+        transform: rotateX(180deg);
+      }
+      .group:hover .group-hover\\:rotate-x-180 {
+        transform: rotateX(180deg);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
 
   const handlePostClick = () => {
     navigate('/submit-news');
@@ -19,18 +51,11 @@ const RightBar = () => {
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
     </svg>
-  );
+  );  
 
-  const SettingsIcon = () => (
+  const ContactIcon = () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  );
-
-  const HelpIcon = () => (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
   );
 
@@ -49,9 +74,8 @@ const RightBar = () => {
   const menuItems = [
     { icon: HomeIcon, label: 'Home', color: 'blue', action: () => navigate('/home') },
     { icon: TrendingIcon, label: 'Trending', color: 'orange', action: () => navigate('/trending') },
-    { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms'), tooltip: 'Vox Space' },
-    { icon: SettingsIcon, label: 'Settings', color: 'gray', action: () => {} },
-    { icon: HelpIcon, label: 'Help', color: 'purple', action: () => {} },
+    { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms') },
+    { icon: ContactIcon, label: 'Know Us', color: 'purple', action: () => setShowContactDropdown(!showContactDropdown) },
   ];
 
   return (
@@ -60,26 +84,79 @@ const RightBar = () => {
       <div className="space-y-1">
         {menuItems.map((item, index) => {
           const IconComponent = item.icon;
+          const isDebateRoom = item.label === 'Debate Rooms';
+          const isContactUs = item.label === 'Contact Us';
+          
           return (
-            <button
-              key={index}
-              onClick={item.action}
-              title={item.tooltip || item.label} // Show Vox Space on hover
-              className={`flex items-center w-full px-3 py-3 text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group ${
-                item.label === 'Home' 
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                  : 'text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              <div className={`w-6 h-6 flex items-center justify-center mr-3 transition-colors duration-200 ${
-                item.label === 'Home'
-                  ? 'text-blue-600 dark:text-blue-400'
-                  : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-              }`}>
-                <IconComponent />
-              </div>
-              <span className="font-medium">{item.label}</span>
-            </button>
+            <div key={index} className="relative">
+              <button
+                onClick={item.action}
+                className={`flex items-center w-full px-3 py-3 text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group relative overflow-hidden ${
+                  item.label === 'Home' 
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
+                    : isContactUs && showContactDropdown
+                    ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <div className={`w-6 h-6 flex items-center justify-center mr-3 transition-colors duration-200 ${
+                  item.label === 'Home'
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : isContactUs && showContactDropdown
+                    ? 'text-purple-600 dark:text-purple-400'
+                    : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                }`}>
+                  <IconComponent />
+                </div>
+                
+                {isDebateRoom ? (
+                  <div className="relative w-full h-6 perspective-1000">
+                    <div className="absolute inset-0 transition-transform duration-500 transform-style-preserve-3d group-hover:rotate-x-180">
+                      {/* Front face - Debate Rooms */}
+                      <span className="absolute inset-0 flex items-center font-medium backface-hidden">
+                        {item.label}
+                      </span>
+                      {/* Back face - VoxSpace */}
+                      <span className="absolute inset-0 flex items-center font-medium backface-hidden rotate-x-180">
+                        VoxSpace
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-medium">{item.label}</span>
+                    {isContactUs && (
+                      <svg 
+                        className={`w-4 h-4 transition-transform duration-200 ${showContactDropdown ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                )}
+              </button>
+
+              {/* Contact Us Dropdown */}
+              {isContactUs && showContactDropdown && (
+                <div className="mt-2 ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                  <a
+                    href="https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J" // Replace with your first file link
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors duration-200"
+                  >
+                    Anantu Rajesh
+                  </a>
+                  <a
+                    href="https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt" // Replace with your second file link
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors duration-200"
+                  >
+                    Deepanshu Gupta
+                  </a>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

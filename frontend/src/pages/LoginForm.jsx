@@ -80,7 +80,7 @@ const LoginForm = () => {
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 dark:bg-slate-900 stage-1-background relative overflow-x-hidden transition-colors duration-300"
+      className="min-h-screen bg-gray-50 dark:bg-[#0D1117] stage-1-background relative overflow-x-hidden transition-colors duration-300"
     >
       {/* Stage 2: Animated Logo */}
       <div className="fixed top-8 left-8 z-50 stage-2-logo">
