@@ -1,7 +1,10 @@
 const { GoogleGenAI, Type } = require('@google/genai');
+require('dotenv').config();
 
-// Initialize Google GenAI - you'll need to add GEMINI_API_KEY to your environment variables
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Initialize Google GenAI with proper API key configuration
+const ai = new GoogleGenAI({ 
+  apiKey: process.env.GEMINI_API_KEY || "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8"
+});
 
 const generateGroupContentFn = {
   name: 'generate_group_content',
@@ -49,7 +52,7 @@ Return only the JSON arguments for the function invocation.`
     ].join('');
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] }
       ],

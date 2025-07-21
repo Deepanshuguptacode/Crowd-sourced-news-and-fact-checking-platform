@@ -1,5 +1,6 @@
 const cron = require('cron');
 const { scrapeAndSaveTrendingNews } = require('../controllers/TrendingNewsController');
+const TrendingNewsCleanupService = require('./trendingNewsCleanupService');
 
 class TrendingNewsScheduler {
   constructor() {

@@ -2,6 +2,7 @@ const TrendingNews = require('../models/TrendingNews');
 const CommunityUser = require('../models/CommunityUser');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const TrendingNewsCleanupService = require('../services/trendingNewsCleanupService');
 
 // Fetch article details from individual page
 async function fetchArticleDetails(url) {
@@ -103,11 +104,22 @@ async function scrapeAndSaveTrendingNews() {
     }
 
     console.log(`News scraping completed: ${savedCount} new, ${updatedCount} updated`);
+    
+    // Run cleanup to maintain only 50 trending news items
+    console.log('🧹 Running automatic cleanup to maintain 50 trending news limit...');
+    const cleanupResult = await TrendingNewsCleanupService.scheduleCleanupAfterFetch();
+    
+    let cleanupMessage = '';
+    if (cleanupResult.deletedCount > 0) {
+      cleanupMessage = ` | Cleaned up: ${cleanupResult.deletedCount} old items`;
+    }
+    
     return { 
       success: true, 
-      message: `Successfully processed ${savedCount + updatedCount} articles`,
+      message: `Successfully processed ${savedCount + updatedCount} articles${cleanupMessage}`,
       newCount: savedCount,
-      updatedCount: updatedCount
+      updatedCount: updatedCount,
+      cleanupResult: cleanupResult
     };
 
   } catch (error) {
@@ -348,6 +360,46 @@ exports.getUserReposts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch user reposts'
+    });
+  }
+};
+
+// Manual cleanup trending news (admin endpoint)
+exports.manualCleanupTrendingNews = async (req, res) => {
+  try {
+    const result = await TrendingNewsCleanupService.manualCleanup();
+    
+    res.status(result.success ? 200 : 500).json(result);
+  } catch (error) {
+    console.error('Error in manual cleanup:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup trending news'
+    });
+  }
+};
+
+// Get trending news statistics (admin endpoint)
+exports.getTrendingNewsStats = async (req, res) => {
+  try {
+    const stats = await TrendingNewsCleanupService.getTrendingNewsStats();
+    
+    if (!stats) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to get trending news statistics'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Error getting trending news stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get trending news statistics'
     });
   }
 };

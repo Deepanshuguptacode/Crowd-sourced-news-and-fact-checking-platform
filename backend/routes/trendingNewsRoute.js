@@ -13,6 +13,8 @@ router.delete('/:id/repost', authenticateAnyUser, trendingNewsController.removeR
 
 // Admin routes (manual fetch)
 router.post('/admin/fetch', authenticateAnyUser, trendingNewsController.fetchTrendingNews);
+router.post('/admin/cleanup', authenticateAnyUser, trendingNewsController.manualCleanupTrendingNews);
+router.get('/admin/stats', authenticateAnyUser, trendingNewsController.getTrendingNewsStats);
 
 // Get single news by ID (must be last to avoid conflicts)
 router.get('/:id', trendingNewsController.getTrendingNewsById);

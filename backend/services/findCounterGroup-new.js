@@ -1,7 +1,10 @@
 const { GoogleGenAI, Type } = require('@google/genai');
 require('dotenv').config();
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Initialize Google GenAI with proper API key configuration
+const ai = new GoogleGenAI({ 
+  apiKey: process.env.GEMINI_API_KEY || "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8"
+});
 
 const findCounterGroupFn = {
   name: 'find_counter_group',
@@ -58,7 +61,7 @@ Return only the JSON arguments for the function invocation.`
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] }
       ],

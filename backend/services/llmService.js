@@ -4,8 +4,20 @@ dotenv.config();
 
 class LLMService {
   constructor() {
+    // Ensure we load dotenv first
+    require('dotenv').config();
+    
     this.apiKey = process.env.GEMINI_API_KEY || "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8";
-    this.genAI = new GoogleGenAI(this.apiKey);
+    
+    // Initialize with explicit API key configuration to avoid ADC issues
+    this.genAI = new GoogleGenAI({ 
+      apiKey: this.apiKey,
+      // Force API key authentication instead of ADC
+      authConfig: {
+        keyFilename: undefined,
+        credentials: undefined
+      }
+    });
   }
 
   async classifyComment(comment, existingLabels) {
@@ -108,7 +120,8 @@ Only match to an existing group if there's strong thematic similarity (confidenc
   async classifyCommentWithGemini(text, existingLabels) {
     try {
       const { GoogleGenAI, Type } = require('@google/genai');
-      const ai = new GoogleGenAI({ apiKey: this.apiKey });
+      // Use instance GenAI instead of creating new one
+      const ai = this.genAI;
 
       const classifyCommentFn = {
         name: 'classify_comment',
@@ -143,7 +156,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -245,7 +258,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await this.genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -407,7 +420,8 @@ Return only the JSON arguments for the function invocation.`
   async analyzeRelevanceWithGemini(comment, debateTitle, debateDescription) {
     try {
       const { GoogleGenAI, Type } = require('@google/genai');
-      const ai = new GoogleGenAI({ apiKey: this.apiKey });
+      // Use instance GenAI instead of creating new one
+      const ai = this.genAI;
 
       const analyzeRelevanceFn = {
         name: 'analyze_comment_relevance',
@@ -453,7 +467,7 @@ Return only the JSON arguments for the function invocation.`
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
