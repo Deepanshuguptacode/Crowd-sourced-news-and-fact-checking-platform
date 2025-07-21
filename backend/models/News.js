@@ -18,6 +18,7 @@ const newsSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    unique: true, // Ensure links are unique
   },
   screenshots: [{
     type: String, // URL to the uploaded screenshot

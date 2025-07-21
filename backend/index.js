@@ -101,15 +101,32 @@ app.use('*', (req, res) => {
 });
 
 // MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/DBMS';
+const PORT = process.env.PORT || 3000;
+
+console.log('Environment check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', PORT);
+console.log('MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✓ Set' : '✗ Missing');
+
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/DBMS')
+  .connect(MONGODB_URI)
   .then(() => {
-    console.log("Connected to MongoDB");
+    console.log("✓ Connected to MongoDB successfully");
     
     // Start trending news scheduler
     trendingNewsScheduler.start();
+    console.log("✓ Trending news scheduler started");
     
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+    // Start server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✓ Server running on port ${PORT}`);
+      console.log(`✓ Health check available at: http://localhost:${PORT}/health`);
+    });
   })
-  .catch((error) => console.log("MongoDB connection failed:", error.message));
+  .catch((error) => {
+    console.error("✗ MongoDB connection failed:", error.message);
+    console.error("Full error:", error);
+    process.exit(1);
+  });
