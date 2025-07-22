@@ -16,8 +16,11 @@ api.interceptors.request.use(
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Also set withCredentials to send cookies
+      config.withCredentials = true;
     }
     console.log('API Request:', config.method?.toUpperCase(), config.url, 'Base:', config.baseURL);
+    console.log('Auth Token Present:', !!token);
     return config;
   },
   (error) => Promise.reject(error)

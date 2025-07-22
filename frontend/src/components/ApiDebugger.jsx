@@ -27,6 +27,13 @@ const ApiDebugger = () => {
     }
   };
 
+  const checkAuthToken = () => {
+    const token = localStorage.getItem('authToken');
+    console.log('Auth Token Check:');
+    console.log('Token exists:', !!token);
+    console.log('Token value:', token ? token.substring(0, 20) + '...' : 'null');
+  };
+
   return (
     <div style={{ 
       position: 'fixed', 
@@ -49,10 +56,25 @@ const ApiDebugger = () => {
           border: 'none', 
           borderRadius: '3px',
           color: 'white',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          marginRight: '5px'
         }}
       >
         Test API
+      </button>
+      <button 
+        onClick={checkAuthToken}
+        style={{ 
+          marginTop: '5px', 
+          padding: '5px 10px', 
+          background: '#28a745', 
+          border: 'none', 
+          borderRadius: '3px',
+          color: 'white',
+          cursor: 'pointer'
+        }}
+      >
+        Check Token
       </button>
     </div>
   );

@@ -7,9 +7,15 @@ const ExpertUser = require('../models/ExpertUser');
 
 // Middleware to authenticate the user
 const authenticateNormalUser = async (req, res, next) => {
-  //recive token from cookie
-  const token = req.cookies.token;
-  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  // Try to get token from cookies first, then from Authorization header
+  let token = req.cookies.token;
+  
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
 
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
@@ -27,8 +33,15 @@ const authenticateNormalUser = async (req, res, next) => {
 
 // Middleware to authenticate the user
 const authenticateCommunityUser = async (req, res, next) => {
-  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
-  const token = req.cookies.token;
+  // Try to get token from cookies first, then from Authorization header
+  let token = req.cookies.token;
+  
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
 
 
   if (!token) {
@@ -46,8 +59,16 @@ const authenticateCommunityUser = async (req, res, next) => {
 };
 
 const authenticateExpertUser = async (req, res, next) => {
-  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
-  const token = req.cookies.token;
+  // Try to get token from cookies first, then from Authorization header
+  let token = req.cookies.token;
+  
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+  
   if (!token) {
     return res.status(401).json({ message: 'Authorization token is missing' });
   }
@@ -62,8 +83,15 @@ const authenticateExpertUser = async (req, res, next) => {
 };
 
 const authenticateCommunityOrExpertUser = async (req, res, next) => {
-  // const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
-  const token = req.cookies.token;
+  // Try to get token from cookies first, then from Authorization header
+  let token = req.cookies.token;
+  
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
 
 
   if (!token) {
