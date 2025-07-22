@@ -10,7 +10,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://voxveritas-backend.vercel.app/',
         changeOrigin: true,
         secure: false,
         ws: true,
