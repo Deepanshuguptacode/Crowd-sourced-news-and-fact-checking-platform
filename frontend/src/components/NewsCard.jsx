@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
-import axios from "axios";
+import api from "../services/api.js"; // Use configured API instead of direct axios
 import { toast } from "react-toastify";
 
 const NewsCard = ({
@@ -80,12 +80,12 @@ const NewsCard = ({
         toast.error("You must become a community/expert user in order to comment");
         return;
       }
-      let endpoint = `/api/news/community-comment/add`; // Default endpoint for community users
+      let endpoint = `/news/community-comment/add`; // Default endpoint for community users
       if (userType.toLowerCase() === "expert") {
-        endpoint = `/api/news/expert-comment/add`;
+        endpoint = `/news/expert-comment/add`;
       }
 
-      const response = await axios.post(endpoint, { newsId: postId, comment: newComment });
+      const response = await api.post(endpoint, { newsId: postId, comment: newComment });
       if (response.status === 201) {
         toast.success(response?.data?.message || "Comment added successfully!");
         
@@ -114,9 +114,11 @@ const NewsCard = ({
     console.log('NewsCard: Testing API call only, voteType:', voteType);
     
     try {
-      // Test 1: Skip parent callback, use direct API call only
-      console.log('NewsCard: Making direct API call without parent callback');
-      const response = await axios.post(`/api/news/vote/${postId}`, { voteType });
+      // Use configured API instance instead of direct axios
+      console.log('NewsCard: Making API call to backend');
+      console.log('NewsCard: API base URL:', api.defaults.baseURL);
+      
+      const response = await api.post(`/news/vote/${postId}`, { voteType });
       
       console.log('NewsCard: API response:', response.data);
       

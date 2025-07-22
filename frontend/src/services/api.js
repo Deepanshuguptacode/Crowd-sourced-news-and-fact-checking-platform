@@ -1,41 +1,36 @@
 import axios from 'axios';
-import config from '../config';
+import config from '../config.js';
 
-// Create axios instance with base configuration
+// Create axios instance with base URL from config
 const api = axios.create({
   baseURL: config.BASE_URL,
-  withCredentials: true, // Important for cookie-based authentication
-  timeout: 30000, // 30 second timeout
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
+// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log('API Request:', config.method?.toUpperCase(), config.url, 'Base:', config.baseURL);
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle auth errors
+// Add response interceptor for debugging
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userType');
-      localStorage.removeItem('userInfo');
-      window.location.href = '/login';
-    }
+    console.error('API Error:', error.response?.status, error.config?.url, error.response?.data);
     return Promise.reject(error);
   }
 );
