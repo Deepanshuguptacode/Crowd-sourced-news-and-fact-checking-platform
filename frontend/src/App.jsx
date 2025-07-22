@@ -18,7 +18,6 @@ import DebateRoomsList from './pages/DebateRoomsList';
 import DebateRoom from './pages/DebateRoom';
 import AdvancedDebateRoom from './components/AdvancedDebateRoom';
 import ProtectedRoute from './components/ProtectedRoute';
-import ApiDebugger from './components/ApiDebugger';
 import { UserProvider } from './context/userContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -111,8 +110,6 @@ function App() {
             pauseOnHover
             theme="colored"
           />
-          {/* Temporary API Debugger - Remove after debugging */}
-          <ApiDebugger />
         </div>
       </Router>
     </UserProvider>

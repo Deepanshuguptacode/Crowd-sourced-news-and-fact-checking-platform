@@ -111,30 +111,20 @@ const NewsCard = ({
   };
 
   const handleVotes = async (voteType) => {
-    console.log('NewsCard: Testing API call only, voteType:', voteType);
-    
     try {
-      // Use configured API instance instead of direct axios
-      console.log('NewsCard: Making API call to backend');
-      console.log('NewsCard: API base URL:', api.defaults.baseURL);
-      
       const response = await api.post(`/news/vote/${postId}`, { voteType });
       
-      console.log('NewsCard: API response:', response.data);
-      
       if (!response.data.error) {
-        // Update local state only (no parent callback)
-        console.log('NewsCard: Updating local state only');
+        // Update local state
         setUpvotes(response.data.upvotes || upvotes);
         setDownvotes(response.data.downvotes || downvotes);
         
         toast.success("Vote registered successfully!");
-        console.log('NewsCard: Local state updated successfully');
       }
       
     } catch (error) {
-      console.error('NewsCard: API call error:', error);
-      toast.error("Error voting - API call failed");
+      console.error('Voting error:', error);
+      toast.error("Error voting - please try again");
     }
   };
 
