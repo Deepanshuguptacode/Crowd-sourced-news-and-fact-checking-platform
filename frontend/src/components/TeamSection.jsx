@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLinkedin, FaGithub,FaBookOpen } from 'react-icons/fa';
 import { useTheme } from './NavBar';
+import anantuImg from '../assets/anantu.jpg';
+import deepanshuImg from '../assets/deepanshu.jpg';
 
 export default function TeamSection() {
   const { isDarkMode } = useTheme();
@@ -10,13 +12,13 @@ export default function TeamSection() {
       name: "Anantu Rajesh",
       role: "Frontend Developer",
       social: { gmail: "rajeshanantu@gmail.com", linkedin: "https://www.linkedin.com/in/anantu-rajesh-22a78a2b5/", github: "https://github.com/Anantu-Rajesh",resume: "https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J"},
-      image: "src/assets/anantu.jpg", // Placeholder image 
+      image: anantuImg,
     },
     {
       name: "Deepanshu Gupta",
       role: "Backend & Gen-AI Engineer",
       social: { gmail: "deepanshugupta650@gmail.com", linkedin: "https://www.linkedin.com/in/deepanshu-gupta-650d/", github: "https://github.com/Deepanshuguptacode",resume: "https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt" },
-      image: "src/assets/deepanshu.jpg", // Placeholder image
+      image: deepanshuImg,
     },
   ];
 
