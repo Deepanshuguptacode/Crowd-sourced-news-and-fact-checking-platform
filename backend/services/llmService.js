@@ -156,7 +156,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -258,7 +258,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await this.genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -467,7 +467,7 @@ Return only the JSON arguments for the function invocation.`
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
