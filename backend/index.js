@@ -26,6 +26,8 @@ const corsOptions = {
     'http://127.0.0.1:5174',
     'http://localhost:4173', // Vite preview
     'http://127.0.0.1:4173',
+    'https://voxveritas.me',
+    'https://www.voxveritas.me',
     // Add your Render frontend URL here when deployed
     process.env.FRONTEND_URL || 'https://voxveritas.vercel.app'
   ],
