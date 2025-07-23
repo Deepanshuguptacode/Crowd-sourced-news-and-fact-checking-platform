@@ -1,27 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'https://voxveritas-backend.vercel.app/';
-
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Add request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken'); // Fixed: changed from 'userToken' to 'authToken'
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import api from './api.js';
 
 // Trending News API Service
 export const trendingNewsService = {
