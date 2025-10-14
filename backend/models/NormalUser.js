@@ -31,6 +31,19 @@ const normalUserSchema = new mongoose.Schema({
     type: [String],
     default: null,
   },
+  // Face Authentication Fields
+  faceEmbedding: {
+    type: [Number], // Array of numbers representing face embedding
+    default: null,
+  },
+  faceRegisteredAt: {
+    type: Date,
+    default: null,
+  },
+  hasFaceAuth: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

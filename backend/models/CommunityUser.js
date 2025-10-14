@@ -48,6 +48,19 @@ const communityUserSchema = new mongoose.Schema({
     linkedin: { type: String, default: null },
     website: { type: String, default: null }
   },
+  // Face Authentication Fields
+  faceEmbedding: {
+    type: [Number], // Array of numbers representing face embedding
+    default: null,
+  },
+  faceRegisteredAt: {
+    type: Date,
+    default: null,
+  },
+  hasFaceAuth: {
+    type: Boolean,
+    default: false,
+  },
   joinedAt: {
     type: Date,
     default: Date.now,

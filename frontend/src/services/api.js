@@ -40,15 +40,31 @@ api.interceptors.response.use(
 
 // Authentication APIs
 export const authAPI = {
-  // Login for different user types
+  // Login for different user types (enhanced with face auth)
   login: async (userType, credentials) => {
     const response = await api.post(`/users/${userType}/login`, credentials);
     return response.data;
   },
 
-  // Signup for different user types
+  // Signup for different user types (enhanced with face auth)
   signup: async (userType, userData) => {
     const response = await api.post(`/users/${userType}/signup`, userData);
+    return response.data;
+  },
+
+  // Face Authentication APIs
+  registerFace: async (userType, faceData) => {
+    const response = await api.post(`/users/${userType}/register-face`, faceData);
+    return response.data;
+  },
+
+  verifyFace: async (userType, faceData) => {
+    const response = await api.post(`/users/${userType}/verify-face`, faceData);
+    return response.data;
+  },
+
+  getFaceAuthStatus: async (userType, userId) => {
+    const response = await api.get(`/users/${userType}/face-auth-status/${userId}`);
     return response.data;
   },
 

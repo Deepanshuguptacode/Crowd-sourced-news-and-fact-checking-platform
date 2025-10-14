@@ -4,7 +4,8 @@ import { useContext } from "react";
 import { UserContext } from "../context/userContext";
 import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, ArrowLeft, Camera } from 'lucide-react';
+import FaceCapture from '../components/FaceCapture';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,9 @@ const LoginForm = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginMethod, setLoginMethod] = useState('password'); // 'password' or 'face'
+  const [faceImage, setFaceImage] = useState(null);
+  const [showFaceCapture, setShowFaceCapture] = useState(false);
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -51,15 +55,40 @@ const LoginForm = () => {
     }
   };
 
+  const handleFaceCapture = (imageDataUrl) => {
+    setFaceImage(imageDataUrl);
+    toast.success("Face captured successfully!");
+  };
+
+  const handleFaceCaptureError = (error) => {
+    toast.error("Face capture failed: " + error);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate inputs based on login method
+    if (loginMethod === 'password' && (!formData.email || !formData.password)) {
+      toast.error("Email and password are required for password login!");
+      return;
+    }
+    
+    if (loginMethod === 'face' && (!formData.email || !faceImage)) {
+      toast.error("Email and face image are required for face login!");
+      return;
+    }
+
     setLoading(true);
     
     try {
-      const response = await authAPI.login(formData.userType, {
+      const loginData = {
         email: formData.email,
-        password: formData.password
-      });
+        loginMethod: loginMethod,
+        ...(loginMethod === 'password' && { password: formData.password }),
+        ...(loginMethod === 'face' && { faceImage: faceImage })
+      };
+
+      const response = await authAPI.login(formData.userType, loginData);
 
       if (response.token) {
         // Use the login function from context
@@ -68,7 +97,10 @@ const LoginForm = () => {
           userType: formData.userType
         }, response.token);
 
-        toast.success("Login successful!");
+        const message = response.authMethod === 'face' 
+          ? "Face login successful!" 
+          : "Login successful!";
+        toast.success(message);
         navigate("/home");
       }
     } catch (error) {
@@ -169,31 +201,106 @@ const LoginForm = () => {
                     </div>
                   </div>
 
-                  {/* Password Field */}
-                  <div>
-                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                      Password
+                  {/* Login Method Selection */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-700/50 p-4 rounded-xl border border-blue-200 dark:border-slate-600">
+                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-3">
+                      Login Method
                     </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        id="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-10 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                        placeholder="Enter your password"
-                        required
-                      />
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                        onClick={() => setLoginMethod('password')}
+                        className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          loginMethod === 'password'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600'
+                        }`}
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        <Lock className="w-4 h-4" />
+                        <span>Password</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLoginMethod('face')}
+                        className={`flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          loginMethod === 'face'
+                            ? 'bg-green-600 text-white shadow-md'
+                            : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>Face ID</span>
                       </button>
                     </div>
                   </div>
+
+                  {/* Password Field (shown for password login) */}
+                  {loginMethod === 'password' && (
+                    <div className="transition-all duration-300 ease-in-out">
+                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          id="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-10 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                          placeholder="Enter your password"
+                          required={loginMethod === 'password'}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Face Authentication (shown for face login) */}
+                  {loginMethod === 'face' && (
+                    <div className="transition-all duration-300 ease-in-out">
+                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-3">
+                        Face Authentication
+                      </label>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setShowFaceCapture(!showFaceCapture)}
+                        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>{faceImage ? 'Update Face Image' : 'Capture Face for Login'}</span>
+                      </button>
+
+                      {showFaceCapture && (
+                        <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
+                          <FaceCapture
+                            onCapture={handleFaceCapture}
+                            onError={handleFaceCaptureError}
+                            mode="both"
+                            captureButtonText="Capture Your Face"
+                            uploadButtonText="Upload Face Photo"
+                            className="w-full"
+                          />
+                        </div>
+                      )}
+
+                      {faceImage && (
+                        <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                          <p className="text-sm text-green-700 dark:text-green-300 flex items-center space-x-2">
+                            <Camera className="w-4 h-4" />
+                            <span>Face captured successfully! You can now log in.</span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <button

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Authentication Test</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .section { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #0056b3; }
+        #video { 
+            width: 100%; 
+            max-width: 400px; 
+            height: 300px; 
+            border: 1px solid #ddd; 
+        }
+        #result { 
+            margin-top: 20px; 
+            padding: 10px; 
+            border-radius: 4px; 
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        img { max-width: 200px; margin: 10px; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            font-weight: bold; 
+        }
+        .status.online { background-color: #d4edda; color: #155724; }
+        .status.offline { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Face Authentication Integration Test</h1>
+    
+    <!-- Service Status Check -->
+    <div class="section">
+        <h2>📊 Service Status</h2>
+        <button onclick="checkServiceStatus()">Check All Services</button>
+        <div id="statusResults"></div>
+    </div>
+
+    <!-- Camera Test -->
+    <div class="section">
+        <h2>📷 Camera Test</h2>
+        <video id="video" autoplay></video><br>
+        <button onclick="startCamera()">Start Camera</button>
+        <button onclick="stopCamera()">Stop Camera</button>
+        <button onclick="captureImage()">Capture Image</button>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <div id="captureResult"></div>
+    </div>
+
+    <!-- Face Detection Test -->
+    <div class="section">
+        <h2>🔍 Face Detection Test</h2>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="testFaceDetection()">Test Face Detection</button>
+        <div id="detectionResult"></div>
+    </div>
+
+    <!-- Face Registration Test -->
+    <div class="section">
+        <h2>📝 Face Registration Test</h2>
+        <input type="text" id="testUsername" placeholder="Enter test username" value="testuser123">
+        <button onclick="testFaceRegistration()">Register Face</button>
+        <div id="registrationResult"></div>
+    </div>
+
+    <!-- Face Verification Test -->
+    <div class="section">
+        <h2>🔐 Face Verification Test</h2>
+        <button onclick="testFaceVerification()">Verify Face</button>
+        <div id="verificationResult"></div>
+    </div>
+
+    <!-- Integration Test -->
+    <div class="section">
+        <h2>🔗 Platform Integration Test</h2>
+        <input type="text" id="platformUsername" placeholder="Platform username" value="testuser@example.com">
+        <input type="password" id="platformPassword" placeholder="Platform password" value="testpass123">
+        <button onclick="testPlatformSignup()">Test Platform Signup</button>
+        <button onclick="testPlatformLogin()">Test Platform Login</button>
+        <div id="integrationResult"></div>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        let currentStream = null;
+        let capturedImageData = null;
+
+        // Service URLs
+        const FACE_AUTH_URL = 'http://127.0.0.1:5000';
+        const BACKEND_URL = 'http://localhost:3001';
+
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            result.appendChild(div);
+            console.log(message);
+        }
+
+        async function checkServiceStatus() {
+            const statusDiv = document.getElementById('statusResults');
+            statusDiv.innerHTML = '<p>Checking services...</p>';
+
+            const services = [
+                { name: 'Face-authorization-System', url: `${FACE_AUTH_URL}/` },
+                { name: 'Face Auth API Status', url: `${FACE_AUTH_URL}/api/status` },
+                { name: 'Backend Health', url: `${BACKEND_URL}/health` },
+                { name: 'Backend API', url: `${BACKEND_URL}/` }
+            ];
+
+            let results = '';
+            for (const service of services) {
+                try {
+                    const response = await axios.get(service.url, { timeout: 5000 });
+                    results += `<div class="status online">✅ ${service.name}: Online (${response.status})</div>`;
+                    if (response.data) {
+                        results += `<small>${JSON.stringify(response.data).substring(0, 100)}...</small>`;
+                    }
+                } catch (error) {
+                    results += `<div class="status offline">❌ ${service.name}: ${error.message}</div>`;
+                }
+            }
+            statusDiv.innerHTML = results;
+        }
+
+        async function startCamera() {
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                const video = document.getElementById('video');
+                video.srcObject = currentStream;
+                log('Camera started successfully', 'success');
+            } catch (error) {
+                log(`Camera error: ${error.message}`, 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                const video = document.getElementById('video');
+                video.srcObject = null;
+                log('Camera stopped', 'info');
+            }
+        }
+
+        function captureImage() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            const captureDiv = document.getElementById('captureResult');
+            captureDiv.innerHTML = `
+                <p>✅ Image captured!</p>
+                <img src="${capturedImageData}" style="max-width: 200px;">
+            `;
+            log('Image captured successfully', 'success');
+        }
+
+        async function testFaceDetection() {
+            let imageData = capturedImageData;
+            
+            // If no captured image, try file upload
+            if (!imageData) {
+                const fileInput = document.getElementById('imageUpload');
+                if (fileInput.files.length === 0) {
+                    log('Please capture an image or select a file first', 'error');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                imageData = await fileToBase64(file);
+            }
+
+            try {
+                log('Testing face detection...', 'info');
+                const response = await axios.post(`${FACE_AUTH_URL}/api/detect_face`, {
+                    image: imageData
+                });
+
+                const resultDiv = document.getElementById('detectionResult');
+                if (response.data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ ${response.data.message}</p>
+                            ${response.data.face_crop ? `<img src="${response.data.face_crop}">` : ''}
+                            <p>Bounding box: ${JSON.stringify(response.data.bbox)}</p>
+                        </div>
+                    `;
+                    log('Face detection successful', 'success');
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ${response.data.message}</div>`;
+                    log(`Face detection failed: ${response.data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Face detection error: ${error.message}`, 'error');
+                document.getElementById('detectionResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testFaceRegistration() {
+            let imageData = capturedImageData;
+            
+            if (!imageData) {
+                const fileInput = document.getElementById('imageUpload');
+                if (fileInput.files.length === 0) {
+                    log('Please capture an image or select a file first', 'error');
+                    return;
+                }
+                const file = fileInput.files[0];
+                imageData = await fileToBase64(file);
+            }
+
+            const username = document.getElementById('testUsername').value;
+            if (!username) {
+                log('Please enter a username', 'error');
+                return;
+            }
+
+            try {
+                log('Testing face registration...', 'info');
+                const response = await axios.post(`${FACE_AUTH_URL}/api/register_face`, {
+                    username: username,
+                    image: imageData
+                });
+
+                const resultDiv = document.getElementById('registrationResult');
+                if (response.data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ ${response.data.message}</p>
+                            ${response.data.face_crop ? `<img src="${response.data.face_crop}">` : ''}
+                        </div>
+                    `;
+                    log('Face registration successful', 'success');
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ${response.data.message}</div>`;
+                    log(`Face registration failed: ${response.data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Face registration error: ${error.message}`, 'error');
+                document.getElementById('registrationResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testFaceVerification() {
+            let imageData = capturedImageData;
+            
+            if (!imageData) {
+                const fileInput = document.getElementById('imageUpload');
+                if (fileInput.files.length === 0) {
+                    log('Please capture an image or select a file first', 'error');
+                    return;
+                }
+                const file = fileInput.files[0];
+                imageData = await fileToBase64(file);
+            }
+
+            try {
+                log('Testing face verification...', 'info');
+                const response = await axios.post(`${FACE_AUTH_URL}/api/verify_face`, {
+                    image: imageData
+                });
+
+                const resultDiv = document.getElementById('verificationResult');
+                if (response.data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Face verified!</p>
+                            <p>Username: ${response.data.username}</p>
+                            <p>Similarity: ${response.data.similarity}</p>
+                            ${response.data.face_crop ? `<img src="${response.data.face_crop}">` : ''}
+                        </div>
+                    `;
+                    log(`Face verification successful: ${response.data.username}`, 'success');
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ${response.data.message}</div>`;
+                    log(`Face verification failed: ${response.data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Face verification error: ${error.message}`, 'error');
+                document.getElementById('verificationResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testPlatformSignup() {
+            const username = document.getElementById('platformUsername').value;
+            const password = document.getElementById('platformPassword').value;
+            
+            if (!capturedImageData) {
+                log('Please capture an image first', 'error');
+                return;
+            }
+
+            try {
+                log('Testing platform signup with face...', 'info');
+                const response = await axios.post(`${BACKEND_URL}/community-user/signup`, {
+                    name: 'Test User',
+                    username: username,
+                    email: username,
+                    password: password,
+                    profession: 'Tester',
+                    faceImage: capturedImageData
+                });
+
+                const resultDiv = document.getElementById('integrationResult');
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Platform signup successful!</p>
+                        <p>Response: ${JSON.stringify(response.data)}</p>
+                    </div>
+                `;
+                log('Platform signup successful', 'success');
+            } catch (error) {
+                log(`Platform signup error: ${error.message}`, 'error');
+                document.getElementById('integrationResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.response?.data?.message || error.message}</div>`;
+            }
+        }
+
+        async function testPlatformLogin() {
+            const username = document.getElementById('platformUsername').value;
+            
+            if (!capturedImageData) {
+                log('Please capture an image first', 'error');
+                return;
+            }
+
+            try {
+                log('Testing platform face login...', 'info');
+                const response = await axios.post(`${BACKEND_URL}/community-user/login`, {
+                    email: username,
+                    faceImage: capturedImageData,
+                    loginMethod: 'face'
+                });
+
+                const resultDiv = document.getElementById('integrationResult');
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <p>✅ Platform face login successful!</p>
+                        <p>Response: ${JSON.stringify(response.data)}</p>
+                    </div>
+                `;
+                log('Platform face login successful', 'success');
+            } catch (error) {
+                log(`Platform face login error: ${error.message}`, 'error');
+                document.getElementById('integrationResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.response?.data?.message || error.message}</div>`;
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Auto-check service status on load
+        window.onload = function() {
+            checkServiceStatus();
+            log('Face Authentication Test Page Loaded', 'info');
+        };
+    </script>
+</body>
+</html>

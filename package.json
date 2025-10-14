@@ -1,0 +1,23 @@
+{
+  "name": "crowd-sourced-news-and-fact-checking-platform",
+  "version": "1.0.0",
+  "main": "comprehensive-face-test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Deepanshuguptacode/Crowd-sourced-news-and-fact-checking-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Deepanshuguptacode/Crowd-sourced-news-and-fact-checking-platform/issues"
+  },
+  "homepage": "https://github.com/Deepanshuguptacode/Crowd-sourced-news-and-fact-checking-platform#readme",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.12.2"
+  }
+}

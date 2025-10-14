@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { UserContext } from "../context/userContext";
 import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, ArrowLeft, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, ArrowLeft, Briefcase, Camera } from 'lucide-react';
+import FaceCapture from '../components/FaceCapture';
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,9 @@ const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [faceImage, setFaceImage] = useState(null);
+  const [skipFaceAuth, setSkipFaceAuth] = useState(false);
+  const [showFaceCapture, setShowFaceCapture] = useState(false);
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -29,11 +33,29 @@ const SignupForm = () => {
     });
   };
 
+  const handleFaceCapture = (imageDataUrl) => {
+    console.log('🔍 [SIGNUP] Face image captured, size:', imageDataUrl.length);
+    setFaceImage(imageDataUrl);
+    toast.success("Face captured successfully!");
+  };
+
+  const handleFaceCaptureError = (error) => {
+    console.error('🔍 [SIGNUP] Face capture error:', error);
+    toast.error("Face capture failed: " + error);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords don't match!");
+      return;
+    }
+
+    // Check if user wants face auth but hasn't captured face
+    if (!skipFaceAuth && !faceImage) {
+      toast.error("Please capture your face for authentication or choose to skip face authentication.");
+      setShowFaceCapture(true);
       return;
     }
 
@@ -45,8 +67,14 @@ const SignupForm = () => {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        ...(formData.userType === 'expert' && { profession: formData.profession })
+        ...(formData.userType === 'expert' && { profession: formData.profession }),
+        ...(faceImage && !skipFaceAuth && { faceImage })
       };
+
+      console.log('🔍 [SIGNUP] Sending signup data:', {
+        ...signupData,
+        faceImage: signupData.faceImage ? `Base64 image (${signupData.faceImage.length} chars)` : 'None'
+      });
 
       const response = await authAPI.signup(formData.userType, signupData);
       
@@ -57,10 +85,16 @@ const SignupForm = () => {
           userType: formData.userType
         }, response.token);
 
-        toast.success("Signup successful!");
+        const message = response.hasFaceAuth 
+          ? "Signup successful with face authentication!" 
+          : "Signup successful!";
+        toast.success(message);
         navigate("/home");
       } else {
-        toast.success("Signup successful! Please wait for admin approval.");
+        const message = response.hasFaceAuth 
+          ? "Signup successful with face authentication! Please wait for admin approval." 
+          : "Signup successful! Please wait for admin approval.";
+        toast.success(message);
         navigate("/login");
       }
     } catch (error) {
@@ -277,6 +311,69 @@ const SignupForm = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Face Authentication Section */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-700/50 p-4 rounded-xl border border-blue-200 dark:border-slate-600">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Face Authentication</h3>
+                      <span className="text-sm text-gray-500 dark:text-slate-400">(Optional but recommended)</span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
+                      Enhance your account security by registering your face for quick and secure login.
+                    </p>
+
+                    {/* Face Auth Options */}
+                    <div className="space-y-3">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!skipFaceAuth}
+                          onChange={(e) => setSkipFaceAuth(!e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-slate-300">
+                          Enable face authentication for this account
+                        </span>
+                      </label>
+
+                      {!skipFaceAuth && (
+                        <div className="transition-all duration-300 ease-in-out">
+                          <button
+                            type="button"
+                            onClick={() => setShowFaceCapture(!showFaceCapture)}
+                            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <Camera className="w-4 h-4" />
+                            <span>{faceImage ? 'Update Face Image' : 'Capture Face Image'}</span>
+                          </button>
+
+                          {showFaceCapture && (
+                            <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
+                              <FaceCapture
+                                onCapture={handleFaceCapture}
+                                onError={handleFaceCaptureError}
+                                mode="both"
+                                captureButtonText="Capture Your Face"
+                                uploadButtonText="Upload Face Photo"
+                                className="w-full"
+                              />
+                            </div>
+                          )}
+
+                          {faceImage && (
+                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                              <p className="text-sm text-green-700 dark:text-green-300 flex items-center space-x-2">
+                                <Camera className="w-4 h-4" />
+                                <span>Face image captured successfully! You can now create your account.</span>
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Submit Button */}
                   <button
