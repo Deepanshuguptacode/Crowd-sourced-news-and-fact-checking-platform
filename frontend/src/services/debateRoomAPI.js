@@ -1,6 +1,7 @@
 import axios from 'axios';
+import config from '../config.js';
 
-const API_BASE_URL = 'https://voxveritas-backend.vercel.app/';
+const API_BASE_URL = config.BASE_URL;
 
 // Create axios instance with default config
 const api = axios.create({

@@ -1,0 +1,1253 @@
+{
+  "newsId": "68ef91ef3bda87128d26e22e",
+  "newsTitle": "Charity: Clinton Foundation Distributed “Watered-Down” AIDS Drugs to Sub-Saharan Africa – Eagle Rising",
+  "comments": [
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9720b6f49e167ec09eef",
+      "comment": "This article presents misleading information without credible sources. The claims made here have been debunked by multiple fact-checking organizations and lack any supporting evidence from reliable news outlets.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.snopes.com/fact-check/",
+          "explanation": "Snopes fact-checking reveals this claim as false with detailed analysis"
+        },
+        {
+          "url": "https://www.politifact.com/factchecks/",
+          "explanation": "PolitiFact rates similar claims as 'Pants on Fire' with comprehensive research"
+        },
+        {
+          "url": "https://www.factcheck.org/",
+          "explanation": "FactCheck.org provides detailed debunking with primary source verification"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.484Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "against",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.484Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "687e894eb0941c5f0c4e7478",
+      "comment": "The sources cited in this article are questionable at best. Many of the claims contradict established facts and documented evidence. This appears to be a deliberate attempt to spread misinformation.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.reuters.com/fact-check/",
+          "explanation": "Reuters fact-check team confirms this information is inaccurate"
+        },
+        {
+          "url": "https://apnews.com/hub/ap-fact-check",
+          "explanation": "Associated Press fact-checking shows contradictory evidence"
+        },
+        {
+          "url": "https://www.washingtonpost.com/news/fact-checker/",
+          "explanation": "Washington Post fact-checker gives this claim four Pinocchios"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "against",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.485Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "This is a classic example of confirmation bias masquerading as journalism. The article cherry-picks data and ignores contradictory evidence to support a predetermined narrative.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.columbia.edu/~fdc/bibliography.html",
+          "explanation": "Columbia Journalism Review guidelines on avoiding bias in reporting"
+        },
+        {
+          "url": "https://www.poynter.org/reporting-editing/",
+          "explanation": "Poynter Institute best practices for ethical journalism contradicted here"
+        },
+        {
+          "url": "https://www.spj.org/ethicscode.asp",
+          "explanation": "Society of Professional Journalists ethics code violated by this reporting"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.485Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "against",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.485Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "687e894eb0941c5f0c4e7478",
+      "comment": "The timeline presented in this article doesn't match documented historical events. Multiple primary sources contradict the sequence of events described here.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.archives.gov/",
+          "explanation": "National Archives records show different timeline than claimed"
+        },
+        {
+          "url": "https://www.congress.gov/",
+          "explanation": "Congressional records contradict the claims made in this article"
+        },
+        {
+          "url": "https://www.whitehouse.gov/briefings-statements/",
+          "explanation": "Official White House statements provide different account of events"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        }
+      ],
+      "upvoteCount": 6,
+      "downvoteCount": 0,
+      "stance": "against",
+      "score": 6,
+      "createdAt": "2025-10-15T17:45:43.486Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ca7655aa2d3e4f8e92763b",
+      "comment": "This article lacks basic journalistic standards. No credible sources are quoted, and the claims made are unverifiable through standard fact-checking methods.",
+      "evidenceLinks": [
+        {
+          "url": "https://ijnet.org/en/resource/journalism-ethics-guidelines",
+          "explanation": "International journalism ethics standards not followed in this piece"
+        },
+        {
+          "url": "https://www.rtdna.org/content/rtdna_coe",
+          "explanation": "Radio Television Digital News Association code of ethics violated"
+        },
+        {
+          "url": "https://www.niemanlab.org/",
+          "explanation": "Nieman Lab analysis shows this article fails basic verification standards"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.486Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "against",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.486Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "687e8a06d4d4dc3e2ed187f8",
+      "comment": "The statistical claims in this article are manipulated and taken out of context. The actual data tells a completely different story when properly analyzed.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.census.gov/",
+          "explanation": "US Census Bureau data contradicts the statistics presented in this article"
+        },
+        {
+          "url": "https://www.bls.gov/",
+          "explanation": "Bureau of Labor Statistics shows different numbers than those claimed"
+        },
+        {
+          "url": "https://data.gov/",
+          "explanation": "Official government data repositories provide accurate statistics that refute these claims"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.487Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "against",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.487Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "687e894eb0941c5f0c4e7478",
+      "comment": "This piece relies heavily on conspiracy theories that have been thoroughly debunked. The author ignores established scientific consensus and expert analysis.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.nationalacademies.org/",
+          "explanation": "National Academy of Sciences reports contradict these conspiracy claims"
+        },
+        {
+          "url": "https://www.science.org/",
+          "explanation": "Peer-reviewed scientific research refutes the theories presented here"
+        },
+        {
+          "url": "https://www.nature.com/",
+          "explanation": "Nature journal publications provide evidence against these unfounded claims"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        }
+      ],
+      "upvoteCount": 3,
+      "downvoteCount": 3,
+      "stance": "against",
+      "score": 0,
+      "createdAt": "2025-10-15T17:45:43.488Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68efa1da54b0df096573bedb",
+      "comment": "The quotes attributed to public figures in this article appear to be taken out of context or completely fabricated. No verifiable source exists for these statements.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.c-span.org/",
+          "explanation": "C-SPAN archives show the actual statements made by these public figures"
+        },
+        {
+          "url": "https://www.presidency.ucsb.edu/",
+          "explanation": "American Presidency Project has no record of these alleged quotes"
+        },
+        {
+          "url": "https://www.govinfo.gov/",
+          "explanation": "Government Publishing Office records don't support these attributed statements"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.488Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "against",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.488Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68efa1da54b0df096573bedb",
+      "comment": "This article promotes dangerous misinformation that could harm public health and safety. The recommendations contradict established medical and scientific guidelines.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.cdc.gov/",
+          "explanation": "Centers for Disease Control guidelines directly contradict advice given in this article"
+        },
+        {
+          "url": "https://www.who.int/",
+          "explanation": "World Health Organization recommendations oppose the claims made here"
+        },
+        {
+          "url": "https://www.nih.gov/",
+          "explanation": "National Institutes of Health research refutes the medical claims presented"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.489Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "against",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.489Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "The economic analysis in this article is fundamentally flawed and ignores basic economic principles. Expert economists have criticized similar arguments extensively.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.federalreserve.gov/",
+          "explanation": "Federal Reserve data contradicts the economic claims made in this article"
+        },
+        {
+          "url": "https://www.imf.org/",
+          "explanation": "International Monetary Fund analysis shows different economic trends"
+        },
+        {
+          "url": "https://www.worldbank.org/",
+          "explanation": "World Bank reports provide accurate economic data that refutes these claims"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.490Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "against",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.490Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "This article demonstrates a clear lack of understanding of the legal framework surrounding the discussed issues. Legal experts have repeatedly clarified these misconceptions.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.supremecourt.gov/",
+          "explanation": "Supreme Court decisions contradict the legal interpretations presented"
+        },
+        {
+          "url": "https://www.law.cornell.edu/",
+          "explanation": "Cornell Law School analysis shows this legal reasoning is flawed"
+        },
+        {
+          "url": "https://www.americanbar.org/",
+          "explanation": "American Bar Association guidelines oppose the legal claims made here"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        }
+      ],
+      "upvoteCount": 3,
+      "downvoteCount": 3,
+      "stance": "against",
+      "score": 0,
+      "createdAt": "2025-10-15T17:45:43.491Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68efa1da54b0df096573bedb",
+      "comment": "The historical context provided in this article is inaccurate and misleading. Historians have extensively documented the actual events, which contradict this narrative.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.historians.org/",
+          "explanation": "American Historical Association fact-checking refutes these historical claims"
+        },
+        {
+          "url": "https://www.smithsonianmag.com/",
+          "explanation": "Smithsonian Institution archives provide accurate historical context"
+        },
+        {
+          "url": "https://www.loc.gov/",
+          "explanation": "Library of Congress records show different historical facts than presented"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.491Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "against",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.491Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "This article raises important questions that deserve serious consideration. While some may disagree with the conclusions, the underlying concerns about transparency and accountability are valid.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.transparency.org/",
+          "explanation": "Transparency International reports support the need for greater accountability"
+        },
+        {
+          "url": "https://www.opensecrets.org/",
+          "explanation": "OpenSecrets data shows patterns that align with concerns raised in this article"
+        },
+        {
+          "url": "https://www.citizensforethics.org/",
+          "explanation": "Citizens for Responsibility and Ethics documents similar issues"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.494Z"
+        }
+      ],
+      "upvoteCount": 6,
+      "downvoteCount": 0,
+      "stance": "in_favor",
+      "score": 6,
+      "createdAt": "2025-10-15T17:45:43.494Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09ef8",
+      "comment": "The mainstream media often overlooks these perspectives. It's important to consider alternative viewpoints, even if they challenge conventional wisdom.",
+      "evidenceLinks": [
+        {
+          "url": "https://fair.org/",
+          "explanation": "Fairness and Accuracy in Reporting documents media bias in coverage"
+        },
+        {
+          "url": "https://www.allsides.com/",
+          "explanation": "AllSides media bias chart shows need for diverse perspectives"
+        },
+        {
+          "url": "https://www.pewresearch.org/journalism/",
+          "explanation": "Pew Research shows public trust in media declining due to bias concerns"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.495Z"
+        }
+      ],
+      "upvoteCount": 2,
+      "downvoteCount": 4,
+      "stance": "in_favor",
+      "score": -2,
+      "createdAt": "2025-10-15T17:45:43.495Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68c16e9f668b85be36b1a299",
+      "comment": "While I don't agree with everything here, this article does highlight some legitimate concerns that have been raised by credible sources in the past.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.propublica.org/",
+          "explanation": "ProPublica investigative reporting has raised similar concerns"
+        },
+        {
+          "url": "https://www.opensecrets.org/",
+          "explanation": "OpenSecrets tracking shows patterns that support some claims made"
+        },
+        {
+          "url": "https://www.followthemoney.org/",
+          "explanation": "Follow the Money database provides context for financial claims"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "stance": "in_favor",
+      "score": 4,
+      "createdAt": "2025-10-15T17:45:43.496Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9720b6f49e167ec09eef",
+      "comment": "This perspective, while controversial, represents views held by a significant portion of the population. Dismissing these concerns outright isn't constructive.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.pewresearch.org/",
+          "explanation": "Pew Research polling shows these views are held by substantial numbers of people"
+        },
+        {
+          "url": "https://www.gallup.com/",
+          "explanation": "Gallup polling data indicates widespread public concern about these issues"
+        },
+        {
+          "url": "https://www.publicpolicypolling.com/",
+          "explanation": "Public Policy Polling shows significant support for investigating these claims"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.496Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "in_favor",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.497Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "The article raises questions about official narratives that deserve investigation. Healthy skepticism of authority is an important part of democratic discourse.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.brennancenter.org/",
+          "explanation": "Brennan Center for Justice supports the importance of government transparency"
+        },
+        {
+          "url": "https://www.aclu.org/",
+          "explanation": "ACLU advocacy for transparency aligns with article's call for accountability"
+        },
+        {
+          "url": "https://www.eff.org/",
+          "explanation": "Electronic Frontier Foundation supports citizen oversight of government activities"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "While this perspective exists, the evidence could be stronger",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Important analysis that helps readers understand the full context",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.497Z"
+        }
+      ],
+      "upvoteCount": 3,
+      "downvoteCount": 3,
+      "stance": "in_favor",
+      "score": 0,
+      "createdAt": "2025-10-15T17:45:43.497Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "687e894eb0941c5f0c4e7478",
+      "comment": "Some of the connections drawn here are thought-provoking, even if the conclusions are debatable. Independent research into these topics could be valuable.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.investigativereportingworkshop.org/",
+          "explanation": "Investigative Reporting Workshop emphasizes importance of independent research"
+        },
+        {
+          "url": "https://www.icij.org/",
+          "explanation": "International Consortium of Investigative Journalists supports thorough investigation"
+        },
+        {
+          "url": "https://www.revealnews.org/",
+          "explanation": "Reveal News emphasizes the value of following financial and political connections"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "downvote",
+          "explanation": "The argument has some merit but lacks comprehensive analysis",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        }
+      ],
+      "upvoteCount": 2,
+      "downvoteCount": 4,
+      "stance": "in_favor",
+      "score": -2,
+      "createdAt": "2025-10-15T17:45:43.498Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "While the tone may be inflammatory, this article does cite some concerning patterns that warrant further examination by qualified researchers.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.sunlightfoundation.com/",
+          "explanation": "Sunlight Foundation archived work supports need for pattern analysis in politics"
+        },
+        {
+          "url": "https://www.maplight.org/",
+          "explanation": "MapLight research shows importance of tracking political and financial connections"
+        },
+        {
+          "url": "https://www.opensecrets.org/",
+          "explanation": "OpenSecrets methodology supports examining financial patterns in politics"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-researched response that addresses key misconceptions",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Provides necessary counter-perspective with solid evidence",
+          "votedAt": "2025-10-15T17:45:43.498Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "in_favor",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.498Z"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "commenter": "68ca7655aa2d3e4f8e92763b",
+      "comment": "This article reflects genuine concerns shared by many citizens about institutional accountability. These concerns shouldn't be dismissed without proper investigation.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.edelman.com/trust-barometer",
+          "explanation": "Edelman Trust Barometer shows declining institutional trust among citizens"
+        },
+        {
+          "url": "https://www.pewresearch.org/politics/",
+          "explanation": "Pew Research documents widespread skepticism about institutional transparency"
+        },
+        {
+          "url": "https://www.gallup.com/poll/1597/confidence-institutions.aspx",
+          "explanation": "Gallup confidence in institutions polling supports need for greater accountability"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68999547755405f4385b5338",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Interesting viewpoint that deserves further investigation",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Helpful clarification that adds to the discussion quality",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Valid concerns raised but more context would be helpful",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable fact-checking with credible sources",
+          "votedAt": "2025-10-15T17:45:43.499Z"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 2,
+      "stance": "in_favor",
+      "score": 2,
+      "createdAt": "2025-10-15T17:45:43.499Z"
+    }
+  ],
+  "statistics": {
+    "totalComments": 20,
+    "againstComments": 12,
+    "inFavorComments": 8,
+    "averageScore": 2.3,
+    "totalExpertVotes": 120
+  }
+}

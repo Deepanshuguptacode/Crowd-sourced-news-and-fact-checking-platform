@@ -1,0 +1,2551 @@
+{
+  "newsId": "68ef91f03bda87128d26e24a",
+  "newsTitle": "President Obama Vetoes 9/11 Victims Bill, Setting Up Showdown With Congress",
+  "totalComments": 20,
+  "inFavorComments": 12,
+  "againstComments": 8,
+  "commentGroups": {
+    "credibleSources": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef8",
+        "comment": "The expert opinions included provide valuable insights and the diversity of sources ensures a comprehensive perspective on the issue.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.spj.org/ethicscode.asp",
+            "explanation": "Society of Professional Journalists code of ethics on source verification",
+            "addedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6894"
+          },
+          {
+            "url": "https://www.bbc.com/academy/en/articles/art20130702112133549",
+            "explanation": "BBC Academy guidelines on expert source selection and verification",
+            "addedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6895"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6896"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6897"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6898"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b6899"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b689a"
+          }
+        ],
+        "upvoteCount": 4,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.244Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b6893",
+        "__v": 0,
+        "groupName": "credibleSources",
+        "stance": "in_favor"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "The sources quoted in this article are highly credible and well-respected in their fields. The journalist has clearly done their due diligence in finding authoritative voices.",
+        "evidenceLinks": [
+          {
+            "url": "https://guides.lib.berkeley.edu/c.php?g=83917&p=539735",
+            "explanation": "UC Berkeley guide on evaluating source credibility",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c8"
+          },
+          {
+            "url": "https://www.apa.org/science/about/psa/2017/08/reliable-sources",
+            "explanation": "APA guidelines on identifying reliable and credible sources",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c9"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68ca"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68cb"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68cc"
+          }
+        ],
+        "upvoteCount": 3,
+        "downvoteCount": 0,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68c7",
+        "__v": 0,
+        "groupName": "credibleSources",
+        "stance": "in_favor"
+      }
+    ],
+    "importance": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09efb",
+        "comment": "This story addresses a critical issue that affects many people. The public has a right to know about these developments and this article serves the important role of keeping citizens informed.",
+        "evidenceLinks": [
+          {
+            "url": "https://freedomhouse.org/report/freedom-world/2021/democracy-under-siege",
+            "explanation": "Freedom House report on the importance of press freedom and public information",
+            "addedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b689d"
+          },
+          {
+            "url": "https://www.un.org/en/universal-declaration-human-rights/",
+            "explanation": "UN Declaration on the right to freedom of information and expression",
+            "addedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b689e"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b689f"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a0"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a1"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a2"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a3"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 0,
+        "createdAt": "2025-10-15T13:15:26.244Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b689c",
+        "__v": 0,
+        "groupName": "importance",
+        "stance": "in_favor"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef2",
+        "comment": "The relevance of this topic to current events cannot be overstated. This reporting provides valuable context that helps readers understand broader societal implications.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.pewresearch.org/journalism/",
+            "explanation": "Pew Research on the role of journalism in informing public discourse",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d8"
+          },
+          {
+            "url": "https://www.niemanlab.org/2021/12/the-public-interest-in-local-news/",
+            "explanation": "Nieman Lab analysis on public interest journalism",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d9"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68da"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68db"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68dc"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68dd"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68de"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68d7",
+        "__v": 0,
+        "groupName": "importance",
+        "stance": "in_favor"
+      }
+    ],
+    "strongSupport": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "This is exactly the kind of investigative journalism we need! The detailed analysis and thorough research behind this article makes it incredibly valuable for understanding the current situation.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.journalism.org/fact-sheet/newspapers/",
+            "explanation": "Pew Research data shows the importance of investigative journalism in democracy",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68a6"
+          },
+          {
+            "url": "https://www.poynter.org/reporting-editing/2019/why-investigative-journalism-matters/",
+            "explanation": "Expert analysis on the critical role of investigative reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68a7"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a8"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.244Z",
+            "_id": "68ef9e6ea3afd176790b68a9"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68aa"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68ab"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68ac"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68a5",
+        "__v": 0,
+        "groupName": "strongSupport",
+        "stance": "in_favor"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef8",
+        "comment": "Excellent reporting that brings important facts to light. The sources cited are credible and the analysis is well-balanced, providing readers with the information they need to form informed opinions.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.reuters.com/fact-check/",
+            "explanation": "Reuters fact-checking standards demonstrate quality journalism practices",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ea"
+          },
+          {
+            "url": "https://www.cjr.org/analysis/trust-in-journalism.php",
+            "explanation": "Columbia Journalism Review on building trust through quality reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68eb"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ec"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ed"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ee"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ef"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f0"
+          }
+        ],
+        "upvoteCount": 4,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b68e9",
+        "__v": 0,
+        "groupName": "strongSupport",
+        "stance": "in_favor"
+      }
+    ],
+    "wellResearched": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9720b6f49e167ec09eef",
+        "comment": "The depth of research evident in this piece is impressive. The journalist has clearly spent considerable time investigating all angles of this story.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.ire.org/training/conferences/",
+            "explanation": "Investigative Reporters and Editors guidelines on thorough research methods",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68af"
+          },
+          {
+            "url": "https://www.poynter.org/reporting-editing/2018/how-to-research-like-a-pro/",
+            "explanation": "Poynter Institute guide on professional research techniques",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b0"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b1"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b2"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b3"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b4"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b5"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68ae",
+        "__v": 0,
+        "groupName": "wellResearched",
+        "stance": "in_favor"
+      }
+    ],
+    "publicInterest": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9720b6f49e167ec09eef",
+        "comment": "This article serves the public interest by exposing important information that citizens need to make informed decisions about their community and country.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.cpj.org/2018/09/attacks-on-the-press-public-interest-journalism/",
+            "explanation": "Committee to Protect Journalists on the importance of public interest reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b8"
+          },
+          {
+            "url": "https://www.propublica.org/about/",
+            "explanation": "ProPublica's mission statement on public interest journalism",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68b9"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68ba"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68bb"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68bc"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68bd"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68be"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 0,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68b7",
+        "__v": 0,
+        "groupName": "publicInterest",
+        "stance": "in_favor"
+      }
+    ],
+    "balancedReporting": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9720b6f49e167ec09eef",
+        "comment": "The balanced approach taken in this article is commendable. Multiple perspectives are presented fairly, allowing readers to form their own conclusions based on comprehensive information.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.bbc.com/academy/en/articles/art20130702112133616",
+            "explanation": "BBC Academy standards on balanced and impartial reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c1"
+          },
+          {
+            "url": "https://www.reuters.com/investigates/special-report/myanmar-facebook-hate/",
+            "explanation": "Example of balanced investigative reporting from Reuters",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c2"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c3"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c4"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68c5"
+          }
+        ],
+        "upvoteCount": 3,
+        "downvoteCount": 0,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68c0",
+        "__v": 0,
+        "groupName": "balancedReporting",
+        "stance": "in_favor"
+      }
+    ],
+    "factualValidation": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "The data and statistics mentioned are accurate and properly sourced. This level of fact-checking is what distinguishes quality journalism from misinformation.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.snopes.com/fact-check/",
+            "explanation": "Snopes verification database confirming factual accuracy",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68cf"
+          },
+          {
+            "url": "https://fullfact.org/about/our-standards/",
+            "explanation": "Full Fact's standards for factual verification and accuracy",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d0"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d1"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d2"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d3"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d4"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68d5"
+          }
+        ],
+        "upvoteCount": 4,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68ce",
+        "__v": 0,
+        "groupName": "factualValidation",
+        "stance": "in_favor"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef8",
+        "comment": "All the facts presented in this article check out. I've cross-referenced the information with multiple reliable sources and found consistent reporting across the board.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.factcheck.org/our-process/",
+            "explanation": "FactCheck.org methodology for verifying information accuracy",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f3"
+          },
+          {
+            "url": "https://apnews.com/hub/ap-fact-check",
+            "explanation": "Associated Press fact-checking standards and verification process",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f4"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f5"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f6"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f7"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f8"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68f9"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 0,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b68f2",
+        "__v": 0,
+        "groupName": "factualValidation",
+        "stance": "in_favor"
+      }
+    ],
+    "timelyCoverage": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef2",
+        "comment": "This is exactly the kind of timely reporting we need on current events. The article provides up-to-date information that helps readers stay informed about developing situations.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.americanpressinstitute.org/journalism-essentials/what-is-journalism/elements-journalism/",
+            "explanation": "American Press Institute on the importance of timely, accurate reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e1"
+          },
+          {
+            "url": "https://www.niemanlab.org/2020/03/breaking-news-vs-developing-stories/",
+            "explanation": "Nieman Lab analysis on the importance of timely news coverage",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e2"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e3"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e4"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e5"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e6"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6ea3afd176790b68e7"
+          }
+        ],
+        "upvoteCount": 5,
+        "downvoteCount": 1,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6ea3afd176790b68e0",
+        "__v": 0,
+        "groupName": "timelyCoverage",
+        "stance": "in_favor"
+      }
+    ],
+    "misleadingHeadlines": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "The headline doesn't accurately represent the content of the article. This kind of misleading framing can contribute to misinformation and reader confusion.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.poynter.org/reporting-editing/2019/how-to-write-headlines-that-work/",
+            "explanation": "Poynter Institute guide on accurate and ethical headline writing",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68fc"
+          },
+          {
+            "url": "https://www.cjr.org/analysis/headlines-clickbait-journalism.php",
+            "explanation": "Columbia Journalism Review on the problem of misleading headlines",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68fd"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68fe"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b68ff"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6900"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6901"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 3,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b68fb",
+        "__v": 0,
+        "groupName": "misleadingHeadlines",
+        "stance": "against"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "The sensationalized headline creates expectations that the article content doesn't fulfill. More accurate headline writing would better serve readers.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.niemanlab.org/2020/01/headlines-matter-more-than-ever/",
+            "explanation": "Nieman Lab analysis on the importance of accurate headlines",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6916"
+          },
+          {
+            "url": "https://www.americanpressinstitute.org/journalism-essentials/bias-objectivity/",
+            "explanation": "API guidance on avoiding bias in headlines and framing",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6917"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6918"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6919"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b691a"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b691b"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b691c"
+          }
+        ],
+        "upvoteCount": 2,
+        "downvoteCount": 3,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b6915",
+        "__v": 0,
+        "groupName": "misleadingHeadlines",
+        "stance": "against"
+      }
+    ],
+    "biasedReporting": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef5",
+        "comment": "This article seems to have a clear bias and doesn't present opposing viewpoints fairly. The language used suggests the author has already reached a conclusion before presenting all the facts.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.allsides.com/media-bias/media-bias-101",
+            "explanation": "AllSides guide on identifying media bias in reporting",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6904"
+          },
+          {
+            "url": "https://guides.lib.umich.edu/c.php?g=637508&p=4462444",
+            "explanation": "University of Michigan guide on recognizing bias in news sources",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6905"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6906"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6907"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6908"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6909"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "downvote",
+            "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b690a"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 4,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b6903",
+        "__v": 0,
+        "groupName": "biasedReporting",
+        "stance": "against"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09efb",
+        "comment": "The selective use of sources and quotes gives this piece a one-sided perspective that doesn't serve readers well. More balanced reporting would strengthen the credibility.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.fair.org/bias-basics/",
+            "explanation": "Fairness & Accuracy in Reporting (FAIR) guide on media bias detection",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b691f"
+          },
+          {
+            "url": "https://www.cjr.org/criticism/bias-impartiality-objectivity.php",
+            "explanation": "Columbia Journalism Review on bias and objectivity in journalism",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6920"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "upvote",
+            "explanation": "The evidence provided supports the commenter's perspective effectively.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6921"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6922"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6923"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6924"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6925"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 4,
+        "createdAt": "2025-10-15T13:15:26.246Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b691e",
+        "__v": 0,
+        "groupName": "biasedReporting",
+        "stance": "against"
+      }
+    ],
+    "sensationalism": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09efb",
+        "comment": "This article relies too heavily on sensational language rather than factual reporting. The dramatic tone detracts from the important underlying issues.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.fair.org/extra/sensationalism-vs-journalism/",
+            "explanation": "FAIR analysis on the difference between sensationalism and quality journalism",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b690d"
+          },
+          {
+            "url": "https://www.cjr.org/criticism/sensationalism-news-media.php",
+            "explanation": "Columbia Journalism Review critique of sensationalism in news media",
+            "addedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b690e"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b690f"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "downvote",
+            "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6910"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6911"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6912"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.245Z",
+            "_id": "68ef9e6fa3afd176790b6913"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 4,
+        "createdAt": "2025-10-15T13:15:26.245Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b690c",
+        "__v": 0,
+        "groupName": "sensationalism",
+        "stance": "against"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09ef2",
+        "comment": "The focus on shocking details overshadows the need for careful analysis and context. More measured reporting would better serve the public interest.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.poynter.org/ethics-trust/2018/sensationalism-in-journalism/",
+            "explanation": "Poynter Institute discussion on avoiding sensationalism in reporting",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6939"
+          },
+          {
+            "url": "https://www.spj.org/ethicscode.asp",
+            "explanation": "Society of Professional Journalists ethics code on responsible reporting",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693a"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693b"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693c"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693d"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693e"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "downvote",
+            "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b693f"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 4,
+        "createdAt": "2025-10-15T13:15:26.246Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b6938",
+        "__v": 0,
+        "groupName": "sensationalism",
+        "stance": "against"
+      }
+    ],
+    "incompleteInformation": [
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09efb",
+        "comment": "While this article touches on an important topic, it feels incomplete. Several key aspects of the story are left unexplored, and important context is missing.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.poynter.org/reporting-editing/2017/what-makes-a-good-story/",
+            "explanation": "Poynter Institute on comprehensive storytelling in journalism",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6928"
+          },
+          {
+            "url": "https://www.americanpressinstitute.org/journalism-essentials/verification-accuracy/",
+            "explanation": "American Press Institute on thorough verification and completeness",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6929"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "upvote",
+            "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b692a"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b692b"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b692c"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b692d"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 3,
+        "createdAt": "2025-10-15T13:15:26.246Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b6927",
+        "__v": 0,
+        "groupName": "incompleteInformation",
+        "stance": "against"
+      },
+      {
+        "newsId": "68ef91f03bda87128d26e24a",
+        "commenter": "68ef9721b6f49e167ec09efb",
+        "comment": "The article raises more questions than it answers. Key details about methodology and additional sources would help readers better understand the full picture.",
+        "evidenceLinks": [
+          {
+            "url": "https://www.spj.org/ethicscode.asp",
+            "explanation": "SPJ Code of Ethics on providing complete and accurate information",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6930"
+          },
+          {
+            "url": "https://www.cjr.org/analysis/transparency-journalism.php",
+            "explanation": "Columbia Journalism Review on transparency in reporting",
+            "addedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6931"
+          }
+        ],
+        "expertVotes": [
+          {
+            "expert": "68ef9723b6f49e167ec09f0a",
+            "voteType": "upvote",
+            "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6932"
+          },
+          {
+            "expert": "68ef9723b6f49e167ec09f07",
+            "voteType": "downvote",
+            "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6933"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f01",
+            "voteType": "downvote",
+            "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6934"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09efe",
+            "voteType": "downvote",
+            "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6935"
+          },
+          {
+            "expert": "68ef9722b6f49e167ec09f04",
+            "voteType": "downvote",
+            "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+            "votedAt": "2025-10-15T13:15:26.246Z",
+            "_id": "68ef9e6fa3afd176790b6936"
+          }
+        ],
+        "upvoteCount": 1,
+        "downvoteCount": 4,
+        "createdAt": "2025-10-15T13:15:26.246Z",
+        "isProcessedForFiltering": false,
+        "filterGroupId": null,
+        "_id": "68ef9e6fa3afd176790b692f",
+        "__v": 0,
+        "groupName": "incompleteInformation",
+        "stance": "against"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef8",
+      "comment": "The expert opinions included provide valuable insights and the diversity of sources ensures a comprehensive perspective on the issue.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.spj.org/ethicscode.asp",
+          "explanation": "Society of Professional Journalists code of ethics on source verification",
+          "addedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6894"
+        },
+        {
+          "url": "https://www.bbc.com/academy/en/articles/art20130702112133549",
+          "explanation": "BBC Academy guidelines on expert source selection and verification",
+          "addedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6895"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6896"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6897"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6898"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b6899"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b689a"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.244Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b6893",
+      "__v": 0,
+      "groupName": "credibleSources",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "This story addresses a critical issue that affects many people. The public has a right to know about these developments and this article serves the important role of keeping citizens informed.",
+      "evidenceLinks": [
+        {
+          "url": "https://freedomhouse.org/report/freedom-world/2021/democracy-under-siege",
+          "explanation": "Freedom House report on the importance of press freedom and public information",
+          "addedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b689d"
+        },
+        {
+          "url": "https://www.un.org/en/universal-declaration-human-rights/",
+          "explanation": "UN Declaration on the right to freedom of information and expression",
+          "addedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b689e"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b689f"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a0"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a1"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a2"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a3"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 0,
+      "createdAt": "2025-10-15T13:15:26.244Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b689c",
+      "__v": 0,
+      "groupName": "importance",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "This is exactly the kind of investigative journalism we need! The detailed analysis and thorough research behind this article makes it incredibly valuable for understanding the current situation.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.journalism.org/fact-sheet/newspapers/",
+          "explanation": "Pew Research data shows the importance of investigative journalism in democracy",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68a6"
+        },
+        {
+          "url": "https://www.poynter.org/reporting-editing/2019/why-investigative-journalism-matters/",
+          "explanation": "Expert analysis on the critical role of investigative reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68a7"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a8"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.244Z",
+          "_id": "68ef9e6ea3afd176790b68a9"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68aa"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68ab"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68ac"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68a5",
+      "__v": 0,
+      "groupName": "strongSupport",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9720b6f49e167ec09eef",
+      "comment": "The depth of research evident in this piece is impressive. The journalist has clearly spent considerable time investigating all angles of this story.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.ire.org/training/conferences/",
+          "explanation": "Investigative Reporters and Editors guidelines on thorough research methods",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68af"
+        },
+        {
+          "url": "https://www.poynter.org/reporting-editing/2018/how-to-research-like-a-pro/",
+          "explanation": "Poynter Institute guide on professional research techniques",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b0"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b1"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b2"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b3"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b4"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b5"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68ae",
+      "__v": 0,
+      "groupName": "wellResearched",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9720b6f49e167ec09eef",
+      "comment": "This article serves the public interest by exposing important information that citizens need to make informed decisions about their community and country.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.cpj.org/2018/09/attacks-on-the-press-public-interest-journalism/",
+          "explanation": "Committee to Protect Journalists on the importance of public interest reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b8"
+        },
+        {
+          "url": "https://www.propublica.org/about/",
+          "explanation": "ProPublica's mission statement on public interest journalism",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68b9"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68ba"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68bb"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68bc"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68bd"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68be"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 0,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68b7",
+      "__v": 0,
+      "groupName": "publicInterest",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9720b6f49e167ec09eef",
+      "comment": "The balanced approach taken in this article is commendable. Multiple perspectives are presented fairly, allowing readers to form their own conclusions based on comprehensive information.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.bbc.com/academy/en/articles/art20130702112133616",
+          "explanation": "BBC Academy standards on balanced and impartial reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c1"
+        },
+        {
+          "url": "https://www.reuters.com/investigates/special-report/myanmar-facebook-hate/",
+          "explanation": "Example of balanced investigative reporting from Reuters",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c2"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c3"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c4"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c5"
+        }
+      ],
+      "upvoteCount": 3,
+      "downvoteCount": 0,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68c0",
+      "__v": 0,
+      "groupName": "balancedReporting",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "The sources quoted in this article are highly credible and well-respected in their fields. The journalist has clearly done their due diligence in finding authoritative voices.",
+      "evidenceLinks": [
+        {
+          "url": "https://guides.lib.berkeley.edu/c.php?g=83917&p=539735",
+          "explanation": "UC Berkeley guide on evaluating source credibility",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c8"
+        },
+        {
+          "url": "https://www.apa.org/science/about/psa/2017/08/reliable-sources",
+          "explanation": "APA guidelines on identifying reliable and credible sources",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68c9"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68ca"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68cb"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68cc"
+        }
+      ],
+      "upvoteCount": 3,
+      "downvoteCount": 0,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68c7",
+      "__v": 0,
+      "groupName": "credibleSources",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "The data and statistics mentioned are accurate and properly sourced. This level of fact-checking is what distinguishes quality journalism from misinformation.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.snopes.com/fact-check/",
+          "explanation": "Snopes verification database confirming factual accuracy",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68cf"
+        },
+        {
+          "url": "https://fullfact.org/about/our-standards/",
+          "explanation": "Full Fact's standards for factual verification and accuracy",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d0"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d1"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d2"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d3"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d4"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d5"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68ce",
+      "__v": 0,
+      "groupName": "factualValidation",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "The relevance of this topic to current events cannot be overstated. This reporting provides valuable context that helps readers understand broader societal implications.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.pewresearch.org/journalism/",
+          "explanation": "Pew Research on the role of journalism in informing public discourse",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d8"
+        },
+        {
+          "url": "https://www.niemanlab.org/2021/12/the-public-interest-in-local-news/",
+          "explanation": "Nieman Lab analysis on public interest journalism",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68d9"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68da"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68db"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68dc"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68dd"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68de"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68d7",
+      "__v": 0,
+      "groupName": "importance",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "This is exactly the kind of timely reporting we need on current events. The article provides up-to-date information that helps readers stay informed about developing situations.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.americanpressinstitute.org/journalism-essentials/what-is-journalism/elements-journalism/",
+          "explanation": "American Press Institute on the importance of timely, accurate reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e1"
+        },
+        {
+          "url": "https://www.niemanlab.org/2020/03/breaking-news-vs-developing-stories/",
+          "explanation": "Nieman Lab analysis on the importance of timely news coverage",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e2"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e3"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e4"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e5"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e6"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6ea3afd176790b68e7"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6ea3afd176790b68e0",
+      "__v": 0,
+      "groupName": "timelyCoverage",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef8",
+      "comment": "Excellent reporting that brings important facts to light. The sources cited are credible and the analysis is well-balanced, providing readers with the information they need to form informed opinions.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.reuters.com/fact-check/",
+          "explanation": "Reuters fact-checking standards demonstrate quality journalism practices",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ea"
+        },
+        {
+          "url": "https://www.cjr.org/analysis/trust-in-journalism.php",
+          "explanation": "Columbia Journalism Review on building trust through quality reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68eb"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ec"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ed"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ee"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ef"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f0"
+        }
+      ],
+      "upvoteCount": 4,
+      "downvoteCount": 1,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b68e9",
+      "__v": 0,
+      "groupName": "strongSupport",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef8",
+      "comment": "All the facts presented in this article check out. I've cross-referenced the information with multiple reliable sources and found consistent reporting across the board.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.factcheck.org/our-process/",
+          "explanation": "FactCheck.org methodology for verifying information accuracy",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f3"
+        },
+        {
+          "url": "https://apnews.com/hub/ap-fact-check",
+          "explanation": "Associated Press fact-checking standards and verification process",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f4"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f5"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f6"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f7"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f8"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Constructive feedback that helps readers understand different perspectives on the topic.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68f9"
+        }
+      ],
+      "upvoteCount": 5,
+      "downvoteCount": 0,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b68f2",
+      "__v": 0,
+      "groupName": "factualValidation",
+      "stance": "in_favor"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "The headline doesn't accurately represent the content of the article. This kind of misleading framing can contribute to misinformation and reader confusion.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.poynter.org/reporting-editing/2019/how-to-write-headlines-that-work/",
+          "explanation": "Poynter Institute guide on accurate and ethical headline writing",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68fc"
+        },
+        {
+          "url": "https://www.cjr.org/analysis/headlines-clickbait-journalism.php",
+          "explanation": "Columbia Journalism Review on the problem of misleading headlines",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68fd"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68fe"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b68ff"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6900"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6901"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 3,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b68fb",
+      "__v": 0,
+      "groupName": "misleadingHeadlines",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "This article seems to have a clear bias and doesn't present opposing viewpoints fairly. The language used suggests the author has already reached a conclusion before presenting all the facts.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.allsides.com/media-bias/media-bias-101",
+          "explanation": "AllSides guide on identifying media bias in reporting",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6904"
+        },
+        {
+          "url": "https://guides.lib.umich.edu/c.php?g=637508&p=4462444",
+          "explanation": "University of Michigan guide on recognizing bias in news sources",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6905"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "This comment provides valuable insight and demonstrates critical thinking about the article.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6906"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6907"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6908"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6909"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b690a"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 4,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b6903",
+      "__v": 0,
+      "groupName": "biasedReporting",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "This article relies too heavily on sensational language rather than factual reporting. The dramatic tone detracts from the important underlying issues.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.fair.org/extra/sensationalism-vs-journalism/",
+          "explanation": "FAIR analysis on the difference between sensationalism and quality journalism",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b690d"
+        },
+        {
+          "url": "https://www.cjr.org/criticism/sensationalism-news-media.php",
+          "explanation": "Columbia Journalism Review critique of sensationalism in news media",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b690e"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b690f"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6910"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6911"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6912"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6913"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 4,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b690c",
+      "__v": 0,
+      "groupName": "sensationalism",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef5",
+      "comment": "The sensationalized headline creates expectations that the article content doesn't fulfill. More accurate headline writing would better serve readers.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.niemanlab.org/2020/01/headlines-matter-more-than-ever/",
+          "explanation": "Nieman Lab analysis on the importance of accurate headlines",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6916"
+        },
+        {
+          "url": "https://www.americanpressinstitute.org/journalism-essentials/bias-objectivity/",
+          "explanation": "API guidance on avoiding bias in headlines and framing",
+          "addedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6917"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6918"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b6919"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b691a"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b691b"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.245Z",
+          "_id": "68ef9e6fa3afd176790b691c"
+        }
+      ],
+      "upvoteCount": 2,
+      "downvoteCount": 3,
+      "createdAt": "2025-10-15T13:15:26.245Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b6915",
+      "__v": 0,
+      "groupName": "misleadingHeadlines",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "The selective use of sources and quotes gives this piece a one-sided perspective that doesn't serve readers well. More balanced reporting would strengthen the credibility.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.fair.org/bias-basics/",
+          "explanation": "Fairness & Accuracy in Reporting (FAIR) guide on media bias detection",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b691f"
+        },
+        {
+          "url": "https://www.cjr.org/criticism/bias-impartiality-objectivity.php",
+          "explanation": "Columbia Journalism Review on bias and objectivity in journalism",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6920"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "upvote",
+          "explanation": "The evidence provided supports the commenter's perspective effectively.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6921"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6922"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6923"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6924"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6925"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 4,
+      "createdAt": "2025-10-15T13:15:26.246Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b691e",
+      "__v": 0,
+      "groupName": "biasedReporting",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "While this article touches on an important topic, it feels incomplete. Several key aspects of the story are left unexplored, and important context is missing.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.poynter.org/reporting-editing/2017/what-makes-a-good-story/",
+          "explanation": "Poynter Institute on comprehensive storytelling in journalism",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6928"
+        },
+        {
+          "url": "https://www.americanpressinstitute.org/journalism-essentials/verification-accuracy/",
+          "explanation": "American Press Institute on thorough verification and completeness",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6929"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "upvote",
+          "explanation": "This comment demonstrates good media literacy and fact-checking practices.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b692a"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b692b"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b692c"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b692d"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 3,
+      "createdAt": "2025-10-15T13:15:26.246Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b6927",
+      "__v": 0,
+      "groupName": "incompleteInformation",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09efb",
+      "comment": "The article raises more questions than it answers. Key details about methodology and additional sources would help readers better understand the full picture.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.spj.org/ethicscode.asp",
+          "explanation": "SPJ Code of Ethics on providing complete and accurate information",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6930"
+        },
+        {
+          "url": "https://www.cjr.org/analysis/transparency-journalism.php",
+          "explanation": "Columbia Journalism Review on transparency in reporting",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6931"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6932"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6933"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6934"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Claims made without sufficient evidence or proper sourcing to support the argument.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6935"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "The tone is unnecessarily harsh and doesn't contribute to productive dialogue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6936"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 4,
+      "createdAt": "2025-10-15T13:15:26.246Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b692f",
+      "__v": 0,
+      "groupName": "incompleteInformation",
+      "stance": "against"
+    },
+    {
+      "newsId": "68ef91f03bda87128d26e24a",
+      "commenter": "68ef9721b6f49e167ec09ef2",
+      "comment": "The focus on shocking details overshadows the need for careful analysis and context. More measured reporting would better serve the public interest.",
+      "evidenceLinks": [
+        {
+          "url": "https://www.poynter.org/ethics-trust/2018/sensationalism-in-journalism/",
+          "explanation": "Poynter Institute discussion on avoiding sensationalism in reporting",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b6939"
+        },
+        {
+          "url": "https://www.spj.org/ethicscode.asp",
+          "explanation": "Society of Professional Journalists ethics code on responsible reporting",
+          "addedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693a"
+        }
+      ],
+      "expertVotes": [
+        {
+          "expert": "68ef9723b6f49e167ec09f07",
+          "voteType": "upvote",
+          "explanation": "Well-reasoned analysis with credible supporting evidence. Adds to the discussion quality.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693b"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f01",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693c"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09f04",
+          "voteType": "downvote",
+          "explanation": "The criticism lacks constructive elements and doesn't advance meaningful discussion.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693d"
+        },
+        {
+          "expert": "68ef9722b6f49e167ec09efe",
+          "voteType": "downvote",
+          "explanation": "Overly biased perspective that doesn't acknowledge complexity of the issue.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693e"
+        },
+        {
+          "expert": "68ef9723b6f49e167ec09f0a",
+          "voteType": "downvote",
+          "explanation": "Factual inaccuracies undermine the validity of the points being made.",
+          "votedAt": "2025-10-15T13:15:26.246Z",
+          "_id": "68ef9e6fa3afd176790b693f"
+        }
+      ],
+      "upvoteCount": 1,
+      "downvoteCount": 4,
+      "createdAt": "2025-10-15T13:15:26.246Z",
+      "isProcessedForFiltering": false,
+      "filterGroupId": null,
+      "_id": "68ef9e6fa3afd176790b6938",
+      "__v": 0,
+      "groupName": "sensationalism",
+      "stance": "against"
+    }
+  ]
+}

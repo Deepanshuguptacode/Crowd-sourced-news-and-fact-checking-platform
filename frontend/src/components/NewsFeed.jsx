@@ -175,12 +175,26 @@ const NewsFeed = () => {
             ...((item.comments?.community || []).map(c => ({
               text: c.comment,
               type: 'community',
-              username: c.commenter?.username || 'Anonymous'
+              username: c.commenter?.username || 'Anonymous',
+              _id: c._id,
+              stance: c.stance, // Include stance field
+              evidenceLinks: c.evidenceLinks || [],
+              expertVotes: c.expertVotes || [],
+              upvoteCount: c.upvoteCount || 0,
+              downvoteCount: c.downvoteCount || 0,
+              createdAt: c.createdAt
             }))),
             ...((item.comments?.expert || []).map(c => ({
               text: c.comment,
               type: 'expert',
-              username: c.expert?.username || 'Expert'
+              username: c.expert?.username || 'Expert',
+              _id: c._id,
+              stance: c.stance, // Include stance field
+              evidenceLinks: c.evidenceLinks || [],
+              expertVotes: c.expertVotes || [],
+              upvoteCount: c.upvoteCount || 0,
+              downvoteCount: c.downvoteCount || 0,
+              createdAt: c.createdAt
             })))
           ];
 

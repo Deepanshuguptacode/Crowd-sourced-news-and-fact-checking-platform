@@ -1,0 +1,103 @@
+{
+  "timestamp": "2025-10-15T17:49:34.027Z",
+  "summary": {
+    "projectComplete": false,
+    "fakeNewsProcessed": 5,
+    "totalCommentsCreated": 100,
+    "commentGroupsCreated": 55,
+    "commentFiltersCreated": 100,
+    "evidenceLinksAdded": 300,
+    "expertVotesRecorded": 600,
+    "successRate": "87.5%"
+  },
+  "details": {
+    "news": {
+      "totalNews": 22,
+      "targetFakeNews": 5,
+      "processedNews": [
+        {
+          "id": "68ef91ef3bda87128d26e22c",
+          "title": "Proof The Mainstream Media Is Manipulating The Election By Taking Bill Clinton Out Of Context"
+        },
+        {
+          "id": "68ef91ef3bda87128d26e22e",
+          "title": "Charity: Clinton Foundation Distributed “Watered-Down” AIDS Drugs to Sub-Saharan Africa – Eagle Rising"
+        },
+        {
+          "id": "68ef91ef3bda87128d26e232",
+          "title": "A Hillary Clinton Administration May be Entirely Run by a FIGUREHEAD – Eagle Rising"
+        },
+        {
+          "id": "68ef91ef3bda87128d26e234",
+          "title": "Trump’s Latest Campaign Promise May Be His Most Horrible One Yet"
+        },
+        {
+          "id": "68ef91ef3bda87128d26e238",
+          "title": "Obama Pushes One World Government"
+        }
+      ]
+    },
+    "comments": {
+      "totalComments": 300,
+      "targetNewsComments": 100,
+      "againstComments": 60,
+      "inFavorComments": 40,
+      "againstCommentsWithRequiredUpvotes": 57,
+      "upvoteRequirementMet": false
+    },
+    "groups": {
+      "totalGroups": 180,
+      "targetNewsGroups": 55,
+      "groupsWithComments": 55,
+      "groupDistribution": {
+        "Fact-Checking Discussion": 15,
+        "Source Credibility Analysis": 5,
+        "Bias and Journalism Standards": 10,
+        "Historical Context Verification": 10,
+        "Statistical Data Analysis": 5,
+        "Conspiracy Theory Assessment": 15,
+        "Quote and Attribution Verification": 5,
+        "Public Health and Safety Concerns": 5,
+        "Economic Claims Analysis": 5,
+        "Alternative Perspectives": 15,
+        "Accountability and Transparency": 10
+      }
+    },
+    "filters": {
+      "totalFilters": 158,
+      "targetNewsFilters": 100,
+      "filterCommentMapping": true
+    },
+    "users": {
+      "communityUsers": 14,
+      "expertUsers": 6
+    },
+    "evidence": {
+      "totalEvidenceLinks": 300,
+      "averageLinksPerComment": 3
+    },
+    "expertVoting": {
+      "totalExpertVotes": 600,
+      "totalUpvotes": 380,
+      "totalDownvotes": 220,
+      "expectedVotes": 600,
+      "votingComplete": true
+    }
+  },
+  "verification": {
+    "requirements": {
+      "20CommentsPerNews": true,
+      "12AgainstComments": true,
+      "8InFavorComments": true,
+      "AgainstComments3PlusUpvotes": false,
+      "CommentGroupsCreated": true,
+      "CommentFiltersCreated": true,
+      "ExpertVotingComplete": true,
+      "EvidenceLinksPresent": true
+    },
+    "passedRequirements": 7,
+    "totalRequirements": 8,
+    "successRate": 87.5
+  },
+  "statistics": {}
+}

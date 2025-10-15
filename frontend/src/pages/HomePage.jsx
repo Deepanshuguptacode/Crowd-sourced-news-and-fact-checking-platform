@@ -49,7 +49,7 @@ const HomePage = () => {
           </div>
 
           {/* Column 2: Main Content - NewsFeed */}
-          <div className="flex-1 lg:ml-80 xl:mr-80">
+          <div className="flex-1 xl:mr-80 lg:ml-80">
             <div className="border-r border-gray-200 dark:border-gray-600 min-h-screen">
               <div className="px-6 py-6">
                 {/* News Feed Container */}
@@ -60,11 +60,12 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Column 3: Right Sidebar - Additional Info (Trending & Expert Insights) */}
+          {/* Column 3: Right Sidebar - Additional Info (Expert Insights) */}
           <div className="hidden xl:block w-80 fixed right-0 top-16 h-screen bg-white dark:bg-[#0D1117] border-l border-gray-200 dark:border-gray-600">
             <div className="h-full overflow-y-scroll scrollbar-hide px-6 py-6">
               <div className="space-y-8">
-                {/* Trending Topics */}
+                {/* Trending Topics - Commented out temporarily */}
+                {/*
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
                     Trending Topics
@@ -78,14 +79,17 @@ const HomePage = () => {
                     ))}
                   </div>
                 </div>
+                */}
 
-                {/* Expert Insights */}
+                {/* Expert Insights, Top Contributors, and Platform Health - Commented out temporarily */}
+                {/*
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
                     Expert Insights
                   </h3>
                   <Sidebar />
                 </div>
+                */}
               </div>
             </div>
           </div>

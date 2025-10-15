@@ -110,13 +110,13 @@ export const newsAPI = {
 
 // Comments APIs
 export const commentsAPI = {
-  // Add community comment
+  // Add community comment (with optional evidence links)
   addCommunityComment: async (commentData) => {
     const response = await api.post('/news/community-comment/add', commentData);
     return response.data;
   },
 
-  // Add expert comment
+  // Add expert comment (with optional evidence links)
   addExpertComment: async (commentData) => {
     const response = await api.post('/news/expert-comment/add', commentData);
     return response.data;
@@ -131,6 +131,28 @@ export const commentsAPI = {
   // Get expert comments
   getExpertComments: async (newsId) => {
     const response = await api.get(`/news/expert-comment?newsId=${newsId}`);
+    return response.data;
+  },
+
+  // Expert voting on comments
+  expertVoteOnCommunityComment: async (commentId, voteData) => {
+    const response = await api.post(`/news/community-comment/${commentId}/vote`, voteData);
+    return response.data;
+  },
+
+  expertVoteOnExpertComment: async (commentId, voteData) => {
+    const response = await api.post(`/news/expert-comment/${commentId}/vote`, voteData);
+    return response.data;
+  },
+
+  // Get comment votes
+  getCommunityCommentVotes: async (commentId) => {
+    const response = await api.get(`/news/community-comment/${commentId}/votes`);
+    return response.data;
+  },
+
+  getExpertCommentVotes: async (commentId) => {
+    const response = await api.get(`/news/expert-comment/${commentId}/votes`);
     return response.data;
   },
 };
@@ -276,6 +298,39 @@ export const profileAPI = {
   // Change password
   changePassword: async (passwordData) => {
     const response = await api.put('/profile/change-password', passwordData);
+    return response.data;
+  },
+};
+
+// AI Verdict API
+export const aiVerdictAPI = {
+  // Generate AI verdict for a news article
+  generateVerdict: async (newsId) => {
+    const response = await api.post(`/api/news/${newsId}/ai-verdict`);
+    return response.data;
+  },
+
+  // Get existing AI verdict for a news article
+  getVerdict: async (newsId) => {
+    const response = await api.get(`/api/news/${newsId}/ai-verdict`);
+    return response.data;
+  },
+
+  // Regenerate AI verdict for a news article
+  regenerateVerdict: async (newsId) => {
+    const response = await api.put(`/api/news/${newsId}/ai-verdict/regenerate`);
+    return response.data;
+  },
+
+  // Delete AI verdict for a news article
+  deleteVerdict: async (newsId) => {
+    const response = await api.delete(`/api/news/${newsId}/ai-verdict`);
+    return response.data;
+  },
+
+  // Get AI verdict statistics
+  getStats: async () => {
+    const response = await api.get('/api/ai-verdicts/stats');
     return response.data;
   },
 };

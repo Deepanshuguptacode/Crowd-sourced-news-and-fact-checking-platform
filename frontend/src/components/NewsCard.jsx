@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
+import AIVerdictSection from "./AIVerdictSection";
 import api from "../services/api.js"; // Use configured API instead of direct axios
 import { toast } from "react-toastify";
 
@@ -54,7 +55,7 @@ const NewsCard = ({
       // Check if this is the new format with comment object
       if (typeof commentData === 'object' && commentData.text) {
         // New format - comment was already added successfully in CommentSection
-        const { text: newComment, type: userType, username } = commentData;
+        const { text: newComment, type: userType, username, evidenceLinks, response } = commentData;
         
         if (userType.toLowerCase() === "normal") {
           toast.error("You must become a community/expert user in order to comment");
@@ -65,9 +66,20 @@ const NewsCard = ({
         if (onCommentAdded) {
           onCommentAdded(postId, newComment, userType.toLowerCase(), username);
         } else {
-          // Fallback to local state update
+          // Fallback to local state update with full comment data
           const type = userType.toLowerCase();
-          setComments([...comments, { text: newComment, type, username }]);
+          const fullCommentData = {
+            text: newComment,
+            type,
+            username,
+            evidenceLinks: evidenceLinks || [],
+            _id: response?.comment?._id,
+            expertVotes: response?.comment?.expertVotes || [],
+            upvoteCount: response?.comment?.upvoteCount || 0,
+            downvoteCount: response?.comment?.downvoteCount || 0,
+            createdAt: response?.comment?.createdAt || new Date().toISOString()
+          };
+          setComments([...comments, fullCommentData]);
         }
         return;
       }
@@ -96,9 +108,20 @@ const NewsCard = ({
           const currentUsername = userData?.username || 'Anonymous';
           onCommentAdded(postId, newComment, userType.toLowerCase(), currentUsername);
         } else {
-          // Fallback to local state update
+          // Fallback to local state update with full comment data
           const type = userType.toLowerCase();
-          setComments([...comments, { text: newComment, type }]);
+          const fullCommentData = {
+            text: newComment,
+            type,
+            username: currentUsername,
+            evidenceLinks: [],
+            _id: response?.data?.comment?._id,
+            expertVotes: response?.data?.comment?.expertVotes || [],
+            upvoteCount: response?.data?.comment?.upvoteCount || 0,
+            downvoteCount: response?.data?.comment?.downvoteCount || 0,
+            createdAt: response?.data?.comment?.createdAt || new Date().toISOString()
+          };
+          setComments([...comments, fullCommentData]);
         }
       }
     } catch (error) {
@@ -372,6 +395,15 @@ const NewsCard = ({
           )}
         </div>
       )}
+
+      {/* AI Verdict Section */}
+      <AIVerdictSection 
+        newsId={postId} 
+        onVerdictUpdate={(verdictData) => {
+          // Handle verdict update if needed
+          console.log('AI Verdict updated:', verdictData);
+        }} 
+      />
 
       {/* Actions Bar */}
       <div className="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-200/50 dark:border-gray-700/50">

@@ -1,0 +1,64 @@
+{
+  "totalNewsArticles": 5,
+  "totalComments": 100,
+  "totalExpertVotes": 600,
+  "averageCommentsPerNews": 20,
+  "generatedAt": "2025-10-15T17:45:43.746Z",
+  "results": [
+    {
+      "newsId": "68ef91ef3bda87128d26e22c",
+      "title": "Proof The Mainstream Media Is Manipulating The Election By Taking Bill Clinton Out Of Context",
+      "statistics": {
+        "totalComments": 20,
+        "againstComments": 12,
+        "inFavorComments": 8,
+        "averageScore": 1.7,
+        "totalExpertVotes": 120
+      }
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "title": "Charity: Clinton Foundation Distributed “Watered-Down” AIDS Drugs to Sub-Saharan Africa – Eagle Rising",
+      "statistics": {
+        "totalComments": 20,
+        "againstComments": 12,
+        "inFavorComments": 8,
+        "averageScore": 2.3,
+        "totalExpertVotes": 120
+      }
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e232",
+      "title": "A Hillary Clinton Administration May be Entirely Run by a FIGUREHEAD – Eagle Rising",
+      "statistics": {
+        "totalComments": 20,
+        "againstComments": 12,
+        "inFavorComments": 8,
+        "averageScore": 0.7,
+        "totalExpertVotes": 120
+      }
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e234",
+      "title": "Trump’s Latest Campaign Promise May Be His Most Horrible One Yet",
+      "statistics": {
+        "totalComments": 20,
+        "againstComments": 12,
+        "inFavorComments": 8,
+        "averageScore": 1.8,
+        "totalExpertVotes": 120
+      }
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e238",
+      "title": "Obama Pushes One World Government",
+      "statistics": {
+        "totalComments": 20,
+        "againstComments": 12,
+        "inFavorComments": 8,
+        "averageScore": 1.5,
+        "totalExpertVotes": 120
+      }
+    }
+  ]
+}

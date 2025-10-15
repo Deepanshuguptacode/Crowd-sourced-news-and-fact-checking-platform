@@ -77,53 +77,34 @@ class CommentFilteringService {
 
   async getGroupedComments(newsId) {
     try {
-      const groups = await CommentGroup.find({ newsId })
-        .populate('comments')
+      // Updated to work with direct CommentGroup population
+      const groups = await CommentGroup.find({ newsId, comments: { $ne: [] } })
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'commenter',
+            select: 'username fullName'
+          }
+        })
         .sort({ createdAt: -1 });
 
-      // For each group, populate the original comment details
-      const populatedGroups = await Promise.all(groups.map(async (group) => {
-        const populatedComments = await Promise.all(group.comments.map(async (commentFilter) => {
-          let originalComment = null;
-          
-          // Populate based on comment type
-          if (commentFilter.commentType === 'community') {
-            originalComment = await require('../models/Comments').CommunityComment
-              .findById(commentFilter.originalCommentId)
-              .populate('commenter', 'username name');
-          } else if (commentFilter.commentType === 'expert') {
-            originalComment = await require('../models/Comments').ExpertComment
-              .findById(commentFilter.originalCommentId)
-              .populate('expert', 'username name');
-          }
-
-          return {
-            _id: commentFilter._id,
-            text: commentFilter.text || 'No comment text',
-            commentType: commentFilter.commentType,
-            createdAt: commentFilter.createdAt,
-            originalComment: originalComment,
-            // Flatten user data for easier frontend access
-            username: commentFilter.commentType === 'expert' 
-              ? (originalComment?.expert?.username || 'Unknown Expert')
-              : (originalComment?.commenter?.username || 'Unknown User'),
-            userFullName: commentFilter.commentType === 'expert' 
-              ? (originalComment?.expert?.name || 'Unknown Expert')
-              : (originalComment?.commenter?.name || 'Unknown User')
-          };
-        }));
-
-        return {
-          _id: group._id,
-          label: group.label,
-          newsId: group.newsId,
-          createdAt: group.createdAt,
-          comments: populatedComments,
-          commentCount: populatedComments.length
-        };
+      // Map to frontend-expected structure
+      return groups.map(group => ({
+        _id: group._id,
+        label: group.label,
+        description: group.description,
+        newsId: group.newsId,
+        createdAt: group.createdAt,
+        commentCount: group.comments.length,
+        comments: group.comments.map(comment => ({
+          _id: comment._id,
+          text: comment.comment, // Map 'comment' field to 'text' for frontend
+          commentType: 'community', // Since these are all community comments
+          username: comment.commenter?.username || 'Anonymous',
+          userFullName: comment.commenter?.fullName || 'Unknown User',
+          createdAt: comment.createdAt
+        }))
       }));
-
-      return populatedGroups;
     } catch (error) {
       console.error('Error fetching grouped comments:', error);
       throw error;

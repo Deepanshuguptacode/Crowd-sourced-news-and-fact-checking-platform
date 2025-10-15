@@ -1,0 +1,44 @@
+{
+  "totalNewsProcessed": 5,
+  "totalCommentsInserted": 100,
+  "totalGroupsCreated": 55,
+  "totalFiltersCreated": 0,
+  "processedAt": "2025-10-15T17:47:05.738Z",
+  "results": [
+    {
+      "newsId": "68ef91ef3bda87128d26e22c",
+      "newsTitle": "Proof The Mainstream Media Is Manipulating The Election By Taking Bill Clinton Out Of Context",
+      "commentsCount": 20,
+      "groupsCount": 11,
+      "filtersCount": 0
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "newsTitle": "Charity: Clinton Foundation Distributed “Watered-Down” AIDS Drugs to Sub-Saharan Africa – Eagle Rising",
+      "commentsCount": 20,
+      "groupsCount": 11,
+      "filtersCount": 0
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e232",
+      "newsTitle": "A Hillary Clinton Administration May be Entirely Run by a FIGUREHEAD – Eagle Rising",
+      "commentsCount": 20,
+      "groupsCount": 11,
+      "filtersCount": 0
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e234",
+      "newsTitle": "Trump’s Latest Campaign Promise May Be His Most Horrible One Yet",
+      "commentsCount": 20,
+      "groupsCount": 11,
+      "filtersCount": 0
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e238",
+      "newsTitle": "Obama Pushes One World Government",
+      "commentsCount": 20,
+      "groupsCount": 11,
+      "filtersCount": 0
+    }
+  ]
+}

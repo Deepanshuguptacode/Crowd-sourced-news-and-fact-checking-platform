@@ -1,0 +1,31 @@
+{
+  "insertionDate": "2025-10-15T12:22:08.325Z",
+  "uploadedBy": "68ef91ef3bda87128d26e229",
+  "fakeNewsCount": 10,
+  "realNewsCount": 10,
+  "totalInserted": 20,
+  "fakeNewsIds": [
+    "68ef91ef3bda87128d26e22c",
+    "68ef91ef3bda87128d26e22e",
+    "68ef91ef3bda87128d26e232",
+    "68ef91ef3bda87128d26e234",
+    "68ef91ef3bda87128d26e236",
+    "68ef91ef3bda87128d26e238",
+    "68ef91ef3bda87128d26e23a",
+    "68ef91ef3bda87128d26e23c",
+    "68ef91ef3bda87128d26e23e",
+    "68ef91ef3bda87128d26e240"
+  ],
+  "realNewsIds": [
+    "68ef91ef3bda87128d26e242",
+    "68ef91ef3bda87128d26e244",
+    "68ef91ef3bda87128d26e246",
+    "68ef91f03bda87128d26e248",
+    "68ef91f03bda87128d26e24a",
+    "68ef91f03bda87128d26e24c",
+    "68ef91f03bda87128d26e24e",
+    "68ef91f03bda87128d26e250",
+    "68ef91f03bda87128d26e252",
+    "68ef91f03bda87128d26e254"
+  ]
+}

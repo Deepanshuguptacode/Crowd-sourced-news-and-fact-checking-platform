@@ -30,7 +30,7 @@ const newsSchema = new mongoose.Schema({
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "NormalUser", // reference to the User model
+    ref: "CommunityUser", // reference to the CommunityUser model
     required: true,
   },
   uploadedAt: {

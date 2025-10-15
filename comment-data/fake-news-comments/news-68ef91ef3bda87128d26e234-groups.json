@@ -1,0 +1,115 @@
+{
+  "newsId": "68ef91ef3bda87128d26e234",
+  "totalGroups": 11,
+  "groups": [
+    {
+      "id": "68efde177bec0fd27d196c02",
+      "label": "Fact-Checking Discussion",
+      "description": "Comments focused on verifying claims and sources",
+      "commentCount": 3,
+      "commentIds": [
+        "68efde167bec0fd27d196b26",
+        "68efde177bec0fd27d196b31",
+        "68efde177bec0fd27d196b52"
+      ]
+    },
+    {
+      "id": "68efde177bec0fd27d196c04",
+      "label": "Source Credibility Analysis",
+      "description": "Comments analyzing the reliability and trustworthiness of cited sources",
+      "commentCount": 1,
+      "commentIds": [
+        "68efde177bec0fd27d196bc0"
+      ]
+    },
+    {
+      "id": "68efde177bec0fd27d196c06",
+      "label": "Bias and Journalism Standards",
+      "description": "Comments examining potential bias and journalistic ethics",
+      "commentCount": 2,
+      "commentIds": [
+        "68efde177bec0fd27d196b3c",
+        "68efde177bec0fd27d196bd6"
+      ]
+    },
+    {
+      "id": "68efde177bec0fd27d196c08",
+      "label": "Historical Context Verification",
+      "description": "Comments providing historical background and timeline verification",
+      "commentCount": 2,
+      "commentIds": [
+        "68efde177bec0fd27d196b47",
+        "68efde177bec0fd27d196b9f"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c0a",
+      "label": "Statistical Data Analysis",
+      "description": "Comments analyzing numerical claims and statistical validity",
+      "commentCount": 1,
+      "commentIds": [
+        "68efde177bec0fd27d196b5d"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c0c",
+      "label": "Conspiracy Theory Assessment",
+      "description": "Comments addressing conspiracy-related content and debunking",
+      "commentCount": 3,
+      "commentIds": [
+        "68efde177bec0fd27d196b68",
+        "68efde177bec0fd27d196b89",
+        "68efde177bec0fd27d196b94"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c0e",
+      "label": "Quote and Attribution Verification",
+      "description": "Comments checking accuracy of quoted statements",
+      "commentCount": 1,
+      "commentIds": [
+        "68efde177bec0fd27d196b73"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c10",
+      "label": "Public Health and Safety Concerns",
+      "description": "Comments addressing health implications and safety warnings",
+      "commentCount": 1,
+      "commentIds": [
+        "68efde177bec0fd27d196b7e"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c12",
+      "label": "Economic Claims Analysis",
+      "description": "Comments examining economic data and financial claims",
+      "commentCount": 1,
+      "commentIds": [
+        "68efde177bec0fd27d196bec"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c14",
+      "label": "Alternative Perspectives",
+      "description": "Comments presenting different viewpoints and considerations",
+      "commentCount": 3,
+      "commentIds": [
+        "68efde177bec0fd27d196bb5",
+        "68efde177bec0fd27d196bcb",
+        "68efde177bec0fd27d196be1"
+      ]
+    },
+    {
+      "id": "68efde187bec0fd27d196c16",
+      "label": "Accountability and Transparency",
+      "description": "Comments focusing on institutional accountability and transparency",
+      "commentCount": 2,
+      "commentIds": [
+        "68efde177bec0fd27d196baa",
+        "68efde177bec0fd27d196bf7"
+      ]
+    }
+  ],
+  "createdAt": "2025-10-15T17:47:04.351Z"
+}

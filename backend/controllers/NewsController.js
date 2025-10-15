@@ -166,14 +166,16 @@ const getAllPosts = async (req, res) => {
           if (voter) downvotes.push(voter);
         }
 
-        // Fetch community comments
+        // Fetch community comments with expert votes populated
         const communityComments = await CommunityComment.find({ newsId: newsItem._id })
           .populate('commenter', 'username')
+          .populate('expertVotes.expert', 'username')
           .sort({ createdAt: -1 });
 
-        // Fetch expert comments
+        // Fetch expert comments with expert votes populated
         const expertComments = await ExpertComment.find({ newsId: newsItem._id })
           .populate('expert', 'username')
+          .populate('expertVotes.expert', 'username')
           .sort({ createdAt: -1 });
 
         // Structure the news item with comments and populated fields

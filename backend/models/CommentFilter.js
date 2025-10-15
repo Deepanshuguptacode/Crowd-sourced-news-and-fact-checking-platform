@@ -57,7 +57,7 @@ const CommentGroupSchema = new Schema({
   },
   comments: [{ 
     type: Schema.Types.ObjectId, 
-    ref: 'CommentFilter' 
+    ref: 'CommunityComment' 
   }],
   createdAt: { 
     type: Date, 
