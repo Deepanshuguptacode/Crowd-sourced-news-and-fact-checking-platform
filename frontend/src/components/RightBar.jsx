@@ -71,9 +71,16 @@ const RightBar = () => {
     </svg>
   );
 
+  const TestAccuracyIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+
   const menuItems = [
     { icon: HomeIcon, label: 'Home', color: 'blue', action: () => navigate('/home') },
     { icon: TrendingIcon, label: 'Trending', color: 'orange', action: () => navigate('/trending') },
+    { icon: TestAccuracyIcon, label: 'Test Accuracy', color: 'indigo', action: () => navigate('/test-accuracy') },
     { icon: DebateIcon, label: 'Debate Rooms', color: 'green', action: () => navigate('/debate-rooms') },
     { icon: ContactIcon, label: 'Know Us', color: 'purple', action: () => setShowContactDropdown(!showContactDropdown) },
   ];

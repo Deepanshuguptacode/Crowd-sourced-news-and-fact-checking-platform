@@ -186,39 +186,58 @@ class AIVerdictService {
       const inFavorComments = allComments.filter(c => c.stance === 'in_favor');
       const againstComments = allComments.filter(c => c.stance === 'against');
 
-      // Group by comment groups and select highest scoring comment from each group
+      // Select top comments - improved logic for better representation
       const selectTopFromGroups = (comments) => {
-        const groups = {};
+        // If we have filterGroupId, use group-based selection
+        const hasValidGroups = comments.some(c => c.filterGroupId);
         
-        // Group comments
-        comments.forEach(comment => {
-          const groupKey = comment.filterGroupId?.toString() || 'ungrouped';
-          if (!groups[groupKey]) {
-            groups[groupKey] = [];
-          }
-          groups[groupKey].push(comment);
-        });
+        if (hasValidGroups) {
+          const groups = {};
+          
+          // Group comments by filterGroupId
+          comments.forEach(comment => {
+            const groupKey = comment.filterGroupId?.toString() || 'ungrouped';
+            if (!groups[groupKey]) {
+              groups[groupKey] = [];
+            }
+            groups[groupKey].push(comment);
+          });
 
-        // Select highest scoring comment from each group
-        const topFromGroups = Object.values(groups).map(groupComments => {
-          return groupComments.reduce((highest, current) => 
-            (current.score || 0) > (highest.score || 0) ? current : highest
-          );
-        });
+          // Select highest scoring comment from each group
+          const topFromGroups = Object.values(groups).map(groupComments => {
+            return groupComments.reduce((highest, current) => 
+              (current.score || 0) > (highest.score || 0) ? current : highest
+            );
+          });
 
-        // Sort by score and return top 5
-        return topFromGroups
-          .sort((a, b) => (b.score || 0) - (a.score || 0))
-          .slice(0, 5)
-          .map(comment => ({
-            commentId: comment._id,
-            commentType: comment.commentType,
-            commentText: comment.comment,
-            evidenceLinks: comment.evidenceLinks || [],
-            upvoteCount: comment.upvoteCount || 0,
-            downvoteCount: comment.downvoteCount || 0,
-            score: comment.score || 0
-          }));
+          // Sort by score and return top 8 (increased from 5)
+          return topFromGroups
+            .sort((a, b) => (b.score || 0) - (a.score || 0))
+            .slice(0, 8)
+            .map(comment => ({
+              commentId: comment._id,
+              commentType: comment.commentType,
+              commentText: comment.comment,
+              evidenceLinks: comment.evidenceLinks || [],
+              upvoteCount: comment.upvoteCount || 0,
+              downvoteCount: comment.downvoteCount || 0,
+              score: comment.score || 0
+            }));
+        } else {
+          // If no valid groups, select top comments by score directly
+          return comments
+            .sort((a, b) => (b.score || 0) - (a.score || 0))
+            .slice(0, 8) // Select top 8 comments
+            .map(comment => ({
+              commentId: comment._id,
+              commentType: comment.commentType,
+              commentText: comment.comment,
+              evidenceLinks: comment.evidenceLinks || [],
+              upvoteCount: comment.upvoteCount || 0,
+              downvoteCount: comment.downvoteCount || 0,
+              score: comment.score || 0
+            }));
+        }
       };
 
       return {

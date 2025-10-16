@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import NewsFeed from '../components/NewsFeed'
-import Sidebar from '../components/Sidebar' 
 import RightBar from '../components/RightBar'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -31,7 +30,7 @@ const HomePage = () => {
         </>
       )}
 
-      {/* Main Content Area - 3 Column Layout */}
+      {/* Main Content Area - 2 Column Layout */}
       <div className="pt-16 pb-16">
         <div className="flex min-h-screen">
           {/* Column 1: Fixed Left Sidebar - RightBar (Quick Actions) */}
@@ -48,9 +47,9 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Column 2: Main Content - NewsFeed */}
-          <div className="flex-1 xl:mr-80 lg:ml-80">
-            <div className="border-r border-gray-200 dark:border-gray-600 min-h-screen">
+          {/* Column 2: Main Content - NewsFeed (Full Width) */}
+          <div className="flex-1 lg:ml-80">
+            <div className="min-h-screen">
               <div className="px-6 py-6">
                 {/* News Feed Container */}
                 <div className="divide-y divide-gray-200 dark:divide-gray-600">
@@ -60,39 +59,6 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Column 3: Right Sidebar - Additional Info (Expert Insights) */}
-          <div className="hidden xl:block w-80 fixed right-0 top-16 h-screen bg-white dark:bg-[#0D1117] border-l border-gray-200 dark:border-gray-600">
-            <div className="h-full overflow-y-scroll scrollbar-hide px-6 py-6">
-              <div className="space-y-8">
-                {/* Trending Topics - Commented out temporarily */}
-                {/*
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
-                    Trending Topics
-                  </h3>
-                  <div className="space-y-3">
-                    {['Climate Change', 'Election Security', 'Health Misinformation', 'Technology', 'Politics'].map((topic, index) => (
-                      <div key={topic} className="flex items-center justify-between py-2 hover:bg-gray-50 dark:hover:bg-gray-800 -mx-2 px-2 rounded transition-colors cursor-pointer">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{topic}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">#{index + 1}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                */}
-
-                {/* Expert Insights, Top Contributors, and Platform Health - Commented out temporarily */}
-                {/*
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
-                    Expert Insights
-                  </h3>
-                  <Sidebar />
-                </div>
-                */}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-10-15T18:57:45.775Z",
+  "userStats": {
+    "communityUsers": 14,
+    "expertUsers": 6,
+    "totalUsers": 20
+  },
+  "votingStats": {
+    "totalArticles": 10,
+    "articlesAbove70Percent": 10,
+    "totalVotes": 121,
+    "totalDownvotes": 91,
+    "totalUpvotes": 30,
+    "overallDownvotePercentage": 75.2,
+    "averageVotesPerArticle": 12.1
+  },
+  "requirements": {
+    "communityUsersCheck": true,
+    "expertUsersCheck": true,
+    "per_article_70_percent": true,
+    "overall_70_percent": true,
+    "allRequirementsMet": true
+  }
+}

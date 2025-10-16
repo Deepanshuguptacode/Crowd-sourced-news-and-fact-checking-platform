@@ -276,7 +276,7 @@ const AIVerdictSection = ({ newsId, onVerdictUpdate }) => {
                     Top Supporting Comments
                   </h5>
                   <div className="space-y-2">
-                    {verdict.topComments.inFavor.slice(0, 3).map((comment, index) => (
+                    {verdict.topComments.inFavor.slice(0, 6).map((comment, index) => (
                       <div key={index} className="p-2 bg-green-100 dark:bg-green-800/30 rounded text-sm">
                         <p className="text-green-800 dark:text-green-200 mb-1">"{comment.commentText}"</p>
                         <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-400">
@@ -285,6 +285,11 @@ const AIVerdictSection = ({ newsId, onVerdictUpdate }) => {
                         </div>
                       </div>
                     ))}
+                    {verdict.topComments.inFavor.length > 6 && (
+                      <div className="text-xs text-green-600 dark:text-green-400 text-center p-2">
+                        +{verdict.topComments.inFavor.length - 6} more supporting comments
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -297,7 +302,7 @@ const AIVerdictSection = ({ newsId, onVerdictUpdate }) => {
                     Top Opposing Comments
                   </h5>
                   <div className="space-y-2">
-                    {verdict.topComments.against.slice(0, 3).map((comment, index) => (
+                    {verdict.topComments.against.slice(0, 6).map((comment, index) => (
                       <div key={index} className="p-2 bg-red-100 dark:bg-red-800/30 rounded text-sm">
                         <p className="text-red-800 dark:text-red-200 mb-1">"{comment.commentText}"</p>
                         <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400">
@@ -306,6 +311,11 @@ const AIVerdictSection = ({ newsId, onVerdictUpdate }) => {
                         </div>
                       </div>
                     ))}
+                    {verdict.topComments.against.length > 6 && (
+                      <div className="text-xs text-red-600 dark:text-red-400 text-center p-2">
+                        +{verdict.topComments.against.length - 6} more opposing comments
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

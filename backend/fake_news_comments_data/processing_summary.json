@@ -1,0 +1,78 @@
+{
+  "processedAt": "2025-10-15T18:35:44.617Z",
+  "totalFakeNews": 10,
+  "totalCommentsCreated": 200,
+  "totalGroupsCreated": 120,
+  "newsArticles": [
+    {
+      "newsId": "68ef91ef3bda87128d26e22c",
+      "title": "Proof The Mainstream Media Is Manipulating The Election By Taking Bill Clinton Out Of Context",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_1_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e22e",
+      "title": "Charity: Clinton Foundation Distributed “Watered-Down” AIDS Drugs to Sub-Saharan Africa – Eagle Rising",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_2_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e232",
+      "title": "A Hillary Clinton Administration May be Entirely Run by a FIGUREHEAD – Eagle Rising",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_3_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e234",
+      "title": "Trump’s Latest Campaign Promise May Be His Most Horrible One Yet",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_4_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e236",
+      "title": "Website is Down For Maintenance",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_5_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e238",
+      "title": "Obama Pushes One World Government",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_6_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e23a",
+      "title": "Clinton Foundation Spent 5.7% on Charity; Rest Went to “Salaries” and “Other Expenses” – Eagle Rising",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_7_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e23c",
+      "title": "WHOA! NEW DISTURBING VIDEO Shows HILLARY'S Campaign Likely FAKED Her Audience At NC Rally * 100percentfedUp.com",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_8_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e23e",
+      "title": "Is it the Beginning of the End for Hillary Clinton? – Eagle Rising",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_9_comments.json"
+    },
+    {
+      "newsId": "68ef91ef3bda87128d26e240",
+      "title": "Californians Had Special Way to View the Eclipse… Now Hospitals Are Filling up",
+      "commentsCreated": 20,
+      "groupsCreated": 12,
+      "fileName": "fake_news_10_comments.json"
+    }
+  ]
+}

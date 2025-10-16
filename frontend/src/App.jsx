@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import DebateRoomsList from './pages/DebateRoomsList';
 import DebateRoom from './pages/DebateRoom';
 import AdvancedDebateRoom from './components/AdvancedDebateRoom';
+import TestAccuracy from './pages/TestAccuracy';
 import ProtectedRoute from './components/ProtectedRoute';
 import { UserProvider } from './context/userContext';
 import { ToastContainer } from 'react-toastify';
@@ -92,6 +93,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdvancedDebateRoom />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/test-accuracy" 
+              element={
+                <ProtectedRoute>
+                  <TestAccuracy />
                 </ProtectedRoute>
               } 
             />
