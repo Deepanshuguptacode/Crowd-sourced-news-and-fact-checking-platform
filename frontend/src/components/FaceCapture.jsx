@@ -67,22 +67,9 @@ const FaceCapture = ({
       };
 
       const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Set both stream and isCapturing together
       setStream(newStream);
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-        
-        // Wait for video to load and then start
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-          // Set canvas dimensions to match video
-          if (canvasRef.current) {
-            canvasRef.current.width = videoRef.current.videoWidth;
-            canvasRef.current.height = videoRef.current.videoHeight;
-          }
-        };
-      }
-      
       setIsCapturing(true);
     } catch (error) {
       console.error('Error starting camera:', error);
@@ -115,8 +102,6 @@ const FaceCapture = ({
   // Test face detection and show preview
   const testFaceDetection = useCallback(async (imageDataUrl) => {
     try {
-      console.log('🔍 [FACE_DETECTION] Testing face detection...');
-      
       const response = await fetch('http://127.0.0.1:5000/api/detect_face', {
         method: 'POST',
         headers: {
@@ -128,7 +113,6 @@ const FaceCapture = ({
       const result = await response.json();
       
       if (result.success) {
-        console.log('✅ [FACE_DETECTION] Face detected successfully');
         setFaceDetectionResult({
           success: true,
           message: result.message,
@@ -138,10 +122,8 @@ const FaceCapture = ({
         // Set the face crop preview if available
         if (result.face_crop) {
           setFaceCropPreview(result.face_crop);
-          console.log('✅ [FACE_DETECTION] Face crop preview available');
         }
       } else {
-        console.log('❌ [FACE_DETECTION] Face detection failed:', result.message);
         setFaceDetectionResult({
           success: false,
           message: result.message
@@ -149,7 +131,7 @@ const FaceCapture = ({
         setFaceCropPreview(null);
       }
     } catch (error) {
-      console.error('❌ [FACE_DETECTION] Error:', error);
+      console.error('Face detection error:', error);
       setFaceDetectionResult({
         success: false,
         message: `Face detection service error: ${error.message}`
@@ -185,8 +167,6 @@ const FaceCapture = ({
       // Convert to base64 with high quality (same as Face-authorization-System)
       const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       setCapturedImage(imageDataUrl);
-      
-      console.log('🔍 [FACE_CAPTURE] Image captured, size:', imageDataUrl.length);
       
       // Test face detection and show preview
       await testFaceDetection(imageDataUrl);
@@ -229,8 +209,6 @@ const FaceCapture = ({
           const imageDataUrl = e.target.result;
           setCapturedImage(imageDataUrl);
           
-          console.log('🔍 [FACE_UPLOAD] Image uploaded, size:', imageDataUrl.length);
-          
           // Test face detection and show preview
           await testFaceDetection(imageDataUrl);
           
@@ -270,6 +248,41 @@ const FaceCapture = ({
     getDevices();
   }, [getDevices]);
 
+  // Set up video element when stream is available
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      // Directly set srcObject
+      videoRef.current.srcObject = stream;
+      
+      // Force set isCapturing to true if we have a stream
+      if (!isCapturing) {
+        setIsCapturing(true);
+      }
+      
+      // Wait for video metadata to load
+      videoRef.current.onloadedmetadata = async () => {
+        try {
+          // Explicitly play the video
+          await videoRef.current.play();
+          
+          // Set canvas dimensions
+          if (canvasRef.current) {
+            canvasRef.current.width = videoRef.current.videoWidth;
+            canvasRef.current.height = videoRef.current.videoHeight;
+          }
+        } catch (playError) {
+          console.error('Video play error:', playError);
+          setError('Camera started but video display failed. Try clicking on the video area.');
+        }
+      };
+      
+      // Also try to play immediately in case metadata is already loaded
+      if (videoRef.current.readyState >= 2) {
+        videoRef.current.play().catch(e => console.warn('Immediate play failed:', e));
+      }
+    }
+  }, [stream, isCapturing]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -305,7 +318,7 @@ const FaceCapture = ({
         {/* Camera Controls */}
         {(mode === 'capture' || mode === 'both') && (
           <div className="flex space-x-2">
-            {!isCapturing ? (
+            {!stream ? (
               <button
                 type="button"
                 onClick={startCamera}
@@ -367,17 +380,44 @@ const FaceCapture = ({
           </div>
         )}
 
+        {/* Debug Info - Remove after fixing */}
+        <div className="text-xs bg-yellow-100 dark:bg-yellow-900 p-2 rounded mb-2">
+          <div><strong>Debug Info:</strong></div>
+          <div>isCapturing: {isCapturing ? '✅ TRUE' : '❌ FALSE'}</div>
+          <div>stream: {stream ? '✅ Active' : '❌ None'}</div>
+          <div>videoRef: {videoRef.current ? '✅ Exists' : '❌ NULL'}</div>
+          <div>Error: {error || 'None'}</div>
+        </div>
+
         {/* Video Preview */}
-        {isCapturing && (
-          <div className="relative">
+        {stream && (
+          <div className="relative bg-black rounded-lg overflow-hidden">
             <video
               ref={videoRef}
-              className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-300 dark:border-slate-600"
+              className="w-full max-w-md mx-auto rounded-lg border-2 border-blue-500 dark:border-blue-600 block"
               autoPlay
               playsInline
               muted
+              style={{
+                display: 'block',
+                minHeight: '300px',
+                maxHeight: '480px',
+                width: '100%',
+                objectFit: 'cover',
+                backgroundColor: '#000'
+              }}
             />
-            <div className="absolute inset-0 border-2 border-dashed border-blue-500 rounded-lg pointer-events-none opacity-50"></div>
+            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
+              📹 Live Camera
+            </div>
+          </div>
+        )}
+        
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative">
+            <AlertCircle className="w-4 h-4 inline mr-2" />
+            <span>{error}</span>
           </div>
         )}
 

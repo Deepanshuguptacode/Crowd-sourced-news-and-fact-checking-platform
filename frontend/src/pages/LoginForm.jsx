@@ -18,6 +18,7 @@ const LoginForm = () => {
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' or 'face'
   const [faceImage, setFaceImage] = useState(null);
   const [showFaceCapture, setShowFaceCapture] = useState(false);
+  const [similarityScore, setSimilarityScore] = useState(null);
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -91,16 +92,21 @@ const LoginForm = () => {
       const response = await authAPI.login(formData.userType, loginData);
 
       if (response.token) {
+        // Display similarity score for face login
+        if (response.authMethod === 'face' && response.similarity) {
+          setSimilarityScore(response.similarity);
+          const scorePercent = (response.similarity * 100).toFixed(1);
+          toast.success(`Face login successful! Match: ${scorePercent}%`, { autoClose: 3000 });
+        } else {
+          toast.success("Login successful!");
+        }
+        
         // Use the login function from context
         login({
           ...response.user,
           userType: formData.userType
         }, response.token);
 
-        const message = response.authMethod === 'face' 
-          ? "Face login successful!" 
-          : "Login successful!";
-        toast.success(message);
         navigate("/home");
       }
     } catch (error) {

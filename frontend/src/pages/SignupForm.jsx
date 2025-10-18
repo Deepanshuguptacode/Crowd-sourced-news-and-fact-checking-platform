@@ -33,14 +33,42 @@ const SignupForm = () => {
     });
   };
 
-  const handleFaceCapture = (imageDataUrl) => {
-    console.log('🔍 [SIGNUP] Face image captured, size:', imageDataUrl.length);
+  const handleFaceCapture = async (imageDataUrl) => {
     setFaceImage(imageDataUrl);
-    toast.success("Face captured successfully!");
+    
+    // Check for duplicate face
+    if (!skipFaceAuth && imageDataUrl) {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/check_duplicate_face', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ image: imageDataUrl }),
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.isDuplicate) {
+          const scorePercent = (result.similarity * 100).toFixed(1);
+          toast.error(`This face is already registered! Match: ${scorePercent}% with user: ${result.existingUsername || 'existing user'}`, {
+            autoClose: 5000
+          });
+          setFaceImage(null); // Clear the captured image
+          return;
+        }
+        
+        toast.success("Face captured successfully!");
+      } catch (error) {
+        console.error('Duplicate check error:', error);
+        toast.warning("Face captured, but couldn't check for duplicates. Proceeding...");
+      }
+    } else {
+      toast.success("Face captured successfully!");
+    }
   };
 
   const handleFaceCaptureError = (error) => {
-    console.error('🔍 [SIGNUP] Face capture error:', error);
     toast.error("Face capture failed: " + error);
   };
 
@@ -70,11 +98,6 @@ const SignupForm = () => {
         ...(formData.userType === 'expert' && { profession: formData.profession }),
         ...(faceImage && !skipFaceAuth && { faceImage })
       };
-
-      console.log('🔍 [SIGNUP] Sending signup data:', {
-        ...signupData,
-        faceImage: signupData.faceImage ? `Base64 image (${signupData.faceImage.length} chars)` : 'None'
-      });
 
       const response = await authAPI.signup(formData.userType, signupData);
       
