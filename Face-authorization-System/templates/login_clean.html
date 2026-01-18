@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Verification - Face Auth System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .camera-controls {
+            margin-bottom: 1rem;
+        }
+
+        .camera-switch {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-switch select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .camera-info {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
+        .camera-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            border: 3px solid #fc466b;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+            object-fit: cover;
+        }
+
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #fc466b, #3f5efb);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-verify {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #fc466b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #fc466b;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ul {
+            margin-left: 1rem;
+            color: #555;
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .similarity-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .score-high {
+            color: #28a745;
+        }
+
+        .score-medium {
+            color: #ffc107;
+        }
+
+        .score-low {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Home</a>
+        
+        <h1>🔓 Face Verification</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li><strong>Option 1:</strong> Use camera - Allow camera access and position your face</li>
+                <li><strong>Option 2:</strong> Upload image - Choose an image file from your device</li>
+                <li>Look straight at the camera or ensure clear face in uploaded image</li>
+                <li>Click "Verify Face" or "Upload & Verify" to authenticate</li>
+                <li>The system will compare your face with registered users</li>
+            </ul>
+        </div>
+
+        <!-- Verification Method Selection -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <h3 style="color: #333; margin-bottom: 1rem;">Choose Verification Method:</h3>
+            <button type="button" id="cameraOption" class="btn btn-primary">📷 Use Camera</button>
+            <button type="button" id="uploadOption" class="btn btn-secondary">📁 Upload Image</button>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div id="upload-section" style="display: none; text-align: center; margin: 2rem 0; padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #fc466b;">
+            <h3>📁 Upload Image for Verification</h3>
+            <input type="file" id="imageUpload" accept="image/*" style="margin: 1rem 0; padding: 10px; border: 2px dashed #fc466b; border-radius: 8px;">
+            <br>
+            <button type="button" id="uploadVerifyBtn" class="btn btn-verify" disabled>🔍 Upload & Verify</button>
+        </div>
+
+        <!-- Camera Section -->
+        <div id="camera-section" style="display: none;">
+            <div class="camera-section">
+                <!-- Camera Selection -->
+                <div class="camera-controls">
+                    <div class="camera-switch">
+                        <label for="cameraSelect" style="margin-right: 10px;">📹 Select Camera:</label>
+                        <select id="cameraSelect">
+                            <option value="">Loading cameras...</option>
+                        </select>
+                        <button type="button" id="refreshCameras" class="btn" style="padding: 5px 10px; margin-left: 10px;">🔄</button>
+                    </div>
+                    <div class="camera-info">
+                        💡 <strong>Tip:</strong> If using mobile as webcam, select it from the dropdown above for better quality and faster processing.
+                    </div>
+                </div>
+                
+                <div class="video-container">
+                    <video id="video" autoplay muted></video>
+                </div>
+                <br>
+                <button type="button" id="startCamera" class="btn btn-primary">📷 Start Camera</button>
+                <button type="button" id="verifyBtn" class="btn btn-verify" disabled>🔍 Verify Face</button>
+                <button type="button" id="stopCamera" class="btn" style="background: #dc3545; color: white;" disabled>⏹️ Stop Camera</button>
+            </div>
+        </div>
+
+        <div id="status"></div>
+        
+        <div id="result-section" class="result-section">
+            <h3 id="result-title"></h3>
+            <div id="result-username"></div>
+            <div id="similarity-score" class="similarity-score"></div>
+            <div id="result-message"></div>
+            <!-- Face crop preview in verification results -->
+            <div id="verified-face-section" style="display: none; margin-top: 1rem;">
+                <p style="color: #666; margin-bottom: 0.5rem;">Face region that was verified:</p>
+                <img id="verified-face" style="max-width: 150px; max-height: 150px; border: 2px solid #667eea; border-radius: 8px;" />
+            </div>
+        </div>
+        
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let stream = null;
+        let faceDetectionInterval = null;
+        let availableCameras = [];
+
+        // Initialize camera list on page load
+        document.addEventListener('DOMContentLoaded', loadCameraList);
+
+        document.getElementById('startCamera').addEventListener('click', startCamera);
+        document.getElementById('verifyBtn').addEventListener('click', verifyFace);
+        document.getElementById('cameraOption').addEventListener('click', showCameraOption);
+        document.getElementById('uploadOption').addEventListener('click', showUploadOption);
+        document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+        document.getElementById('uploadVerifyBtn').addEventListener('click', uploadAndVerify);
+        document.getElementById('refreshCameras').addEventListener('click', loadCameraList);
+        document.getElementById('stopCamera').addEventListener('click', stopCamera);
+
+        async function loadCameraList() {
+            try {
+                // Request camera permission first to get proper device labels
+                let tempStream = null;
+                try {
+                    tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                } catch (permError) {
+                    console.error('Camera permission denied:', permError);
+                    document.getElementById('cameraSelect').innerHTML = '<option value="">Camera permission denied</option>';
+                    showStatus('❌ Camera permission denied. Please allow camera access in your browser settings.', 'error');
+                    return;
+                }
+                
+                // Now enumerate devices (with permission granted, we get labels)
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                // Stop the temporary stream
+                if (tempStream) {
+                    tempStream.getTracks().forEach(track => track.stop());
+                }
+                
+                const cameraSelect = document.getElementById('cameraSelect');
+                cameraSelect.innerHTML = '';
+                
+                if (videoDevices.length === 0) {
+                    cameraSelect.innerHTML = '<option value="">No cameras found</option>';
+                    showStatus('❌ No cameras detected. Please connect a camera and refresh.', 'error');
+                    return;
+                }
+                
+                availableCameras = videoDevices;
+                
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    
+                    // Create user-friendly names
+                    let label = device.label || `Camera ${index + 1}`;
+                    if (label.toLowerCase().includes('mobile') || label.toLowerCase().includes('phone')) {
+                        label = `📱 ${label}`;
+                    } else if (label.toLowerCase().includes('usb') || label.toLowerCase().includes('webcam')) {
+                        label = `💻 ${label}`;
+                    } else {
+                        label = `📹 ${label}`;
+                    }
+                    
+                    option.textContent = label;
+                    cameraSelect.appendChild(option);
+                });
+                
+                // Select the first camera by default
+                if (videoDevices.length > 0) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                }
+                
+                console.log(`✅ Loaded ${videoDevices.length} camera(s)`);
+                
+            } catch (error) {
+                console.error('Error loading cameras:', error);
+                document.getElementById('cameraSelect').innerHTML = '<option value="">Error loading cameras</option>';
+                showStatus('❌ Error loading cameras: ' + error.message, 'error');
+            }
+        }
+
+        function showCameraOption() {
+            document.getElementById('camera-section').style.display = 'block';
+            document.getElementById('upload-section').style.display = 'none';
+            document.getElementById('result-section').style.display = 'none';
+            
+            // Load camera list if not already loaded
+            if (availableCameras.length === 0) {
+                loadCameraList();
+            }
+        }
+
+        function showUploadOption() {
+            document.getElementById('camera-section').style.display = 'none';
+            document.getElementById('upload-section').style.display = 'block';
+            document.getElementById('result-section').style.display = 'none';
+            
+            // Stop camera if running
+            stopCamera();
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+            }
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+                faceDetectionInterval = null;
+            }
+            
+            document.getElementById('startCamera').disabled = false;
+            document.getElementById('stopCamera').disabled = true;
+            document.getElementById('verifyBtn').disabled = true;
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('uploadVerifyBtn').disabled = false;
+                showStatus('Image selected. Click "Upload & Verify" to proceed.', 'info');
+            } else {
+                document.getElementById('uploadVerifyBtn').disabled = true;
+            }
+        }
+
+        async function uploadAndVerify() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('Please select an image file first', 'error');
+                return;
+            }
+
+            document.getElementById('uploadVerifyBtn').disabled = true;
+            showStatus('Verifying uploaded image...', 'info');
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const imageData = e.target.result;
+                
+                try {
+                    const response = await fetch('/api/verify_face', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ image: imageData })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showStatus('✅ Face verification successful!', 'success');
+                        showResult(true, data.username, data.similarity, 'Access Granted!', data.face_crop);
+                    } else {
+                        showStatus('❌ ' + data.message, 'error');
+                        showResult(false, null, data.similarity || 0, 'Access Denied - Face not recognized', data.face_crop);
+                    }
+                } catch (error) {
+                    showStatus('❌ Error: ' + error.message, 'error');
+                    showResult(false, null, 0, 'Verification failed due to error', null);
+                }
+
+                // Re-enable verification after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('uploadVerifyBtn').disabled = false;
+                }, 3000);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        async function startCamera() {
+            try {
+                // Stop any existing stream
+                stopCamera();
+                
+                const selectedCameraId = document.getElementById('cameraSelect').value;
+                
+                if (!selectedCameraId) {
+                    showStatus('Please select a camera first', 'error');
+                    return;
+                }
+                
+                // Optimized constraints for faster processing
+                const constraints = {
+                    video: {
+                        deviceId: { exact: selectedCameraId },
+                        width: { ideal: 640, max: 1280 },  // Limit max resolution for speed
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 15, max: 30 }  // Lower frame rate for mobile webcams
+                    }
+                };
+                
+                showStatus('Starting camera...', 'info');
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                // Explicitly play the video (critical for some browsers)
+                try {
+                    await video.play();
+                    console.log('✅ Video playing successfully');
+                } catch (playError) {
+                    console.error('Video play error:', playError);
+                    showStatus('⚠️ Camera started but video display failed. Try clicking the video area.', 'warning');
+                }
+                
+                document.getElementById('startCamera').disabled = true;
+                document.getElementById('stopCamera').disabled = false;
+                document.getElementById('verifyBtn').disabled = false;
+                showStatus('Camera started! Position your face in the frame.', 'info');
+                
+                // Start face detection with optimized timing
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    console.log(`📹 Video dimensions: ${video.videoWidth}x${video.videoHeight}`);
+                    
+                    // Wait a moment for video to stabilize, then start detection
+                    setTimeout(() => {
+                        startFaceDetection();
+                    }, 1000);
+                });
+                
+            } catch (err) {
+                console.error('Camera error:', err);
+                showStatus('Error accessing camera: ' + err.message + '. Try selecting a different camera.', 'error');
+                stopCamera();
+            }
+        }
+
+        function startFaceDetection() {
+            // Optimized face detection - check every 2 seconds to reduce load
+            faceDetectionInterval = setInterval(() => {
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    detectFace();
+                }
+            }, 2000); // Increased from 200ms to 2000ms for better performance
+        }
+
+        function detectFace() {
+            try {
+                // Use lower quality for face detection to speed up processing
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg', 0.6); // Lower quality for detection
+                
+                // Send to backend for face detection (non-blocking)
+                fetch('/api/detect_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.bbox && data.bbox.length === 4) {
+                        // Enable verify button when face is detected
+                        document.getElementById('verifyBtn').disabled = false;
+                        showStatus('Face detected! Click "Verify Face" to authenticate.', 'success');
+                    } else {
+                        // Disable verify button when no face detected
+                        document.getElementById('verifyBtn').disabled = true;
+                    }
+                })
+                .catch(error => {
+                    // Silent fail for face detection - don't spam user with errors
+                    document.getElementById('verifyBtn').disabled = true;
+                });
+            } catch (error) {
+                console.error('Face detection error:', error);
+            }
+        }
+
+        async function verifyFace() {
+            if (video.videoWidth === 0) {
+                showStatus('Please start the camera first', 'error');
+                return;
+            }
+
+            // Capture current frame
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg', 0.9); // Higher quality for verification
+            
+            document.getElementById('verifyBtn').disabled = true;
+            showStatus('Verifying face...', 'info');
+            
+            try {
+                const response = await fetch('/api/verify_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('✅ Face verification successful!', 'success');
+                    showResult(true, data.username, data.similarity, 'Access Granted!', data.face_crop);
+                } else {
+                    showStatus('❌ ' + data.message, 'error');
+                    showResult(false, null, data.similarity || 0, 'Access Denied - Face not recognized', data.face_crop);
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+                showResult(false, null, 0, 'Verification failed due to error', null);
+            }
+
+            // Re-enable verification after 3 seconds
+            setTimeout(() => {
+                document.getElementById('verifyBtn').disabled = false;
+            }, 3000);
+        }
+
+        function showResult(success, username, similarity, message, faceCrop) {
+            const resultSection = document.getElementById('result-section');
+            const resultTitle = document.getElementById('result-title');
+            const resultUsername = document.getElementById('result-username');
+            const similarityScore = document.getElementById('similarity-score');
+            const resultMessage = document.getElementById('result-message');
+            const verifiedFaceSection = document.getElementById('verified-face-section');
+            const verifiedFace = document.getElementById('verified-face');
+
+            resultTitle.textContent = success ? '✅ Verification Successful' : '❌ Verification Failed';
+            resultUsername.textContent = username ? `Welcome, ${username}!` : 'Unknown User';
+            
+            if (similarity > 0) {
+                similarityScore.textContent = `Similarity Score: ${(similarity * 100).toFixed(1)}%`;
+                if (similarity >= 0.8) {
+                    similarityScore.className = 'similarity-score score-high';
+                } else if (similarity >= 0.6) {
+                    similarityScore.className = 'similarity-score score-medium';
+                } else {
+                    similarityScore.className = 'similarity-score score-low';
+                }
+            } else {
+                similarityScore.textContent = '';
+            }
+            
+            resultMessage.textContent = message;
+            
+            if (faceCrop) {
+                verifiedFace.src = faceCrop;
+                verifiedFaceSection.style.display = 'block';
+            } else {
+                verifiedFaceSection.style.display = 'none';
+            }
+            
+            resultSection.style.display = 'block';
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide info and success messages
+            if (type === 'info' || type === 'success') {
+                setTimeout(() => {
+                    if (statusDiv.className.includes(type)) {
+                        statusDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>

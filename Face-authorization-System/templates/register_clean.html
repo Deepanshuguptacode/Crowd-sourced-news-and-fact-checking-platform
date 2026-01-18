@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Face - Face Auth System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #11998e;
+        }
+
+        .camera-controls {
+            margin-bottom: 1rem;
+        }
+
+        .camera-switch {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .camera-switch select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .camera-info {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .camera-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            border: 3px solid #11998e;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+            object-fit: cover;
+        }
+
+        .video-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #fc466b, #3f5efb);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #11998e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #11998e;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ul {
+            margin-left: 1rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Home</a>
+        
+        <h1>👤 Register Your Face</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Enter your username</li>
+                <li><strong>Option 1:</strong> Use camera - Allow camera access and position your face</li>
+                <li><strong>Option 2:</strong> Upload image - Choose an image file from your device</li>
+                <li>Look straight at the camera or ensure clear face in uploaded image</li>
+                <li>Click "Capture Face" or "Upload Image" then "Register"</li>
+            </ul>
+        </div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+
+            <!-- Method Selection -->
+            <div class="form-group" style="text-align: center; margin: 2rem 0;">
+                <h3 style="color: #333; margin-bottom: 1rem;">Choose Registration Method:</h3>
+                <button type="button" id="cameraOption" class="btn btn-primary">📷 Use Camera</button>
+                <button type="button" id="uploadOption" class="btn btn-secondary">📁 Upload Image</button>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div id="upload-section" style="display: none; text-align: center; margin: 2rem 0; padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #667eea;">
+                <h3>📁 Upload Image</h3>
+                <input type="file" id="imageUpload" accept="image/*" style="margin: 1rem 0; padding: 10px; border: 2px dashed #667eea; border-radius: 8px;">
+                <br>
+                <button type="button" id="processUpload" class="btn btn-success" disabled>🔍 Process Uploaded Image</button>
+            </div>
+
+            <!-- Camera Section -->
+            <div id="camera-section" style="display: none;">
+                <div class="camera-section">
+                    <!-- Camera Selection -->
+                    <div class="camera-controls">
+                        <div class="camera-switch">
+                            <label for="cameraSelect" style="margin-right: 10px;">📹 Select Camera:</label>
+                            <select id="cameraSelect">
+                                <option value="">Loading cameras...</option>
+                            </select>
+                            <button type="button" id="refreshCameras" class="btn" style="padding: 5px 10px; margin-left: 10px;">🔄</button>
+                        </div>
+                        <div class="camera-info">
+                            💡 <strong>Tip:</strong> If using mobile as webcam, select it from the dropdown above. Mobile cameras typically provide better quality and faster processing.
+                        </div>
+                    </div>
+                    
+                    <div class="video-container">
+                        <video id="video" autoplay muted></video>
+                    </div>
+                    <br>
+                    <button type="button" id="startCamera" class="btn btn-primary">📷 Start Camera</button>
+                    <button type="button" id="captureBtn" class="btn btn-success" disabled>📸 Capture Face</button>
+                    <button type="button" id="stopCamera" class="btn" style="background: #dc3545; color: white;" disabled>⏹️ Stop Camera</button>
+                </div>
+            </div>
+            
+            <button type="submit" id="registerBtn" class="btn btn-secondary" disabled>✅ Register</button>
+            
+            <!-- Face Preview Section -->
+            <div id="face-preview-section" style="display: none; text-align: center; margin: 2rem 0; padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #11998e;">
+                <h3>📸 Face to be Embedded:</h3>
+                <p style="color: #666; margin-bottom: 1rem;">This is the face region that will be processed and stored as embedding</p>
+                <img id="face-preview" style="max-width: 200px; max-height: 200px; border: 2px solid #11998e; border-radius: 8px;" />
+                <br><br>
+                <p style="color: #555; font-size: 0.9rem;">✅ Face detected and ready for registration</p>
+            </div>
+        </form>
+
+        <div id="status"></div>
+        
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let capturedImageData = null;
+        let stream = null;
+        let faceDetectionInterval = null;
+        let availableCameras = [];
+
+        // Initialize camera list on page load
+        document.addEventListener('DOMContentLoaded', loadCameraList);
+        
+        document.getElementById('startCamera').addEventListener('click', startCamera);
+        document.getElementById('captureBtn').addEventListener('click', captureImage);
+        document.getElementById('registerForm').addEventListener('submit', registerFace);
+        document.getElementById('cameraOption').addEventListener('click', showCameraOption);
+        document.getElementById('uploadOption').addEventListener('click', showUploadOption);
+        document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+        document.getElementById('processUpload').addEventListener('click', processUploadedImage);
+        document.getElementById('refreshCameras').addEventListener('click', loadCameraList);
+        document.getElementById('stopCamera').addEventListener('click', stopCamera);
+
+        async function loadCameraList() {
+            try {
+                // Request camera permission first to get proper device labels
+                let tempStream = null;
+                try {
+                    tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                } catch (permError) {
+                    console.error('Camera permission denied:', permError);
+                    document.getElementById('cameraSelect').innerHTML = '<option value="">Camera permission denied</option>';
+                    showStatus('❌ Camera permission denied. Please allow camera access in your browser settings.', 'error');
+                    return;
+                }
+                
+                // Now enumerate devices (with permission granted, we get labels)
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                // Stop the temporary stream
+                if (tempStream) {
+                    tempStream.getTracks().forEach(track => track.stop());
+                }
+                
+                const cameraSelect = document.getElementById('cameraSelect');
+                cameraSelect.innerHTML = '';
+                
+                if (videoDevices.length === 0) {
+                    cameraSelect.innerHTML = '<option value="">No cameras found</option>';
+                    showStatus('❌ No cameras detected. Please connect a camera and refresh.', 'error');
+                    return;
+                }
+                
+                availableCameras = videoDevices;
+                
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    
+                    // Create user-friendly names
+                    let label = device.label || `Camera ${index + 1}`;
+                    if (label.toLowerCase().includes('mobile') || label.toLowerCase().includes('phone')) {
+                        label = `📱 ${label}`;
+                    } else if (label.toLowerCase().includes('usb') || label.toLowerCase().includes('webcam')) {
+                        label = `💻 ${label}`;
+                    } else {
+                        label = `📹 ${label}`;
+                    }
+                    
+                    option.textContent = label;
+                    cameraSelect.appendChild(option);
+                });
+                
+                // Select the first camera by default
+                if (videoDevices.length > 0) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                }
+                
+                console.log(`✅ Loaded ${videoDevices.length} camera(s)`);
+                
+            } catch (error) {
+                console.error('Error loading cameras:', error);
+                document.getElementById('cameraSelect').innerHTML = '<option value="">Error loading cameras</option>';
+                showStatus('❌ Error loading cameras: ' + error.message, 'error');
+            }
+        }
+
+        function showCameraOption() {
+            document.getElementById('camera-section').style.display = 'block';
+            document.getElementById('upload-section').style.display = 'none';
+            document.getElementById('face-preview-section').style.display = 'none';
+            document.getElementById('registerBtn').disabled = true;
+            capturedImageData = null;
+            
+            // Load camera list if not already loaded
+            if (availableCameras.length === 0) {
+                loadCameraList();
+            }
+        }
+
+        function showUploadOption() {
+            document.getElementById('camera-section').style.display = 'none';
+            document.getElementById('upload-section').style.display = 'block';
+            document.getElementById('face-preview-section').style.display = 'none';
+            document.getElementById('registerBtn').disabled = true;
+            capturedImageData = null;
+            
+            // Stop camera if running
+            stopCamera();
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+            }
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+                faceDetectionInterval = null;
+            }
+            
+            document.getElementById('startCamera').disabled = false;
+            document.getElementById('stopCamera').disabled = true;
+            document.getElementById('captureBtn').disabled = true;
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('processUpload').disabled = false;
+                showStatus('Image selected. Click "Process Uploaded Image" to continue.', 'info');
+            } else {
+                document.getElementById('processUpload').disabled = true;
+            }
+        }
+
+        function processUploadedImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('Please select an image file first', 'error');
+                return;
+            }
+
+            showStatus('Processing uploaded image...', 'info');
+            document.getElementById('processUpload').disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                capturedImageData = e.target.result;
+                
+                // Get face crop preview using the detect_face API
+                fetch('/api/detect_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: capturedImageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.face_crop) {
+                        // Show face crop preview
+                        document.getElementById('face-preview').src = data.face_crop;
+                        document.getElementById('face-preview-section').style.display = 'block';
+                        document.getElementById('registerBtn').disabled = false;
+                        showStatus('Face detected in uploaded image! Review the face region above and click Register to save.', 'success');
+                    } else {
+                        showStatus('❌ ' + (data.message || 'No face detected in uploaded image'), 'error');
+                        document.getElementById('processUpload').disabled = false;
+                    }
+                })
+                .catch(error => {
+                    showStatus('❌ Error processing uploaded image: ' + error.message, 'error');
+                    document.getElementById('processUpload').disabled = false;
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        async function startCamera() {
+            try {
+                // Stop any existing stream
+                stopCamera();
+                
+                const selectedCameraId = document.getElementById('cameraSelect').value;
+                
+                if (!selectedCameraId) {
+                    showStatus('Please select a camera first', 'error');
+                    return;
+                }
+                
+                // Optimized constraints for faster processing
+                const constraints = {
+                    video: {
+                        deviceId: { exact: selectedCameraId },
+                        width: { ideal: 640, max: 1280 },  // Limit max resolution for speed
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 15, max: 30 }  // Lower frame rate for mobile webcams
+                    }
+                };
+                
+                showStatus('Starting camera...', 'info');
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                // Explicitly play the video (critical for some browsers)
+                try {
+                    await video.play();
+                    console.log('✅ Video playing successfully');
+                } catch (playError) {
+                    console.error('Video play error:', playError);
+                    showStatus('⚠️ Camera started but video display failed. Try clicking the video area.', 'warning');
+                }
+                
+                document.getElementById('startCamera').disabled = true;
+                document.getElementById('stopCamera').disabled = false;
+                document.getElementById('captureBtn').disabled = false;
+                showStatus('Camera started! Position your face in the frame and wait for face detection.', 'info');
+                
+                // Start face detection with optimized timing
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    console.log(`📹 Video dimensions: ${video.videoWidth}x${video.videoHeight}`);
+                    
+                    // Wait a moment for video to stabilize, then start detection
+                    setTimeout(() => {
+                        startFaceDetection();
+                    }, 1000);
+                });
+                
+            } catch (err) {
+                console.error('Camera error:', err);
+                showStatus('Error accessing camera: ' + err.message + '. Try selecting a different camera.', 'error');
+                stopCamera();
+            }
+        }
+
+        function startFaceDetection() {
+            // Optimized face detection - check every 2 seconds to reduce load
+            faceDetectionInterval = setInterval(() => {
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    detectFace();
+                }
+            }, 2000); // Increased from 1000ms to 2000ms for better performance
+        }
+
+        function detectFace() {
+            try {
+                // Use lower quality for face detection to speed up processing
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg', 0.6); // Lower quality for detection
+                
+                // Send to backend for face detection (non-blocking)
+                fetch('/api/detect_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.bbox && data.bbox.length === 4) {
+                        // Enable capture button when face is detected
+                        document.getElementById('captureBtn').disabled = false;
+                        showStatus('Face detected! Click "Capture Face" to proceed.', 'success');
+                    } else {
+                        // Disable capture button when no face detected
+                        document.getElementById('captureBtn').disabled = true;
+                    }
+                })
+                .catch(error => {
+                    // Silent fail for face detection - don't spam user with errors
+                    document.getElementById('captureBtn').disabled = true;
+                });
+            } catch (error) {
+                console.error('Face detection error:', error);
+            }
+        }
+
+        function captureImage() {
+            if (video.videoWidth === 0) {
+                showStatus('Please start the camera first', 'error');
+                return;
+            }
+
+            // Stop face detection to free up resources
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+                faceDetectionInterval = null;
+            }
+            
+            // Capture the current frame with higher quality for registration
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.9); // Higher quality for final capture
+            
+            showStatus('Processing captured face...', 'info');
+            
+            // Get face crop preview using the detect_face API
+            fetch('/api/detect_face', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: capturedImageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.face_crop) {
+                    // Show face crop preview
+                    document.getElementById('face-preview').src = data.face_crop;
+                    document.getElementById('face-preview-section').style.display = 'block';
+                    document.getElementById('registerBtn').disabled = false;
+                    document.getElementById('captureBtn').disabled = true;
+                    showStatus('Face captured successfully! Review the face region above and click Register to save.', 'success');
+                } else {
+                    showStatus('❌ ' + (data.message || 'No face detected in captured image'), 'error');
+                    // Restart face detection
+                    startFaceDetection();
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error processing captured image: ' + error.message, 'error');
+                // Restart face detection
+                startFaceDetection();
+            });
+        }
+
+        async function registerFace(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showStatus('Please enter a username', 'error');
+                return;
+            }
+            
+            if (!capturedImageData) {
+                showStatus('Please capture a face or upload an image first', 'error');
+                return;
+            }
+            
+            showStatus('Registering face...', 'info');
+            document.getElementById('registerBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/register_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        image: capturedImageData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('✅ Face registered successfully! You can now use face verification.', 'success');
+                    
+                    // Reset form
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('face-preview-section').style.display = 'none';
+                    document.getElementById('camera-section').style.display = 'none';
+                    document.getElementById('upload-section').style.display = 'none';
+                    capturedImageData = null;
+                    
+                    // Stop camera
+                    stopCamera();
+                } else {
+                    showStatus('❌ ' + data.message, 'error');
+                    document.getElementById('registerBtn').disabled = false;
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+                document.getElementById('registerBtn').disabled = false;
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide info and success messages
+            if (type === 'info' || type === 'success') {
+                setTimeout(() => {
+                    if (statusDiv.className.includes(type)) {
+                        statusDiv.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>
