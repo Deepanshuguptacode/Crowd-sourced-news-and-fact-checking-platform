@@ -1,0 +1,17 @@
+[Unit]
+Description=VoxVeritas Face Authentication Service
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/voxveritas/Face-authorization-System
+Environment="PATH=/home/YOUR_USERNAME/voxveritas/Face-authorization-System/venv/bin"
+ExecStart=/home/YOUR_USERNAME/voxveritas/Face-authorization-System/venv/bin/python app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

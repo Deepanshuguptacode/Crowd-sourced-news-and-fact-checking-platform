@@ -1,9 +1,10 @@
 const { GoogleGenAI, Type } = require('@google/genai');
+const geminiKeyRotation = require('./geminiKeyRotation');
 require('dotenv').config();
 
-// Initialize Google GenAI with proper API key configuration
-const ai = new GoogleGenAI({ 
-  apiKey: process.env.GEMINI_API_KEY || "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8"
+// Initialize Google GenAI with proper API key configuration using rotation service
+const getAI = () => new GoogleGenAI({ 
+  apiKey: geminiKeyRotation.getApiKey()
 });
 
 const generateGroupContentFn = {
@@ -51,8 +52,9 @@ The description should read like an evolving summary that reflects the collectiv
 Return only the JSON arguments for the function invocation.`
     ].join('');
 
+    const ai = getAI();
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: [
         { role: 'user', parts: [{ text: systemPrompt }] }
       ],

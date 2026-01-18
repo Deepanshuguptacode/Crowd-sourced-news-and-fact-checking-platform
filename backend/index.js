@@ -114,7 +114,9 @@ console.log('Environment check:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', PORT);
 console.log('MONGODB_URI:', MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials
-console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✓ Set' : '✗ Missing');
+console.log('GEMINI_API_KEY_1:', process.env.GEMINI_API_KEY_1 ? '✓ Set' : '✗ Missing');
+console.log('GEMINI_API_KEY_2:', process.env.GEMINI_API_KEY_2 ? '✓ Set' : '✗ Missing');
+console.log('GEMINI_API_KEY_3:', process.env.GEMINI_API_KEY_3 ? '✓ Set' : '✗ Missing');
 
 mongoose
   .connect(MONGODB_URI)

@@ -6,7 +6,9 @@ console.log('🚀 Starting Crowd-Sourced News Platform Backend...\n');
 // Validate required environment variables
 const requiredEnvVars = [
   'MONGODB_URI',
-  'GEMINI_API_KEY',
+  'GEMINI_API_KEY_1',
+  'GEMINI_API_KEY_2',
+  'GEMINI_API_KEY_3',
   'JWT_SECRET'
 ];
 

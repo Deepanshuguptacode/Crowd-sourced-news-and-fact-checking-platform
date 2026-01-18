@@ -114,7 +114,7 @@ const aiVerdictSchema = new mongoose.Schema({
   generatedBy: {
     model: {
       type: String,
-      default: 'Gemini-Pro'
+      default: 'gemini-3-flash-preview'
     },
     version: {
       type: String,

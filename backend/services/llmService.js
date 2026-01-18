@@ -1,4 +1,5 @@
 const { GoogleGenAI } = require('@google/genai');
+const geminiKeyRotation = require('./geminiKeyRotation');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -7,12 +8,24 @@ class LLMService {
     // Ensure we load dotenv first
     require('dotenv').config();
     
-    this.apiKey = process.env.GEMINI_API_KEY || "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8";
+    // Use rotation service for API key
+    this.geminiKeyRotation = geminiKeyRotation;
     
-    // Initialize with explicit API key configuration to avoid ADC issues
+    // Initialize with rotated API key configuration
     this.genAI = new GoogleGenAI({ 
-      apiKey: this.apiKey,
+      apiKey: this.geminiKeyRotation.getApiKey(),
       // Force API key authentication instead of ADC
+      authConfig: {
+        keyFilename: undefined,
+        credentials: undefined
+      }
+    });
+  }
+  
+  // Get fresh GenAI instance with rotated key
+  getGenAI() {
+    return new GoogleGenAI({ 
+      apiKey: this.geminiKeyRotation.getApiKey(),
       authConfig: {
         keyFilename: undefined,
         credentials: undefined
@@ -32,7 +45,7 @@ class LLMService {
 
   async generateGroupDescription(commentText) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
       
       const prompt = `Generate a brief, descriptive explanation (2-3 sentences) for a comment group based on this comment:
 
@@ -65,7 +78,7 @@ The description should explain what type of comments would be grouped together w
         };
       }
 
-      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
       
       // Create a detailed prompt with group descriptions
       const groupDescriptions = existingGroups.map((group, index) => 
@@ -156,7 +169,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -258,7 +271,7 @@ Return only the JSON arguments for the function invocation.`
       ].join('');
 
       const response = await this.genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
@@ -326,7 +339,7 @@ Return only the JSON arguments for the function invocation.`
 
   async regenerateGroupNameWithGemini(comments, currentGroupName) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
       const commentsText = comments.map((comment, index) => 
         `${index + 1}. ${comment}`
@@ -402,7 +415,7 @@ Return only the JSON arguments for the function invocation.`
   // New method for off-topic detection
   async analyzeCommentRelevance(comment, debateTitle, debateDescription) {
     try {
-      if (this.apiKey && this.apiKey == "AIzaSyCBp-890BKo0InjWvJLOI9Xh-8JWvK02q8") {
+      if (this.geminiKeyRotation.isConfigured()) {
         return await this.analyzeRelevanceWithGemini(comment, debateTitle, debateDescription);
       } else {
         return await this.simpleRelevanceAnalysis(comment, debateTitle, debateDescription);
@@ -467,7 +480,7 @@ Return only the JSON arguments for the function invocation.`
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],
