@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, Upload, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import config from '../config';
 
 const FaceCapture = ({ 
   onCapture, 
@@ -102,7 +103,7 @@ const FaceCapture = ({
   // Test face detection and show preview
   const testFaceDetection = useCallback(async (imageDataUrl) => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/detect_face', {
+      const response = await fetch(`${config.FACE_AUTH_URL}/api/detect_face`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

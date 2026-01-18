@@ -5,6 +5,7 @@ import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, ArrowLeft, Briefcase, Camera } from 'lucide-react';
 import FaceCapture from '../components/FaceCapture';
+import config from '../config';
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ const SignupForm = () => {
     // Check for duplicate face
     if (!skipFaceAuth && imageDataUrl) {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/check_duplicate_face', {
+        const response = await fetch(`${config.FACE_AUTH_URL}/api/check_duplicate_face`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
