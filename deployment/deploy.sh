@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 # Get current username
 CURRENT_USER=$(whoami)
 HOME_DIR="/home/$CURRENT_USER"
-PROJECT_DIR="$HOME_DIR/voxveritas"
+PROJECT_DIR="$HOME_DIR/Crowd-sourced-news-and-fact-checking-platform"
 
 echo -e "${YELLOW}Step 1: Updating system packages...${NC}"
 sudo apt update && sudo apt upgrade -y
