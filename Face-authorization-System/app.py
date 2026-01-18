@@ -135,8 +135,51 @@ def detect_face():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
-@app.route('/api/register_face', methods=['POST'])
+@app.route('/api/extract_embedding', methods=['POST', 'OPTIONS'])
+def extract_embedding_endpoint():
+    """Extract face embedding from image without registration"""
+    if request.method == 'OPTIONS':
+        return '', 204
+    
+    try:
+        data = request.get_json()
+        image_data = data.get('image')
+        
+        if not image_data:
+            return jsonify({
+                'success': False,
+                'message': 'No image provided'
+            }), 400
+        
+        # Get embedding using existing function
+        embedding, bbox, face_crop = get_embedding_from_image_data(image_data)
+        
+        if embedding is None:
+            return jsonify({
+                'success': False,
+                'message': 'No face detected in image'
+            }), 400
+        
+        return jsonify({
+            'success': True,
+            'embedding': embedding.tolist(),
+            'bbox': bbox.tolist() if bbox is not None else None,
+            'face_crop': face_crop,
+            'message': 'Embedding extracted successfully'
+        }), 200
+        
+    except Exception as e:
+        print(f"Extract embedding error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
+
+@app.route('/api/register_face', methods=['POST', 'OPTIONS'])
 def register_face():
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
         data = request.json
         username = data.get('username')
@@ -263,8 +306,11 @@ def verify_face():
         print(f"💥 [VERIFICATION] ERROR: {str(e)}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
-@app.route('/api/check_duplicate_face', methods=['POST'])
+@app.route('/api/check_duplicate_face', methods=['POST', 'OPTIONS'])
 def check_duplicate_face():
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     """Check if a face already exists in the database"""
     try:
         data = request.get_json()
