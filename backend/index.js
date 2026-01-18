@@ -30,9 +30,13 @@ const corsOptions = {
     'http://127.0.0.1:4173',
     'https://voxveritas.me',
     'https://www.voxveritas.me',
-    // Add your Render frontend URL here when deployed
-    process.env.FRONTEND_URL || 'https://voxveritas.vercel.app'
-  ],
+    'https://voxveritas.vercel.app',
+    'https://voxveritas-frontend.vercel.app',
+    // GCP VM IP
+    'http://34.131.44.0',
+    // Environment variable for custom frontend URL
+    process.env.FRONTEND_URL
+  ].filter(Boolean), // Remove undefined values
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type',
