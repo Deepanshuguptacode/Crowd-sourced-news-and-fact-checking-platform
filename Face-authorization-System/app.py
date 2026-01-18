@@ -190,8 +190,11 @@ def register_face():
         print(f"💥 [REGISTRATION] ERROR: {str(e)}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
-@app.route('/api/verify_face', methods=['POST'])
+@app.route('/api/verify_face', methods=['POST', 'OPTIONS'])
 def verify_face():
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
         data = request.json
         image_data = data.get('image')
