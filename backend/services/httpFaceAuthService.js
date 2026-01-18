@@ -202,7 +202,7 @@ class HttpFaceAuthService {
     /**
      * Verify face match using cosine similarity
      */
-    verifyFaceMatch(testEmbedding, storedEmbedding, threshold = 0.6) {
+    verifyFaceMatch(testEmbedding, storedEmbedding, threshold = 0.3) {
         try {
             // Calculate cosine similarity
             const dotProduct = testEmbedding.reduce((sum, a, i) => sum + a * storedEmbedding[i], 0);

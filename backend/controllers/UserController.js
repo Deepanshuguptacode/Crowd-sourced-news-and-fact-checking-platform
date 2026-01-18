@@ -168,7 +168,7 @@ const login = async (req, res, UserModel) => {
         const matchResult = faceAuthService.verifyFaceMatch(
           faceResult.embedding, 
           user.faceEmbedding, 
-          0.6 // threshold
+          0.3 // threshold
         );
 
         if (matchResult.success && matchResult.matched) {
@@ -392,7 +392,7 @@ const verifyFace = async (req, res, UserModel) => {
       const verificationResult = await faceAuthService.verifyFaceMatch(
         faceResult.embedding, 
         storedEmbeddings, 
-        0.6 // threshold
+        0.3 // threshold
       );
 
       if (verificationResult.success && verificationResult.matched_user_id) {

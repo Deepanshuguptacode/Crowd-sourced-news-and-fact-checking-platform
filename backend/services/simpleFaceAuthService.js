@@ -87,7 +87,7 @@ except Exception as e:
     });
   }
 
-  async verifyFaceMatch(testEmbedding, storedEmbeddings, threshold = 0.6) {
+  async verifyFaceMatch(testEmbedding, storedEmbeddings, threshold = 0.3) {
     return new Promise((resolve, reject) => {
       const pythonScript = `
 import sys
@@ -103,7 +103,7 @@ try:
     input_data = json.loads(sys.stdin.read())
     test_embedding = input_data.get('test_embedding')
     stored_embeddings = input_data.get('stored_embeddings', {})
-    threshold = input_data.get('threshold', 0.6)
+    threshold = input_data.get('threshold', 0.3)
     
     best_similarity = 0
     best_match_id = None
