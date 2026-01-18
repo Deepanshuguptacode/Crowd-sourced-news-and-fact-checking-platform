@@ -7,16 +7,22 @@ from pymongo import MongoClient
 from datetime import datetime
 import json
 import io
+import os
 from PIL import Image
 import matplotlib
 matplotlib.use('Agg')  # Set backend before importing pyplot
 from insightface.app import FaceAnalysis
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# MongoDB connection
-client = MongoClient('mongodb://localhost:27017/')
+# MongoDB connection with Atlas support
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+client = MongoClient(MONGODB_URI)
 db = client['face_auth_db']
 users_collection = db['users']
 

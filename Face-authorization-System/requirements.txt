@@ -17,6 +17,7 @@ matplotlib==3.7.2
 
 # Database
 pymongo==4.5.0
+python-dotenv==1.0.0
 
 # Additional Dependencies
 Werkzeug==2.3.7
