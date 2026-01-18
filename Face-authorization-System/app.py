@@ -260,6 +260,60 @@ def verify_face():
         print(f"💥 [VERIFICATION] ERROR: {str(e)}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
+@app.route('/api/check_duplicate_face', methods=['POST'])
+def check_duplicate_face():
+    """Check if a face already exists in the database"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'image' not in data:
+            return jsonify({
+                'success': False,
+                'message': 'No image data provided'
+            }), 400
+        
+        # Extract embedding from the uploaded image
+        embedding = get_embedding_from_image_data(data['image'])
+        
+        if embedding is None:
+            return jsonify({
+                'success': False,
+                'message': 'No face detected in image'
+            }), 400
+        
+        # Check against all existing users
+        existing_users = list(users_collection.find())
+        
+        for user in existing_users:
+            if 'face_embedding' in user:
+                stored_embedding = np.array(user['face_embedding'])
+                # Calculate cosine similarity
+                similarity = np.dot(embedding, stored_embedding) / (
+                    np.linalg.norm(embedding) * np.linalg.norm(stored_embedding)
+                )
+                
+                # If similarity > 0.7, it's likely the same person
+                if similarity > 0.7:
+                    return jsonify({
+                        'success': False,
+                        'isDuplicate': True,
+                        'message': f'This face is already registered for user: {user.get("username", "Unknown")}',
+                        'similarity': float(similarity)
+                    }), 200
+        
+        # No duplicate found
+        return jsonify({
+            'success': True,
+            'isDuplicate': False,
+            'message': 'No duplicate face found'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error checking duplicate: {str(e)}'
+        }), 500
+
 @app.route('/api/get_users')
 def get_users():
     try:
