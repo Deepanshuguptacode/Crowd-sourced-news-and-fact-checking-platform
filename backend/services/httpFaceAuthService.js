@@ -8,8 +8,7 @@ const axios = require('axios');
  */
 class HttpFaceAuthService {
     constructor() {
-        // Use environment variable or default to localhost
-        this.faceAuthUrl = process.env.FACE_AUTH_URL || 'http://127.0.0.1:5000'; // Face-authorization-System Flask app
+        this.faceAuthUrl = 'http://127.0.0.1:5000'; // Face-authorization-System Flask app
         this.timeout = 30000; // 30 second timeout
     }
 
