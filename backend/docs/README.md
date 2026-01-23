@@ -45,6 +45,26 @@ This documentation is organized into logical parts to help you understand the en
 - **[5.5 Verification Services](./22-verification-services.md)** - News verification logic
 - **[5.6 Schedulers & Background Jobs](./23-schedulers.md)** - Cron jobs and cleanup
 
+### ⭐ Special Guides: Face Authentication
+- **[FACE_AUTHENTICATION_COMPLETE_GUIDE.md](./FACE_AUTHENTICATION_COMPLETE_GUIDE.md)** - 📘 **COMPREHENSIVE GUIDE**
+  - What is Face Authentication? Complete explanation from basics
+  - Mathematics behind face recognition (cosine similarity, embeddings)
+  - ArcFace & InsightFace deep dive
+  - Python Flask service code walkthrough (line by line)
+  - Node.js integration service explanation
+  - Complete authentication flows with diagrams
+  - Security considerations & anti-spoofing
+  - Interview Questions & Answers (17+ questions)
+  - Troubleshooting guide
+  
+- **[FACE_AUTH_FRONTEND_AND_SETUP.md](./FACE_AUTH_FRONTEND_AND_SETUP.md)** - Frontend & Setup
+  - FaceCapture React component explained
+  - Complete setup instructions (step by step)
+  - Dependencies & requirements
+  - Configuration files
+  - Production deployment guide
+  - Common error messages & solutions
+
 ### Part 6: Security & Middleware
 - **[6.1 Authentication Middleware](./24-auth-middleware.md)** - JWT authentication
 - **[6.2 Security Best Practices](./25-security.md)** - CORS, validation, rate limiting
