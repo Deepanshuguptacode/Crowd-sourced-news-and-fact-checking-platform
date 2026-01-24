@@ -3,7 +3,7 @@
 
 ## 1. **Project Overview**
 
-This project is a full-stack web application designed to combat misinformation by allowing users to submit, discuss, and fact-check news articles. It supports multiple user roles (Normal, Community, Expert), a voting system, commenting, and image uploads. The stack includes **React** (frontend), **Node.js/Express** (backend), and **MongoDB** (database).
+This project is a full-stack web application designed to combat misinformation by allowing users to submit, discuss, and fact-check news articles. It supports multiple user roles (Normal, Community, Expert), a voting system, commenting, and image uploads. The stack includes **React** (frontend), **Node.js/Express** (backend), and **MongoDB** (database)..
 
 ---
 
