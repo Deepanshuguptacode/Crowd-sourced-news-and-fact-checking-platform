@@ -80,9 +80,10 @@ const Header = ({ onMenuToggle }) => {
 
   return (
     <div className="w-full">
-      <header className="w-full bg-white/95 dark:bg-[#0D1117] backdrop-blur-lg text-gray-800 dark:text-white shadow-lg border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300">
-        <div className="max-w-7xl  px-2 sm:px-2 lg:px-2">
-          <div className="flex justify-between items-center h-16 gap-4">
+      <header className="w-full bg-white dark:bg-[#0D1117] backdrop-blur-lg text-gray-800 dark:text-white shadow-lg transition-all duration-300">
+        <div className="border-b border-gray-200 dark:border-slate-700">
+          <div className="max-w-7xl mx-auto px-2 sm:px-2 lg:px-2">
+            <div className="flex justify-between items-center h-16 gap-4">
             {/* Left side - Logo and Navigation */}
             <div className="flex items-center space-x-12">
               <button 
@@ -236,9 +237,10 @@ const Header = ({ onMenuToggle }) => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Mobile search overlay */}
-        {showSearch && (
+      {/* Mobile search overlay */}
+      {showSearch && (
           <div className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg">
             <div className="px-4 py-3">
               <div className="relative">

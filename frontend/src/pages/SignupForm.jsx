@@ -3,447 +3,295 @@ import { useNavigate, Link } from "react-router-dom";
 import { UserContext } from "../context/userContext";
 import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, ArrowLeft, Briefcase, Camera } from 'lucide-react';
-import FaceCapture from '../components/FaceCapture';
-import config from '../config';
+import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, Briefcase, Camera, Shield, Users, Award, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import FaceCapture from "../components/FaceCapture";
+import config from "../config";
+import NavigationHeader from "../components/NavigationHeader";
+
+const roleContent = {
+  normal: { title: "Join as an Onlooker", subtitle: "Start Your Journey", icon: Eye, features: [{ text: "Access verified news", icon: Sparkles }, { text: "Browse fact-checked articles", icon: Shield }, { text: "Stay informed daily", icon: Users }] },
+  community: { title: "Become a Community Member", subtitle: "Make Your Voice Heard", icon: Users, features: [{ text: "Submit news articles", icon: Sparkles }, { text: "Participate in verification", icon: Shield }, { text: "Build your reputation", icon: Award }] },
+  expert: { title: "Register as an Expert", subtitle: "Lead the Fact-Checking", icon: Award, features: [{ text: "Provide expert insights", icon: Shield }, { text: "Verify complex claims", icon: Sparkles }, { text: "Guide the community", icon: Award }] }
+};
+
+const styles = {
+  input: "w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border-2 border-gray-200 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300",
+  label: "block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1",
+  icon: "absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors duration-300"
+};
+
+const InputField = ({ id, type = "text", icon: Icon, placeholder, value, onChange, children }) => (
+  <div className="relative group">
+    <Icon className={styles.icon} />
+    <input type={type} id={id} value={value} onChange={onChange} className={styles.input + (children ? " pr-12" : "")} placeholder={placeholder} required />
+    {children}
+  </div>
+);
 
 const SignupForm = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    userType: "normal",
-    confirmPassword: "",
-    profession: ""
-  });
+  const [formData, setFormData] = useState({ name: "", username: "", email: "", password: "", confirmPassword: "", userType: "normal", profession: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [faceImage, setFaceImage] = useState(null);
   const [skipFaceAuth, setSkipFaceAuth] = useState(false);
   const [showFaceCapture, setShowFaceCapture] = useState(false);
+
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
+  const currentRole = roleContent[formData.userType];
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData({
-      ...formData,
-      [id]: value,
-    });
-  };
+  const handleInputChange = (e) => setFormData({ ...formData, [e.target.id]: e.target.value });
 
   const handleFaceCapture = async (imageDataUrl) => {
     setFaceImage(imageDataUrl);
-    
-    // Check for duplicate face
     if (!skipFaceAuth && imageDataUrl) {
       try {
-        const response = await fetch(`${config.FACE_AUTH_URL}/api/check_duplicate_face`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ image: imageDataUrl }),
-        });
-
-        const result = await response.json();
-        
+        const res = await fetch(`${config.FACE_AUTH_URL}/api/check_duplicate_face`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: imageDataUrl }) });
+        const result = await res.json();
         if (result.success && result.isDuplicate) {
-          const scorePercent = (result.similarity * 100).toFixed(1);
-          toast.error(`This face is already registered! Match: ${scorePercent}% with user: ${result.existingUsername || 'existing user'}`, {
-            autoClose: 5000
-          });
-          setFaceImage(null); // Clear the captured image
+          toast.error(`Face already registered (${(result.similarity * 100).toFixed(1)}%)`);
+          setFaceImage(null);
           return;
         }
-        
         toast.success("Face captured successfully!");
-      } catch (error) {
-        console.error('Duplicate check error:', error);
-        toast.warning("Face captured, but couldn't check for duplicates. Proceeding...");
-      }
-    } else {
-      toast.success("Face captured successfully!");
+      } catch { toast.warning("Face captured, duplicate check skipped."); }
     }
   };
 
-  const handleFaceCaptureError = (error) => {
-    toast.error("Face capture failed: " + error);
-  };
+  const handleFaceCaptureError = (err) => toast.error("Face capture failed: " + err);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords don't match!");
-      return;
-    }
-
-    // Check if user wants face auth but hasn't captured face
+    if (formData.password !== formData.confirmPassword) return toast.error("Passwords don't match");
     if (!skipFaceAuth && !faceImage) {
-      toast.error("Please capture your face for authentication or choose to skip face authentication.");
+      toast.error("Capture face or disable face authentication");
       setShowFaceCapture(true);
       return;
     }
-
     setLoading(true);
-
     try {
-      const signupData = {
+      const payload = {
         name: formData.name,
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        ...(formData.userType === 'expert' && { profession: formData.profession }),
-        ...(faceImage && !skipFaceAuth && { faceImage })
+        confirmPassword: formData.confirmPassword,
+        userType: formData.userType
       };
-
-      const response = await authAPI.signup(formData.userType, signupData);
       
-      if (response.token) {
-        // Auto-login after successful signup
-        login({
-          ...response.user,
-          userType: formData.userType
-        }, response.token);
-
-        const message = response.hasFaceAuth 
-          ? "Signup successful with face authentication!" 
-          : "Signup successful!";
-        toast.success(message);
-        navigate("/home");
-      } else {
-        const message = response.hasFaceAuth 
-          ? "Signup successful with face authentication! Please wait for admin approval." 
-          : "Signup successful! Please wait for admin approval.";
-        toast.success(message);
-        navigate("/login");
+      if (formData.userType === "expert" && formData.profession) {
+        payload.profession = formData.profession;
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Signup failed!");
+      
+      if (faceImage && !skipFaceAuth) {
+        payload.faceImage = faceImage;
+      }
+      
+      const res = await authAPI.signup(formData.userType, payload);
+      if (res.token) {
+        login({ ...res.user, userType: formData.userType }, res.token);
+        navigate("/home");
+      } else navigate("/login");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div 
-      className="min-h-screen bg-gray-50 dark:bg-[#0D1117] stage-1-background relative overflow-x-hidden transition-colors duration-300"
-    >
-      {/* Stage 2: Animated Logo */}
-      <div className="fixed top-8 left-8 z-50 stage-2-logo">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">N</span>
-          </div>
-          <span className="text-gray-900 dark:text-white font-semibold text-xl">NewsCheck</span>
-        </div>
-      </div>
-
-      {/* Stage 3: Main Signup Form */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-4 stage-3-form">
-        <div className="w-full max-w-5xl mx-auto">
-          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
-            <div className="grid lg:grid-cols-2 min-h-[580px]">
-            
-            {/* Left Panel - Welcome Content */}
-            <div className="bg-gradient-to-br from-indigo-600 via-purple-700 to-blue-800 p-6 lg:p-8 flex flex-col justify-center text-white relative overflow-hidden">
-              <div className="absolute inset-0 bg-black/10"></div>
-              <div className="relative z-10">
-                <h1 className="text-2xl lg:text-3xl font-bold mb-3 lg:mb-4 leading-tight">
-                  Join the Future of
-                  <span className="block text-indigo-200">News Verification</span>
-                </h1>
-                <p className="text-indigo-100 text-sm lg:text-base mb-4 lg:mb-6 leading-relaxed">
-                  Be part of a global community dedicated to fighting misinformation 
-                  and promoting truth in journalism.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-indigo-300 rounded-full animate-pulse"></div>
-                    <span className="text-indigo-100 text-sm lg:text-base">Submit and verify news articles</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-indigo-300 rounded-full animate-pulse"></div>
-                    <span className="text-indigo-100 text-sm lg:text-base">Collaborate with fact-checking experts</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-indigo-300 rounded-full animate-pulse"></div>
-                    <span className="text-indigo-100 text-sm lg:text-base">Build a trusted news ecosystem</span>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/20 dark:from-[#0D1117] dark:to-slate-900">
+      <NavigationHeader />
+      <div className="mt-20 px-4 pb-12 flex justify-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full max-w-6xl bg-white/70 dark:bg-slate-800/70 backdrop-blur rounded-2xl shadow-xl overflow-hidden"
+        >
+          <div className="grid lg:grid-cols-2">
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 sm:p-8 flex flex-col justify-center text-white relative overflow-hidden min-h-[400px] sm:min-h-[450px]">
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
               </div>
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={formData.userType} 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: -10 }} 
+                  transition={{ duration: 0.4, ease: "easeInOut" }} 
+                  className="relative z-10 space-y-4 sm:space-y-6"
+                >
+                  <currentRole.icon className="w-12 h-12 sm:w-14 sm:h-14 opacity-90" strokeWidth={1.5} />
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 leading-tight">{currentRole.title}</h1>
+                    <p className="text-lg sm:text-xl text-white/90">{currentRole.subtitle}</p>
+                  </div>
+                  <div className="space-y-3 sm:space-y-4 pt-2">
+                    {currentRole.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-start space-x-3 group">
+                        <div className="mt-1 p-2 bg-white/20 rounded-lg group-hover:bg-white/30 transition-all duration-300">
+                          <feature.icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm sm:text-base text-white/90 group-hover:text-white transition-colors duration-300">{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            {/* Right Panel - Signup Form */}
-            <div className="p-4 lg:p-6 flex flex-col justify-center">
-              <div className="max-w-md mx-auto w-full">
-                <div className="mb-4">
-                  <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Account</h2>
-                  <p className="text-gray-600 dark:text-slate-400 text-sm">Join the NewsCheck community</p>
+            <motion.div 
+              className="p-6 sm:p-8 flex flex-col justify-start lg:justify-center lg:max-h-screen lg:overflow-y-auto scrollbar-hide max-w-md mx-auto w-full" 
+              initial={{ opacity: 0, x: 20 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            >
+              <div className="space-y-3">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">Create Account</h2>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-slate-400">Join the truth revolution</p>
                 </div>
-
                 <form onSubmit={handleSubmit} className="space-y-3">
-                  {/* User Type Selection */}
                   <div>
-                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                      Account Type
-                    </label>
-                    <select
-                      id="userType"
-                      value={formData.userType}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                      required
-                    >
+                    <label htmlFor="userType" className={styles.label}>Account Type</label>
+                    <select id="userType" value={formData.userType} onChange={handleInputChange} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border-2 border-gray-200 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300 cursor-pointer" required>
                       <option value="normal">Onlooker</option>
                       <option value="community">Community User</option>
                       <option value="expert">Expert User</option>
                     </select>
                   </div>
-
-                  {/* Name and Username Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          id="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                          placeholder="Full name"
-                          required
-                        />
+                  <div className="grid grid-cols-2 gap-3">
+                    {['name', 'username'].map((field) => (
+                      <div key={field}>
+                        <label htmlFor={field} className={styles.label}>{field === 'name' ? 'Full Name' : 'Username'}</label>
+                        <InputField id={field} icon={User} placeholder={field === 'name' ? 'Full name' : 'Username'} value={formData[field]} onChange={handleInputChange} />
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                        Username
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          id="username"
-                          value={formData.username}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                          placeholder="Username"
-                          required
-                        />
-                      </div>
-                    </div>
+                    ))}
                   </div>
-
-                  {/* Email Field */}
                   <div>
-                    <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                      <input
-                        type="email"
-                        id="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full pl-9 pr-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </div>
+                    <label htmlFor="email" className={styles.label}>Email Address</label>
+                    <InputField id="email" type="email" icon={Mail} placeholder="you@example.com" value={formData.email} onChange={handleInputChange} />
                   </div>
-
-                  {/* Password Fields Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          id="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-9 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                          placeholder="Password"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                        Confirm Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                        <input
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          id="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-9 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                          placeholder="Confirm"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors"
-                        >
-                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Profession Field (for experts) */}
-                  {formData.userType === "expert" && (
-                    <div className="transition-all duration-300 ease-in-out">
-                      <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium mb-1">
-                        Profession
-                      </label>
-                      <div className="relative">
-                        <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          id="profession"
-                          value={formData.profession}
-                          onChange={handleInputChange}
-                          className="w-full pl-10 pr-3 py-2.5 bg-gray-100 dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
-                          placeholder="Enter your profession"
-                          required
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Face Authentication Section */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-700/50 p-4 rounded-xl border border-blue-200 dark:border-slate-600">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Face Authentication</h3>
-                      <span className="text-sm text-gray-500 dark:text-slate-400">(Optional but recommended)</span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
-                      Enhance your account security by registering your face for quick and secure login.
-                    </p>
-
-                    {/* Face Auth Options */}
-                    <div className="space-y-3">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!skipFaceAuth}
-                          onChange={(e) => setSkipFaceAuth(!e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                        <span className="text-sm text-gray-700 dark:text-slate-300">
-                          Enable face authentication for this account
-                        </span>
-                      </label>
-
-                      {!skipFaceAuth && (
-                        <div className="transition-all duration-300 ease-in-out">
-                          <button
-                            type="button"
-                            onClick={() => setShowFaceCapture(!showFaceCapture)}
-                            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
-                          >
-                            <Camera className="w-4 h-4" />
-                            <span>{faceImage ? 'Update Face Image' : 'Capture Face Image'}</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'password', show: showPassword, setShow: setShowPassword, label: 'Password', placeholder: 'Password' },
+                      { id: 'confirmPassword', show: showConfirmPassword, setShow: setShowConfirmPassword, label: 'Confirm', placeholder: 'Confirm' }
+                    ].map((field) => (
+                      <div key={field.id}>
+                        <label htmlFor={field.id} className={styles.label}>{field.label}</label>
+                        <InputField id={field.id} type={field.show ? 'text' : 'password'} icon={Lock} placeholder={field.placeholder} value={formData[field.id]} onChange={handleInputChange}>
+                          <button type="button" onClick={() => field.setShow(!field.show)} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-white transition-colors duration-300">
+                            {field.show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>
-
-                          {showFaceCapture && (
-                            <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
-                              <FaceCapture
-                                onCapture={handleFaceCapture}
-                                onError={handleFaceCaptureError}
-                                mode="both"
-                                captureButtonText="Capture Your Face"
-                                uploadButtonText="Upload Face Photo"
-                                className="w-full"
-                              />
-                            </div>
-                          )}
-
-                          {faceImage && (
-                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                              <p className="text-sm text-green-700 dark:text-green-300 flex items-center space-x-2">
-                                <Camera className="w-4 h-4" />
-                                <span>Face image captured successfully! You can now create your account.</span>
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                        </InputField>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-2.5 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : (
-                      <>
-                        <UserPlus className="w-5 h-5" />
-                        <span>Create Account</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                {/* Stage 4: Navigation Links */}
-                <div className="mt-4 stage-4-details">
-                  <div className="text-center">
-                    <p className="text-gray-600 dark:text-slate-400 mb-3 text-sm">
-                      Already have an account?{' '}
-                      <Link 
-                        to="/login" 
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors inline-flex items-center space-x-1"
+                  <AnimatePresence mode="wait">
+                    {formData.userType === "expert" && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }} 
+                        animate={{ opacity: 1, height: 'auto' }} 
+                        exit={{ opacity: 0, height: 0 }} 
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
                       >
-                        <LogIn className="w-4 h-4" />
-                        <span>Sign In</span>
-                      </Link>
-                    </p>
-                    
-                    <Link 
-                      to="/" 
-                      className="text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 text-xs transition-colors inline-flex items-center space-x-1"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      <span>Back to Home</span>
-                    </Link>
-                  </div>
-                </div>
+                        <label htmlFor="profession" className={styles.label}>Profession</label>
+                        <InputField id="profession" icon={Briefcase} placeholder="Your profession" value={formData.profession} onChange={handleInputChange} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div 
+                    className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-slate-800/50 dark:to-slate-700/50 p-4 rounded-xl border-2 border-blue-200/50 dark:border-slate-600" 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Face Authentication</h3>
+                        <span className="text-xs text-gray-500 dark:text-slate-400">(Optional)</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked={!skipFaceAuth} onChange={(e) => setSkipFaceAuth(!e.target.checked)} className="sr-only peer" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+                      </label>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Add face recognition for enhanced security</p>
+                    <AnimatePresence mode="wait">
+                      {!skipFaceAuth && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }} 
+                          animate={{ opacity: 1, height: 'auto' }} 
+                          exit={{ opacity: 0, height: 0 }} 
+                          transition={{ duration: 0.4, ease: "easeInOut" }} 
+                          className="space-y-3"
+                        >
+                          <motion.button 
+                            type="button" 
+                            onClick={() => setShowFaceCapture(!showFaceCapture)} 
+                            className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20" 
+                            whileHover={{ scale: 1.02 }} 
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Camera className="w-5 h-5" />
+                            <span>{faceImage ? 'Update Face' : 'Capture Face'}</span>
+                          </motion.button>
+                          <AnimatePresence mode="wait">
+                            {showFaceCapture && (
+                              <motion.div 
+                                initial={{ opacity: 0, height: 0 }} 
+                                animate={{ opacity: 1, height: 'auto' }} 
+                                exit={{ opacity: 0, height: 0 }} 
+                                transition={{ duration: 0.4, ease: "easeInOut" }}
+                                className="p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-gray-200 dark:border-slate-600"
+                              >
+                                <FaceCapture onCapture={handleFaceCapture} onError={handleFaceCaptureError} mode="both" captureButtonText="Capture" uploadButtonText="Upload" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          {faceImage && (
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.95 }} 
+                              animate={{ opacity: 1, scale: 1 }} 
+                              transition={{ duration: 0.3, ease: "easeOut" }}
+                              className="p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl flex items-center space-x-2"
+                            >
+                              <Camera className="w-4 h-4 text-blue-700 dark:text-blue-300" />
+                              <span className="text-sm text-blue-700 dark:text-blue-300">Face captured successfully!</span>
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                  <motion.button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20" 
+                    whileHover={{ scale: loading ? 1 : 1.02 }} 
+                    whileTap={{ scale: loading ? 1 : 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><UserPlus className="w-5 h-5" /><span>Create Account</span></>}
+                  </motion.button>
+                </form>
+                <p className="pt-4 border-t border-gray-200 dark:border-slate-700 text-center text-gray-600 dark:text-slate-400 text-sm">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors inline-flex items-center space-x-1 hover:underline">
+                    <LogIn className="w-4 h-4" /><span>Sign In</span>
+                  </Link>
+                </p>
               </div>
-            </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

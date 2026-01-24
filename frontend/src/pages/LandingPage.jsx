@@ -1,8 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import Navbar, { ThemeProvider, useTheme } from '../components/NavBar';
 import HeroSection from '../components/HeroSection';
 import WhySection from '../components/WhySection';
-import HowItWorks from '../components/HowItWorks';
 import TeamSection from '../components/TeamSection';
 import Footer from '../components/FooterNew';
 import About from '../components/About';

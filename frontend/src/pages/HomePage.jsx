@@ -11,10 +11,9 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0D1117] transition-all duration-500">
       {/* Enhanced Header with backdrop blur */}
-      <div className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/95 dark:bg-[#0D1117]/95 border-b border-gray-200 dark:border-gray-600">
+      <div className="fixed top-0 w-full z-50 backdrop-blur-md bg-white dark:bg-[#0D1117]/95 ">
         <Header onMenuToggle={() => setShowMenu(!showMenu)} />
       </div>
-
       {/* Enhanced Mobile menu overlay */}
       {showMenu && (
         <>

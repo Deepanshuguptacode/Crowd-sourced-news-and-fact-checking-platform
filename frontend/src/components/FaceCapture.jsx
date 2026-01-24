@@ -316,9 +316,62 @@ const FaceCapture = ({
           </div>
         )}
 
-        {/* Camera Controls */}
-        {(mode === 'capture' || mode === 'both') && (
-          <div className="flex space-x-2">
+        {/* Camera Controls and File Upload */}
+        {mode === 'both' && (
+          <div className="grid grid-cols-2 gap-3">
+            {/* Start Camera Button */}
+            {!stream ? (
+              <button
+                type="button"
+                onClick={startCamera}
+                disabled={disabled || processing}
+                className="flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Start Camera</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={capturePhoto}
+                disabled={disabled || processing}
+                className="flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                {processing ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+                <span>{processing ? 'Processing...' : captureButtonText}</span>
+              </button>
+            )}
+
+            {/* File Upload Button */}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={disabled || processing}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled || processing}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{uploadButtonText}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Camera Controls Only */}
+        {mode === 'capture' && (
+          <div>
             {!stream ? (
               <button
                 type="button"
@@ -330,36 +383,25 @@ const FaceCapture = ({
                 <span>Start Camera</span>
               </button>
             ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={capturePhoto}
-                  disabled={disabled || processing}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-                >
-                  {processing ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Camera className="w-4 h-4" />
-                  )}
-                  <span>{processing ? 'Processing...' : captureButtonText}</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={stopCamera}
-                  disabled={disabled || processing}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-                >
-                  Stop Camera
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={capturePhoto}
+                disabled={disabled || processing}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                {processing ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+                <span>{processing ? 'Processing...' : captureButtonText}</span>
+              </button>
             )}
           </div>
         )}
 
-        {/* File Upload */}
-        {(mode === 'upload' || mode === 'both') && (
+        {/* File Upload Only */}
+        {mode === 'upload' && (
           <div>
             <input
               ref={fileInputRef}
@@ -373,7 +415,7 @@ const FaceCapture = ({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || processing}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
             >
               <Upload className="w-4 h-4" />
               <span>{uploadButtonText}</span>
@@ -381,14 +423,17 @@ const FaceCapture = ({
           </div>
         )}
 
-        {/* Debug Info - Remove after fixing */}
-        <div className="text-xs bg-yellow-100 dark:bg-yellow-900 p-2 rounded mb-2">
-          <div><strong>Debug Info:</strong></div>
-          <div>isCapturing: {isCapturing ? '✅ TRUE' : '❌ FALSE'}</div>
-          <div>stream: {stream ? '✅ Active' : '❌ None'}</div>
-          <div>videoRef: {videoRef.current ? '✅ Exists' : '❌ NULL'}</div>
-          <div>Error: {error || 'None'}</div>
-        </div>
+        {/* Stop Camera Button (when streaming) */}
+        {stream && (
+          <button
+            type="button"
+            onClick={stopCamera}
+            disabled={disabled || processing}
+            className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+          >
+            Stop Camera
+          </button>
+        )}
 
         {/* Video Preview */}
         {stream && (
@@ -408,7 +453,7 @@ const FaceCapture = ({
                 backgroundColor: '#000'
               }}
             />
-            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
+            <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold">
               📹 Live Camera
             </div>
           </div>
@@ -416,7 +461,7 @@ const FaceCapture = ({
         
         {/* Error Message */}
         {error && (
-          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative">
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-400 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-4 py-3 rounded relative">
             <AlertCircle className="w-4 h-4 inline mr-2" />
             <span>{error}</span>
           </div>
@@ -442,64 +487,21 @@ const FaceCapture = ({
               <img
                 src={capturedImage}
                 alt="Captured face"
-                className="w-full max-w-xs mx-auto rounded-lg border-2 border-green-300 dark:border-green-600"
+                className="w-full max-w-xs mx-auto rounded-lg border-2 border-blue-300 dark:border-blue-600"
               />
             </div>
 
             {/* Face Detection Results */}
-            {faceDetectionResult && (
+            {faceDetectionResult && faceDetectionResult.success && (
               <div className="mt-4 space-y-2">
-                <div className={`flex items-center space-x-2 p-3 rounded-lg border ${
-                  faceDetectionResult.success 
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                }`}>
-                  {faceDetectionResult.success ? (
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  )}
+                <div className="flex items-center space-x-2 p-3 rounded-lg border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                  <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
                   <div className="text-sm">
-                    <div className={`font-medium ${
-                      faceDetectionResult.success 
-                        ? 'text-green-700 dark:text-green-300' 
-                        : 'text-red-700 dark:text-red-300'
-                    }`}>
-                      Face Detection: {faceDetectionResult.success ? 'SUCCESS' : 'FAILED'}
+                    <div className="font-medium text-blue-700 dark:text-blue-300">
+                      Face detected successfully
                     </div>
-                    <div className={`text-xs ${
-                      faceDetectionResult.success 
-                        ? 'text-green-600 dark:text-green-400' 
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {faceDetectionResult.message}
-                    </div>
-                    {faceDetectionResult.bbox && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Bounding Box: [{faceDetectionResult.bbox.join(', ')}]
-                      </div>
-                    )}
                   </div>
                 </div>
-
-                {/* Face Crop Preview */}
-                {faceCropPreview && (
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                      Detected Face (This will be used for embedding):
-                    </div>
-                    <div className="flex justify-center">
-                      <img
-                        src={faceCropPreview}
-                        alt="Detected face crop"
-                        className="max-w-32 max-h-32 rounded-lg border-2 border-blue-300 dark:border-blue-600 shadow-lg"
-                      />
-                    </div>
-                    <div className="text-xs text-center text-gray-500 dark:text-gray-400">
-                      Face detection confidence threshold: 60%
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -508,19 +510,11 @@ const FaceCapture = ({
         {/* Hidden canvas for image processing */}
         <canvas ref={canvasRef} className="hidden" />
 
-        {/* Error Display */}
-        {error && (
-          <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
-          </div>
-        )}
-
         {/* Success Indicator */}
         {capturedImage && !error && (
-          <div className="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-            <span className="text-sm text-green-700 dark:text-green-300">Face image captured successfully</span>
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+            <span className="text-sm text-blue-700 dark:text-blue-300">Face image captured successfully</span>
           </div>
         )}
       </div>
