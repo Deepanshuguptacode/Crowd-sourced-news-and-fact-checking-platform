@@ -18,7 +18,7 @@
 ## 1. System Overview
 
 ### 1.1 Platform Vision
-VoxVeritas is a comprehensive crowd-sourced news verification platform that combines AI-powered analysis with community-driven fact-checking to combat misinformation.
+VoxVeritas is a comprehensive crowd-sourced news verification platform that combines AI-powered analysis with community-driven fact-checking to combat misinformation..
 
 ### 1.2 Key Capabilities
 - **AI-Powered Verdict System**: Automated news verification using machine learning
