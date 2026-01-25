@@ -1,8 +1,7 @@
 import React from 'react';
 import { FaTwitter, FaFacebook, FaLinkedin, FaInstagram, FaGithub } from 'react-icons/fa';
 import { useTheme } from './NavBar';
-import logoLight from '../assets/logo-light.jpg';
-import logoDark from '../assets/logo-dark.jpg';
+import logoTransparent from '../assets/logo-transparent.png';
 
 export default function FooterNew({ scrollToTeam }) {
   const { isDarkMode } = useTheme();
@@ -22,8 +21,7 @@ export default function FooterNew({ scrollToTeam }) {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           <div>
             <div className="flex items-center mb-4">
-              <img  src={isDarkMode ? logoDark : logoLight}
-          alt="Logo" className="w-10 h-10 mr-2" />
+              <img src={logoTransparent} alt="Logo" className="w-10 h-10 mr-2" />
               <span className="text-xl font-bold bg-gradient-to-r from-sky-500 to-emerald-400 bg-clip-text text-transparent">VoxVeritas</span>
             </div>
             <p className={`mb-4 transition-colors duration-300 ${

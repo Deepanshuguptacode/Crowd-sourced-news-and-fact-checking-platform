@@ -31,10 +31,11 @@ const HomePage = () => {
 
       {/* Main Content Area - 2 Column Layout */}
       <div className="pt-16 pb-16">
-        <div className="flex min-h-screen">
-          {/* Column 1: Fixed Left Sidebar - RightBar (Quick Actions) */}
-          <div className="hidden lg:block w-80 fixed left-0 top-16 h-screen bg-white dark:bg-[#0D1117] border-r border-gray-200 dark:border-gray-600 shadow-lg z-40">
-            <div className="h-full overflow-y-scroll scrollbar-hide px-6 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex min-h-screen">
+            {/* Column 1: Fixed Left Sidebar - RightBar (Quick Actions) */}
+            <div className="hidden lg:block w-80 fixed left-[max(0px,calc((100%-80rem)/2))] top-16 h-screen bg-white dark:bg-[#0D1117] border-r border-gray-200 dark:border-gray-600 shadow-lg z-40">
+              <div className="h-full overflow-y-scroll scrollbar-hide px-6 py-6">
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -47,9 +48,9 @@ const HomePage = () => {
           </div>
 
           {/* Column 2: Main Content - NewsFeed (Full Width) */}
-          <div className="flex-1 lg:ml-80">
-            <div className="min-h-screen">
-              <div className="px-6 py-6">
+            <div className="flex-1 lg:ml-80">
+              <div className="min-h-screen">
+                <div className="px-6 py-6">
                 {/* News Feed Container */}
                 <div className="divide-y divide-gray-200 dark:divide-gray-600">
                   <NewsFeed />
@@ -57,7 +58,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-
+          </div>
         </div>
       </div>
 

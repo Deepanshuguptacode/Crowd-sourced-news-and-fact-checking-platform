@@ -102,14 +102,14 @@ const SignupForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/20 dark:from-[#0D1117] dark:to-slate-900">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50/20 dark:from-[#0D1117] dark:to-slate-900 relative overflow-x-hidden transition-all duration-700">
       <NavigationHeader />
-      <div className="mt-20 px-4 pb-12 flex justify-center">
+      <div className="min-h-screen lg:h-screen flex items-center justify-center px-4 py-20 lg:py-8 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 15 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full max-w-6xl bg-white/70 dark:bg-slate-800/70 backdrop-blur rounded-2xl shadow-xl overflow-hidden"
+          className="w-full max-w-6xl lg:mt-16 bg-white/70 dark:bg-slate-800/70 backdrop-blur-2xl rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-slate-700/50"
         >
           <div className="grid lg:grid-cols-2">
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 sm:p-8 flex flex-col justify-center text-white relative overflow-hidden min-h-[400px] sm:min-h-[450px]">

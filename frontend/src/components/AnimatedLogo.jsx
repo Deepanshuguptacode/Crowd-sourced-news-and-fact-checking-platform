@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logoLight from '../assets/logo-light.jpg';
-import logoDark from '../assets/logo-dark.jpg';
+import logoTransparent from '../assets/logo-transparent.png';
 
 const AnimatedLogo = ({ size = 'w-12 h-12', brandName = 'VoxVeritas', showBrand = true, isDarkMode }) => {
   const [showLogo, setShowLogo] = useState(true);
@@ -25,7 +24,7 @@ const AnimatedLogo = ({ size = 'w-12 h-12', brandName = 'VoxVeritas', showBrand 
         }`}
       >
         <img 
-          src={currentTheme ? logoDark : logoLight}
+          src={logoTransparent}
           alt="Logo"
           className="w-full h-full object-contain"
           onError={(e) => {

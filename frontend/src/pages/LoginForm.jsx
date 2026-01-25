@@ -215,7 +215,7 @@ const LoginForm = () => {
                       ) : (
                         <motion.div key="face" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} className="space-y-3" transition={{ duration: 0.18 }}>
                           <label className="block text-gray-700 dark:text-slate-300 text-sm font-medium">Face Authentication</label>
-                          <motion.button type="button" onClick={() => updUi(prev => ({ ...prev, face: { ...prev.face, open: !prev.face.open } }))} className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl flex items-center justify-center space-x-2 shadow-lg">
+                          <motion.button type="button" onClick={() => setUi(prev => ({ ...prev, face: { ...prev.face, open: !prev.face.open } }))} className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl flex items-center justify-center space-x-2 shadow-lg transition-all duration-300" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                             <Camera className="w-5 h-5" /><span>{ui.face.image ? 'Update Face' : 'Capture Face'}</span>
                           </motion.button>
 

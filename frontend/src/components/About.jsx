@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from './NavBar';
-import logoLight from '../assets/logo-light.jpg';
-import logoDark from '../assets/logo-dark.jpg';
+import logoTransparent from '../assets/logo-transparent.png';
 
 const About = () => {
   const { isDarkMode } = useTheme();
@@ -66,7 +65,7 @@ const About = () => {
                     : 'bg-gradient-to-br from-sky-100 to-emerald-100'
                 }`}>
                   <img 
-                    src={isDarkMode ? logoDark : logoLight} 
+                    src={logoTransparent} 
                     alt="VoxVeritas Logo" 
                     className="w-40 h-40 rounded-full"
                   />
