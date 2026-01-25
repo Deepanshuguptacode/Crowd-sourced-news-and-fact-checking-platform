@@ -92,26 +92,26 @@ const RightBar = () => {
         {menuItems.map((item, index) => {
           const IconComponent = item.icon;
           const isDebateRoom = item.label === 'Debate Rooms';
-          const isContactUs = item.label === 'Contact Us';
+          const isKnowUs = item.label === 'Know Us';
+          
+          // Define color classes for each menu item - using blue scheme for all
+          const getColorClasses = () => {
+            return { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', icon: 'text-blue-600 dark:text-blue-400', hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/20' };
+          };
+          
+          const colors = getColorClasses();
+          const isActive = item.label === 'Home' || (isKnowUs && showContactDropdown);
           
           return (
             <div key={index} className="relative">
               <button
                 onClick={item.action}
-                className={`flex items-center w-full px-3 py-3 text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group relative overflow-hidden ${
-                  item.label === 'Home' 
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' 
-                    : isContactUs && showContactDropdown
-                    ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
-                    : 'text-gray-700 dark:text-gray-300'
+                className={`flex items-center w-full px-3 py-3 text-left transition-all duration-200 rounded-lg group relative overflow-hidden ${
+                  isActive ? `${colors.bg} ${colors.text}` : `${colors.hover} text-gray-700 dark:text-gray-300`
                 }`}
               >
                 <div className={`w-6 h-6 flex items-center justify-center mr-3 transition-colors duration-200 ${
-                  item.label === 'Home'
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : isContactUs && showContactDropdown
-                    ? 'text-purple-600 dark:text-purple-400'
-                    : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                  isActive ? colors.icon : `text-gray-500 dark:text-gray-400 group-hover:${colors.icon.split(' ')[0]}`
                 }`}>
                   <IconComponent />
                 </div>
@@ -132,7 +132,7 @@ const RightBar = () => {
                 ) : (
                   <div className="flex items-center justify-between w-full">
                     <span className="font-medium">{item.label}</span>
-                    {isContactUs && (
+                    {isKnowUs && (
                       <svg 
                         className={`w-4 h-4 transition-transform duration-200 ${showContactDropdown ? 'rotate-180' : ''}`} 
                         fill="none" 
@@ -147,17 +147,21 @@ const RightBar = () => {
               </button>
 
               {/* Contact Us Dropdown */}
-              {isContactUs && showContactDropdown && (
+              {isKnowUs && showContactDropdown && (
                 <div className="mt-2 ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
                   <a
-                    href="https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J" // Replace with your first file link
-                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors duration-200"
+                    href="https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200"
                   >
                     Anantu Rajesh
                   </a>
                   <a
-                    href="https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt" // Replace with your second file link
-                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors duration-200"
+                    href="https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200"
                   >
                     Deepanshu Gupta
                   </a>

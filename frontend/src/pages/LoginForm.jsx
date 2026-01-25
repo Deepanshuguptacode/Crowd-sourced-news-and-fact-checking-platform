@@ -108,7 +108,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50/20 dark:from-[#0D1117] dark:to-slate-900 relative overflow-x-hidden transition-all duration-700">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/20 dark:from-[#0D1117] dark:to-slate-900 relative overflow-x-hidden transition-all duration-700">
       <NavigationHeader />
       {/* subtle animated blobs */}
       <motion.div className="absolute inset-0 opacity-20 dark:opacity-10" initial={{ opacity: 0 }} animate={{ opacity: 0.18 }} transition={{ duration: 1.2 }}>
@@ -116,8 +116,8 @@ const LoginForm = () => {
         <div className="absolute top-40 right-10 w-96 h-96 bg-indigo-300 dark:bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
       </motion.div>
 
-      <div className="min-h-screen lg:h-screen flex items-center justify-center px-4 py-20 lg:py-8 relative z-10">
-        <motion.div className="w-full max-w-6xl lg:mt-16" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-20 relative z-10">
+        <motion.div className="w-full max-w-6xl my-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="my-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-2xl rounded-2xl overflow-hidden border border-white/20 dark:border-slate-700/50 shadow-2xl">
             <div className="grid lg:grid-cols-2">
               {/* LEFT */}
