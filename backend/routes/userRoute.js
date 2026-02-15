@@ -18,6 +18,8 @@ const {
   expertUserFaceAuthStatus,
   getAllExperts,
   getExpertById,
+  adminSignup,
+  adminLogin,
 } = require('../controllers/UserController');
 
 const router = express.Router();
@@ -52,5 +54,9 @@ router.get('/expert/face-auth-status/:userId', expertUserFaceAuthStatus);
 // Public routes for experts
 router.get('/experts', getAllExperts); // Get all approved experts
 router.get('/experts/:id', getExpertById); // Get expert by ID
+
+// Admin Routes
+router.post('/admin/signup', adminSignup);
+router.post('/admin/login', adminLogin);
 
 module.exports = router;

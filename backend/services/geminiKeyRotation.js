@@ -56,12 +56,15 @@ class GeminiKeyRotation {
     this.requestCount++;
     this.totalRequests++;
 
-    // Log rotation info
+    // Log rotation info with more detail
     const maskedKey = this.maskApiKey(currentKey);
-    console.log(`🔑 Using API Key ${this.currentKeyIndex + 1}/${this.apiKeys.length} (${maskedKey}) - Request ${this.requestCount}/${this.maxRequestsPerKey}`);
+    const timestamp = new Date().toISOString();
+    console.log(`🔑 [${timestamp}] Using API Key ${this.currentKeyIndex + 1}/${this.apiKeys.length} (${maskedKey})`);
+    console.log(`📊 Request ${this.requestCount}/${this.maxRequestsPerKey} on this key (Total: ${this.totalRequests})`);
 
     // Check if we need to rotate to next key
     if (this.requestCount >= this.maxRequestsPerKey) {
+      console.log(`🔄 Key rotation threshold reached (${this.requestCount}/${this.maxRequestsPerKey})`);
       this.rotateKey();
     }
 
@@ -73,6 +76,7 @@ class GeminiKeyRotation {
    */
   rotateKey() {
     const oldIndex = this.currentKeyIndex;
+    const timestamp = new Date().toISOString();
     
     // Move to next key (circular rotation)
     this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
@@ -83,8 +87,11 @@ class GeminiKeyRotation {
     const oldKeyMasked = this.maskApiKey(this.apiKeys[oldIndex]);
     const newKeyMasked = this.maskApiKey(this.apiKeys[this.currentKeyIndex]);
     
-    console.log(`🔄 Rotating API Key: ${oldKeyMasked} → ${newKeyMasked}`);
+    console.log(`🔄 [${timestamp}] API Key Rotation:`);
+    console.log(`   From: Key ${oldIndex + 1} (${oldKeyMasked})`);
+    console.log(`   To:   Key ${this.currentKeyIndex + 1} (${newKeyMasked})`);
     console.log(`📊 Total requests served: ${this.totalRequests}`);
+    console.log(`🔄 Rotation complete - ready for new requests`);
   }
 
   /**
@@ -112,6 +119,15 @@ class GeminiKeyRotation {
       totalRequests: this.totalRequests,
       currentKey: this.maskApiKey(this.apiKeys[this.currentKeyIndex])
     };
+  }
+
+  /**
+   * Force advance to the next API key immediately.
+   * Use between sequential LLM calls in the same request to spread load.
+   */
+  advanceKey() {
+    this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
+    this.requestCount = 0;
   }
 
   /**

@@ -28,6 +28,8 @@ const {
   getCommentsByGroup,
   likeComment,
   dislikeComment,
+  deleteDebateComment,
+  undoDebateComment,
   getDebugCounterStatus: getCommentsDebugCounterStatus
 } = require('../controllers/DebateCommentController');
 
@@ -51,7 +53,7 @@ router.delete('/:roomId', deleteDebateRoom);
 
 // Advanced Group Management Routes
 router.put('/:roomId/groups/:groupId/regenerate', regenerateGroupContent);
-router.post('/:roomId/groups/relink', relinkGroups);
+router.post('/:roomId/relink-all', relinkGroups);
 router.get('/:roomId/debug/counter-status', getDebugCounterStatus);
 
 // Debate Group Routes
@@ -68,6 +70,8 @@ router.get('/:roomId/comments', getDebateComments);
 router.get('/:roomId/groups/:groupId/comments', getCommentsByGroup);
 router.post('/:roomId/comments/:commentId/like', likeComment);
 router.post('/:roomId/comments/:commentId/dislike', dislikeComment);
+router.delete('/:roomId/comments/:commentId', deleteDebateComment);
+router.post('/:roomId/comments/:commentId/undo', undoDebateComment);
 router.get('/:roomId/comments/debug/counter-status', getCommentsDebugCounterStatus);
 
 module.exports = router;

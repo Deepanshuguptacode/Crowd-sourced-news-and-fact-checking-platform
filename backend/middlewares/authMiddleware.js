@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const NormalUser = require('../models/NormalUser');
 const CommunityUser = require('../models/CommunityUser');
 const ExpertUser = require('../models/ExpertUser');
+const Admin = require('../models/Admin');
 
 
 // Middleware to authenticate the user
@@ -114,9 +115,8 @@ const authenticateCommunityOrExpertUser = async (req, res, next) => {
   }
 };
 
-// General authentication middleware for all user types
-const authenticateAnyUser = async (req, res, next) => {
-  // Check for token in cookies first, then Authorization header
+// Authenticate admin user
+const authenticateAdmin = async (req, res, next) => {
   let token = req.cookies.token;
   if (!token) {
     const authHeader = req.headers.authorization;
@@ -130,19 +130,47 @@ const authenticateAnyUser = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, "RAM"); // Replace with your JWT secret
-    
-    // Try to find user in all three user types
-    const normalUser = await NormalUser.findById(`${decoded.id}`);
-    const communityUser = await CommunityUser.findById(`${decoded.id}`);
-    const expertUser = await ExpertUser.findById(`${decoded.id}`);
+    const decoded = jwt.verify(token, "RAM");
+    const admin = await Admin.findById(`${decoded.id}`);
+    if (!admin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    req.user = admin;
+    req.userType = 'admin';
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
 
-    const user = normalUser || communityUser || expertUser;
+// General authentication middleware for all user types (including admin)
+const authenticateAnyUser = async (req, res, next) => {
+  let token = req.cookies.token;
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authorization token is missing' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, "RAM");
+    
+    // Try to find user in all user types (including admin)
+    const normalUser = await NormalUser.findById(`${decoded.id}`);
+    const communityUser = !normalUser ? await CommunityUser.findById(`${decoded.id}`) : null;
+    const expertUser = (!normalUser && !communityUser) ? await ExpertUser.findById(`${decoded.id}`) : null;
+    const adminUser = (!normalUser && !communityUser && !expertUser) ? await Admin.findById(`${decoded.id}`) : null;
+
+    const user = normalUser || communityUser || expertUser || adminUser;
     
     if (user) {
-      req.user = user; // Attach user to the request object
-      // Add user type for easier identification
-      req.userType = normalUser ? 'normal' : communityUser ? 'community' : 'expert';
+      req.user = user;
+      req.userType = normalUser ? 'normal' : communityUser ? 'community' : expertUser ? 'expert' : 'admin';
       return next();
     } else {
       return res.status(403).json({ message: 'Access denied' });
@@ -153,4 +181,4 @@ const authenticateAnyUser = async (req, res, next) => {
 };
 
 
-module.exports = { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser , authenticateCommunityOrExpertUser, authenticateAnyUser};
+module.exports = { authenticateNormalUser, authenticateCommunityUser, authenticateExpertUser, authenticateCommunityOrExpertUser, authenticateAnyUser, authenticateAdmin };

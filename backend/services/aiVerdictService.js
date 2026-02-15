@@ -309,8 +309,16 @@ ANALYSIS INSTRUCTIONS:
 Return only the JSON arguments for the function invocation.
       `;
 
-      console.log('🤖 Calling AI for verdict with prompt length:', systemPrompt.length);
+      console.log('🤖 Calling AI for verdict generation:');
+      console.log(`📰 News ID: ${newsId}`);
+      console.log(`📝 Prompt length: ${systemPrompt.length} chars`);
+      console.log(`💬 Total comments analyzed: ${totalComments}`);
+      console.log(`👥 Community comments: ${communityComments}`);
+      console.log(`🎓 Expert comments: ${expertComments}`);
+      console.log(`⚖️ Positive/Negative votes: ${positiveVotes}/${negativeVotes}`);
+      console.log(`🔑 Using Gemini API key rotation...`);
       
+      const callStartTime = Date.now();
       const ai = getAI();
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -322,8 +330,17 @@ Return only the JSON arguments for the function invocation.
           functionInvocation: 'auto' 
         }
       });
+      
+      const callDuration = Date.now() - callStartTime;
 
-      console.log('🔍 AI Response received:', JSON.stringify(response, null, 2));
+      console.log(`⚡ AI Response received (${callDuration}ms)`);
+      console.log('📊 Response structure:', {
+        hasFunctionCalls: !!response.functionCalls?.length,
+        hasCandidates: !!response.candidates?.length,
+        hasText: !!response.text,
+        responseKeys: Object.keys(response)
+      });
+      console.log('🔍 Full AI Response:', JSON.stringify(response, null, 2));
       
       // Try multiple ways to parse the response
       let call = response.functionCalls?.[0];

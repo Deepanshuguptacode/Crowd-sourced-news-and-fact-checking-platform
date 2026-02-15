@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
+import { UserContext } from '../context/userContext';
 import { toast } from 'react-toastify';
 import CounterChatView from './CounterChatView';
 import { 
@@ -16,7 +17,8 @@ import {
   ArrowPathIcon,
   EyeIcon,
   ChevronUpIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { 
   HandThumbUpIcon as HandThumbUpIconSolid,
@@ -37,6 +39,8 @@ const AdvancedDebateRoom = () => {
   const [viewMode, setViewMode] = useState('chat'); // 'chat' or 'counter'
   const [counterAnalysis, setCounterAnalysis] = useState(null);
   const [debugStatus, setDebugStatus] = useState(null);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const { userType, userInfo } = useContext(UserContext);
 
   useEffect(() => {
     fetchDebateRoom();
@@ -167,6 +171,21 @@ const AdvancedDebateRoom = () => {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    try {
+      setDeletingCommentId(commentId);
+      await debateRoomAPI.deleteDebateComment(roomId, commentId);
+      toast.success('Comment deleted successfully');
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete comment');
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
   const toggleGroupExpansion = (groupId) => {
     setExpandedGroups(prev => ({
       ...prev,
@@ -200,6 +219,20 @@ const AdvancedDebateRoom = () => {
             <HandThumbDownIcon className="h-4 w-4" />
             {comment.dislikes?.length || 0}
           </button>
+          {(userType === 'admin' || (userInfo && comment.author && comment.author.toString() === userInfo._id)) && (
+            <button
+              onClick={() => handleDeleteComment(comment._id)}
+              disabled={deletingCommentId === comment._id}
+              className="flex items-center gap-1 text-gray-400 hover:text-red-600 text-sm transition-colors disabled:opacity-50"
+              title="Delete comment"
+            >
+              {deletingCommentId === comment._id ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+              ) : (
+                <TrashIcon className="h-4 w-4" />
+              )}
+            </button>
+          )}
         </div>
       </div>
       <p className="text-gray-900 dark:text-gray-100">{comment.text}</p>

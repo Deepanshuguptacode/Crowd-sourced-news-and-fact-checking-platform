@@ -74,6 +74,10 @@ const NewsFeed = () => {
     }));
   };
 
+  const handlePostDeleted = (postId) => {
+    setNews(prevNews => prevNews.filter(post => post._id !== postId));
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -85,8 +89,8 @@ const NewsFeed = () => {
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   const processComments = (comments) => [
-    ...((comments?.community || []).map(c => ({ text: c.comment, type: 'community', username: c.commenter?.username || 'Anonymous', _id: c._id, stance: c.stance, evidenceLinks: c.evidenceLinks || [], expertVotes: c.expertVotes || [], upvoteCount: c.upvoteCount || 0, downvoteCount: c.downvoteCount || 0, createdAt: c.createdAt }))),
-    ...((comments?.expert || []).map(c => ({ text: c.comment, type: 'expert', username: c.expert?.username || 'Expert', _id: c._id, stance: c.stance, evidenceLinks: c.evidenceLinks || [], expertVotes: c.expertVotes || [], upvoteCount: c.upvoteCount || 0, downvoteCount: c.downvoteCount || 0, createdAt: c.createdAt })))
+    ...((comments?.community || []).map(c => ({ text: c.comment, type: 'community', username: c.commenter?.username || 'Anonymous', _id: c._id, commenterId: c.commenter?._id, stance: c.stance, evidenceLinks: c.evidenceLinks || [], expertVotes: c.expertVotes || [], upvoteCount: c.upvoteCount || 0, downvoteCount: c.downvoteCount || 0, createdAt: c.createdAt }))),
+    ...((comments?.expert || []).map(c => ({ text: c.comment, type: 'expert', username: c.expert?.username || 'Expert', _id: c._id, commenterId: c.expert?._id, stance: c.stance, evidenceLinks: c.evidenceLinks || [], expertVotes: c.expertVotes || [], upvoteCount: c.upvoteCount || 0, downvoteCount: c.downvoteCount || 0, createdAt: c.createdAt })))
   ];
 
   const processImageUrls = (screenshots) => (screenshots || []).map(screenshot => 
@@ -113,10 +117,12 @@ const NewsFeed = () => {
             comments={processComments(item.comments)}
             imageUrl={processImageUrls(item.screenshots)}
             username={item.uploadedBy?.username || 'Anonymous'}
+            uploadedById={item.uploadedBy?._id}
             aiReview={item.aiReview}
             confidence={item.confidence}
             onVote={handleVote}
             onCommentAdded={handleCommentAdded}
+            onPostDeleted={handlePostDeleted}
           />
         ))
       )}

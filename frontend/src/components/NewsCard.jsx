@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import CommentSection from "./CommentSection";
 import AIVerdictSection from "./AIVerdictSection";
-import api from "../services/api.js"; // Use configured API instead of direct axios
+import api, { newsAPI } from "../services/api.js";
+import { UserContext } from "../context/userContext";
 import { toast } from "react-toastify";
 
 const NewsCard = ({
@@ -15,11 +16,13 @@ const NewsCard = ({
   comments: initialComments,
   imageUrl,
   username,
+  uploadedById,
   link,
   aiReview,
   confidence,
   onVote,
   onCommentAdded,
+  onPostDeleted,
 }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes || 0);
   const [downvotes, setDownvotes] = useState(initialDownvotes || 0);
@@ -29,6 +32,8 @@ const NewsCard = ({
   const imagesPerPage = 4;
   const [showAiAnalysis, setShowAiAnalysis] = useState(false);
   const [showFullText, setShowFullText] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { userInfo, userType } = useContext(UserContext);
   const maxTextLength = 220;
   const isLongText = content.length > maxTextLength;
   const displayText = showFullText ? content : content.slice(0, maxTextLength);
@@ -133,6 +138,22 @@ const NewsCard = ({
     setShowComments(!showComments);
   };
 
+  const canDelete = userType === 'admin' || (userInfo?._id && uploadedById && userInfo._id === uploadedById);
+
+  const handleDeletePost = async () => {
+    if (!window.confirm('Are you sure you want to delete this post? All comments and related data will be permanently deleted.')) return;
+    setDeleting(true);
+    try {
+      await newsAPI.deletePost(postId);
+      toast.success('Post deleted successfully!');
+      if (onPostDeleted) onPostDeleted(postId);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete post');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleVotes = async (voteType) => {
     try {
       const response = await api.post(`/news/vote/${postId}`, { voteType });
@@ -189,6 +210,23 @@ const NewsCard = ({
           
           {/* Status Badge */}
           <div className="flex items-center space-x-2">
+            {canDelete && (
+              <button
+                onClick={handleDeletePost}
+                disabled={deleting}
+                className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50"
+                title="Delete post"
+              >
+                {deleting ? (
+                  <div className="w-3 h-3 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin mr-1" />
+                ) : (
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                )}
+                Delete
+              </button>
+            )}
             <span
               className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${
                 factStatus === "Verified"
@@ -454,6 +492,9 @@ const NewsCard = ({
             onAddComment={handleAddComment} 
             onClose={toggleComments} 
             newsId={postId}
+            onCommentDeleted={(commentId) => {
+              setComments(prev => prev.filter(c => c._id !== commentId));
+            }}
           />
         </div>
       )}
@@ -480,8 +521,10 @@ NewsCard.propTypes = {
   aiReview: PropTypes.string,
   confidence: PropTypes.number,
   username: PropTypes.string.isRequired,
+  uploadedById: PropTypes.string,
   onVote: PropTypes.func,
   onCommentAdded: PropTypes.func,
+  onPostDeleted: PropTypes.func,
 };
 
 NewsCard.defaultProps = {

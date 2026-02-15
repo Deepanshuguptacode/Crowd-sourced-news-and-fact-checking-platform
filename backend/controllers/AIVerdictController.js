@@ -1,5 +1,6 @@
 const aiVerdictService = require('../services/aiVerdictService');
 const News = require('../models/News');
+const AIVerdict = require('../models/AIVerdict');
 
 /**
  * Generate AI verdict for a news article
@@ -190,8 +191,6 @@ const deleteAIVerdict = async (req, res) => {
  */
 const getAIVerdictStats = async (req, res) => {
   try {
-    const AIVerdict = require('../models/AIVerdict');
-    
     const stats = await AIVerdict.aggregate([
       {
         $group: {

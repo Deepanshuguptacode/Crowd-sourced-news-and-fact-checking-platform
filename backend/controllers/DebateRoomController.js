@@ -358,7 +358,7 @@ const updateDebateRoom = async (req, res) => {
   }
 };
 
-// Delete debate room (only by creator)
+// Delete debate room (only by creator or admin) — full cascade
 const deleteDebateRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
@@ -373,21 +373,40 @@ const deleteDebateRoom = async (req, res) => {
       });
     }
 
-    if (debateRoom.creator.toString() !== userId.toString()) {
+    // Allow creator or admin to delete
+    const isCreator = debateRoom.creator.toString() === userId.toString();
+    const isAdmin = req.userType === 'admin';
+    if (!isCreator && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'Only the creator can delete this debate room'
+        message: 'Only the creator or admin can delete this debate room'
       });
     }
 
-    // Delete all associated comments and groups
+    const vectorService = require('../services/vectorService');
+
+    // Collect group IDs for vector cleanup
+    const groups = await DebateGroup.find({ debateRoomId: roomId }).select('_id').lean();
+    const groupIds = groups.map(g => g._id.toString());
+
+    // Delete all Pinecone vectors for groups in this room
+    if (groupIds.length > 0) {
+      vectorService.deleteMany(groupIds, vectorService.getNamespaces().DEBATE_GROUPS)
+        .catch(err => console.error('Vector cleanup error (groups):', err.message));
+    }
+
+    // Delete the topic vector for this room
+    vectorService.deleteVector(roomId.toString(), vectorService.getNamespaces().DEBATE_TOPICS)
+      .catch(err => console.error('Vector cleanup error (topic):', err.message));
+
+    // Delete all associated comments and groups from MongoDB
     await DebateComment.deleteMany({ debateRoomId: roomId });
     await DebateGroup.deleteMany({ debateRoomId: roomId });
     await DebateRoom.findByIdAndDelete(roomId);
 
     res.json({
       success: true,
-      message: 'Debate room deleted successfully'
+      message: 'Debate room and all related data deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting debate room:', error);
@@ -429,8 +448,9 @@ const regenerateGroupContent = async (req, res) => {
     }
 
     // Generate new title and description
-    const { generateGroupContent } = require('../services/generateGroupContent');
-    const { title, description } = await generateGroupContent(group.commentIds);
+    const llmService = require('../services/llmService');
+    const vectorService = require('../services/vectorService');
+    const { title, description } = await llmService.generateGroupContent(group.commentIds);
 
     // Update the group
     const updatedGroup = await DebateGroup.findByIdAndUpdate(
@@ -438,6 +458,11 @@ const regenerateGroupContent = async (req, res) => {
       { title, description, updatedAt: new Date() },
       { new: true }
     ).populate('commentIds');
+
+    // Sync Pinecone embedding
+    vectorService.storeDebateGroup(
+      groupId, title, description, group.debateRoomId.toString(), group.stance
+    ).catch(err => console.error('Pinecone sync error:', err.message));
 
     res.json({
       success: true,
@@ -471,25 +496,18 @@ const relinkGroups = async (req, res) => {
     const forGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'for' });
     const againstGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'against' });
     
-    const { findCounterGroup } = require('../services/findCounterGroup');
+    const vectorService = require('../services/vectorService');
     let updated = 0;
 
     // Re-evaluate FOR groups against AGAINST groups
     for (const forGroup of forGroups) {
       if (againstGroups.length > 0) {
-        const { counterGroupId } = await findCounterGroup(forGroup, againstGroups);
+        const match = await vectorService.findCounterGroup(
+          forGroup._id.toString(), forGroup.title, forGroup.description, roomId, 'against'
+        );
+        const counterGroupId = match?.counterGroupId || null;
         if (counterGroupId !== forGroup.counterGroupId?.toString()) {
           await DebateGroup.findByIdAndUpdate(forGroup._id, { counterGroupId });
-          
-          // Update display order if new counter found
-          if (counterGroupId) {
-            const counterGroup = await DebateGroup.findById(counterGroupId);
-            if (counterGroup) {
-              await DebateGroup.findByIdAndUpdate(forGroup._id, { 
-                displayOrder: counterGroup.displayOrder + 0.5 
-              });
-            }
-          }
           updated++;
         }
       }
@@ -498,19 +516,12 @@ const relinkGroups = async (req, res) => {
     // Re-evaluate AGAINST groups against FOR groups
     for (const againstGroup of againstGroups) {
       if (forGroups.length > 0) {
-        const { counterGroupId } = await findCounterGroup(againstGroup, forGroups);
+        const match = await vectorService.findCounterGroup(
+          againstGroup._id.toString(), againstGroup.title, againstGroup.description, roomId, 'for'
+        );
+        const counterGroupId = match?.counterGroupId || null;
         if (counterGroupId !== againstGroup.counterGroupId?.toString()) {
           await DebateGroup.findByIdAndUpdate(againstGroup._id, { counterGroupId });
-          
-          // Update display order if new counter found
-          if (counterGroupId) {
-            const counterGroup = await DebateGroup.findById(counterGroupId);
-            if (counterGroup) {
-              await DebateGroup.findByIdAndUpdate(againstGroup._id, { 
-                displayOrder: counterGroup.displayOrder + 0.5 
-              });
-            }
-          }
           updated++;
         }
       }

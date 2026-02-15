@@ -1,8 +1,8 @@
 const DebateGroup = require('../models/DebateGroup');
 const DebateComment = require('../models/DebateComment');
 const DebateRoom = require('../models/DebateRoom');
-const { generateGroupContent } = require('../services/generateGroupContent');
-const { findCounterGroup } = require('../services/findCounterGroup');
+const vectorService = require('../services/vectorService');
+const llmService = require('../services/llmService');
 
 // Get all groups by stance or both stances for a debate room
 const getDebateGroups = async (req, res) => {
@@ -10,66 +10,33 @@ const getDebateGroups = async (req, res) => {
     const { roomId } = req.params;
     const { stance } = req.query;
 
-    // Verify debate room exists
-    const debateRoom = await DebateRoom.findById(roomId);
-    if (!debateRoom) {
-      return res.status(404).json({
-        success: false,
-        message: 'Debate room not found'
-      });
+    const roomExists = await DebateRoom.exists({ _id: roomId });
+    if (!roomExists) {
+      return res.status(404).json({ success: false, message: 'Debate room not found' });
     }
 
     if (stance) {
-      // Return groups for specific stance
       const groups = await DebateGroup.find({ debateRoomId: roomId, stance })
         .populate('commentIds')
         .populate('counterGroupId')
-        .sort({ displayOrder: 1 });
-        
-      console.log(`Found ${groups.length} groups for stance '${stance}'`);
-      groups.forEach(group => {
-        console.log(`Group: ${group.title}, counterGroupId: ${group.counterGroupId}`);
-      });
-        
-      res.json({
-        success: true,
-        data: groups
-      });
-    } else {
-      // Return both stances organized for display
-      const forGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'for' })
-        .populate('commentIds')
-        .populate('counterGroupId')
-        .sort({ displayOrder: 1 });
-      
-      const againstGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'against' })
-        .populate('commentIds')
-        .populate('counterGroupId')
-        .sort({ displayOrder: 1 });
+        .sort({ displayOrder: 1 })
+        .lean();
 
-      console.log(`Found ${forGroups.length} FOR groups and ${againstGroups.length} AGAINST groups`);
-      forGroups.forEach(group => {
-        console.log(`FOR Group: ${group.title}, counterGroupId: ${group.counterGroupId}`);
-      });
-      againstGroups.forEach(group => {
-        console.log(`AGAINST Group: ${group.title}, counterGroupId: ${group.counterGroupId}`);
-      });
-
-      res.json({
-        success: true,
-        data: { 
-          for: forGroups, 
-          against: againstGroups 
-        }
-      });
+      return res.json({ success: true, data: groups });
     }
+
+    // Return both stances
+    const [forGroups, againstGroups] = await Promise.all([
+      DebateGroup.find({ debateRoomId: roomId, stance: 'for' })
+        .populate('commentIds').populate('counterGroupId').sort({ displayOrder: 1 }).lean(),
+      DebateGroup.find({ debateRoomId: roomId, stance: 'against' })
+        .populate('commentIds').populate('counterGroupId').sort({ displayOrder: 1 }).lean(),
+    ]);
+
+    res.json({ success: true, data: { for: forGroups, against: againstGroups } });
   } catch (error) {
     console.error('Error fetching debate groups:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch debate groups',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to fetch debate groups', error: error.message });
   }
 };
 
@@ -79,38 +46,30 @@ const createDebateGroup = async (req, res) => {
     const { roomId } = req.params;
     const { label, title, description, stance } = req.body;
 
-    // Verify debate room exists
-    const debateRoom = await DebateRoom.findById(roomId);
-    if (!debateRoom) {
-      return res.status(404).json({
-        success: false,
-        message: 'Debate room not found'
-      });
+    const roomExists = await DebateRoom.exists({ _id: roomId });
+    if (!roomExists) {
+      return res.status(404).json({ success: false, message: 'Debate room not found' });
     }
 
-    const group = new DebateGroup({ 
+    const group = new DebateGroup({
       debateRoomId: roomId,
-      label, 
-      title: title || label, 
+      label,
+      title: title || label,
       description: description || 'A new discussion group.',
-      stance, 
-      commentIds: [] 
+      stance,
+      commentIds: [],
     });
-
     await group.save();
-    
-    res.status(201).json({
-      success: true,
-      message: 'Debate group created successfully',
-      data: group
-    });
+
+    // Store embedding in Pinecone (fire-and-forget)
+    vectorService.storeDebateGroup(
+      group._id.toString(), group.title, group.description, roomId, stance
+    ).catch(err => console.error('Pinecone store error:', err.message));
+
+    res.status(201).json({ success: true, message: 'Debate group created successfully', data: group });
   } catch (error) {
     console.error('Error creating debate group:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create debate group',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to create debate group', error: error.message });
   }
 };
 
@@ -149,178 +108,122 @@ const getDebateGroup = async (req, res) => {
 const regenerateDebateGroup = async (req, res) => {
   try {
     const { roomId, groupId } = req.params;
-    
-    // Find the group and populate comments
-    const group = await DebateGroup.findOne({ 
-      _id: groupId, 
-      debateRoomId: roomId 
-    }).populate('commentIds');
-    
+
+    const group = await DebateGroup.findOne({ _id: groupId, debateRoomId: roomId })
+      .populate('commentIds');
+
     if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: 'Debate group not found'
-      });
+      return res.status(404).json({ success: false, message: 'Debate group not found' });
     }
-
     if (group.commentIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot regenerate content for empty group'
-      });
+      return res.status(400).json({ success: false, message: 'Cannot regenerate content for empty group' });
     }
 
-    // Generate new title and description based on all comments
-    const { title, description } = await generateGroupContent(group.commentIds);
-    
-    // Update the group
+    // Generate new title + description via LLM
+    const { title, description } = await llmService.generateGroupContent(group.commentIds);
+
     const updatedGroup = await DebateGroup.findByIdAndUpdate(
       groupId,
       { title, description, updatedAt: new Date() },
       { new: true }
     ).populate('commentIds');
 
-    res.json({
-      success: true,
-      message: 'Debate group regenerated successfully',
-      data: updatedGroup
-    });
+    // Update Pinecone embedding in background
+    vectorService.storeDebateGroup(
+      groupId, title, description, roomId, group.stance
+    ).catch(err => console.error('Pinecone update error:', err.message));
+
+    res.json({ success: true, message: 'Debate group regenerated successfully', data: updatedGroup });
   } catch (error) {
     console.error('Error regenerating debate group content:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to regenerate debate group content',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to regenerate debate group content', error: error.message });
   }
 };
 
-// Re-evaluate all counter-group matchings for a debate room
+// Re-evaluate all counter-group matchings for a debate room (vector-powered)
 const relinkDebateGroups = async (req, res) => {
   try {
     const { roomId } = req.params;
 
-    // Verify debate room exists
-    const debateRoom = await DebateRoom.findById(roomId);
-    if (!debateRoom) {
-      return res.status(404).json({
-        success: false,
-        message: 'Debate room not found'
-      });
+    const roomExists = await DebateRoom.exists({ _id: roomId });
+    if (!roomExists) {
+      return res.status(404).json({ success: false, message: 'Debate room not found' });
     }
 
-    const forGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'for' });
-    const againstGroups = await DebateGroup.find({ debateRoomId: roomId, stance: 'against' });
-    
+    const [forGroups, againstGroups] = await Promise.all([
+      DebateGroup.find({ debateRoomId: roomId, stance: 'for' }).lean(),
+      DebateGroup.find({ debateRoomId: roomId, stance: 'against' }).lean(),
+    ]);
+
     let updated = 0;
 
-    // Re-evaluate FOR groups against AGAINST groups
-    for (const forGroup of forGroups) {
-      if (againstGroups.length > 0) {
-        const { counterGroupId } = await findCounterGroup(forGroup, againstGroups);
-        if (counterGroupId && counterGroupId !== forGroup.counterGroupId?.toString()) {
-          await DebateGroup.findByIdAndUpdate(forGroup._id, { counterGroupId });
-          
-          // Update display order if new counter found
-          const counterGroup = await DebateGroup.findById(counterGroupId);
-          if (counterGroup) {
-            await DebateGroup.findByIdAndUpdate(forGroup._id, { 
-              displayOrder: counterGroup.displayOrder + 0.5 
-            });
-          }
-          updated++;
-        }
+    // Match FOR → AGAINST
+    for (const g of forGroups) {
+      const match = await vectorService.findCounterGroup(
+        g._id.toString(), g.title, g.description, roomId, 'against'
+      );
+      if (match && match.counterGroupId !== g.counterGroupId?.toString()) {
+        await DebateGroup.findByIdAndUpdate(g._id, { counterGroupId: match.counterGroupId });
+        updated++;
       }
     }
 
-    // Re-evaluate AGAINST groups against FOR groups
-    for (const againstGroup of againstGroups) {
-      if (forGroups.length > 0) {
-        const { counterGroupId } = await findCounterGroup(againstGroup, forGroups);
-        if (counterGroupId && counterGroupId !== againstGroup.counterGroupId?.toString()) {
-          await DebateGroup.findByIdAndUpdate(againstGroup._id, { counterGroupId });
-          
-          // Update display order if new counter found
-          const counterGroup = await DebateGroup.findById(counterGroupId);
-          if (counterGroup) {
-            await DebateGroup.findByIdAndUpdate(againstGroup._id, { 
-              displayOrder: counterGroup.displayOrder + 0.5 
-            });
-          }
-          updated++;
-        }
+    // Match AGAINST → FOR
+    for (const g of againstGroups) {
+      const match = await vectorService.findCounterGroup(
+        g._id.toString(), g.title, g.description, roomId, 'for'
+      );
+      if (match && match.counterGroupId !== g.counterGroupId?.toString()) {
+        await DebateGroup.findByIdAndUpdate(g._id, { counterGroupId: match.counterGroupId });
+        updated++;
       }
     }
 
-    res.json({
-      success: true,
-      message: `Re-evaluated counter-group links. Updated ${updated} groups.`
-    });
+    res.json({ success: true, message: `Re-evaluated counter-group links. Updated ${updated} groups.` });
   } catch (error) {
     console.error('Error relinking debate groups:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to relink debate groups',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to relink debate groups', error: error.message });
   }
 };
 
-// Get counter-group analysis for a specific group
+// Get counter-group analysis for a specific group (vector-powered)
 const getCounterAnalysis = async (req, res) => {
   try {
     const { roomId, groupId } = req.params;
-    
-    const group = await DebateGroup.findOne({ 
-      _id: groupId, 
-      debateRoomId: roomId 
-    }).populate('commentIds');
-    
+
+    const group = await DebateGroup.findOne({ _id: groupId, debateRoomId: roomId })
+      .populate('commentIds')
+      .lean();
+
     if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: 'Debate group not found'
-      });
+      return res.status(404).json({ success: false, message: 'Debate group not found' });
     }
 
     let counterAnalysis = null;
-    
+
     if (group.counterGroupId) {
-      const counterGroup = await DebateGroup.findById(group.counterGroupId).populate('commentIds');
-      
+      const counterGroup = await DebateGroup.findById(group.counterGroupId)
+        .populate('commentIds')
+        .lean();
+
       if (counterGroup) {
-        // Re-analyze the counter match to get confidence score
         const opposingStance = group.stance === 'for' ? 'against' : 'for';
-        const opposingGroups = await DebateGroup.find({ 
-          debateRoomId: roomId, 
-          stance: opposingStance 
-        });
-        
-        const { counterGroupId, confidence, reasoning } = await findCounterGroup(group, opposingGroups);
-        
+        const match = await vectorService.findCounterGroup(
+          groupId, group.title, group.description, roomId, opposingStance
+        );
+
         counterAnalysis = {
           counterGroup,
-          confidence,
-          reasoning,
-          isStillValid: counterGroupId === group.counterGroupId.toString()
+          confidence: match?.score ?? 0,
+          isStillValid: match?.counterGroupId === group.counterGroupId.toString(),
         };
       }
     }
 
-    res.json({
-      success: true,
-      data: {
-        group,
-        counterAnalysis
-      }
-    });
+    res.json({ success: true, data: { group, counterAnalysis } });
   } catch (error) {
     console.error('Error getting counter analysis:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get counter analysis',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to get counter analysis', error: error.message });
   }
 };
 

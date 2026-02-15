@@ -247,6 +247,7 @@ const LoginForm = () => {
                   {/* Footer Links */}
                   <div className="pt-4 border-t border-gray-200 dark:border-slate-700 text-center space-y-2">
                     <p className="text-gray-600 dark:text-slate-400 text-sm">Don't have an account? <Link to="/signup" className="text-blue-600 dark:text-blue-400 inline-flex items-center space-x-1"><UserPlus className="w-4 h-4"/><span>Create Account</span></Link></p>
+                    <p className="text-gray-500 dark:text-slate-500 text-xs"><Link to="/admin/login" className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 inline-flex items-center space-x-1"><Shield className="w-3 h-3"/><span>Admin Portal</span></Link></p>
                   </div>
                 </div>
               </motion.div>

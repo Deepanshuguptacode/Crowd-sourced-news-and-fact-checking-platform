@@ -1,94 +1,99 @@
 const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
+const vectorService = require('./vectorService');
 const llmService = require('./llmService');
 
 class CommentFilteringService {
-  
+
+  /**
+   * Process a new comment: vector match first, LLM fallback.
+   */
   async processComment(commentText, originalCommentId, commentType, newsId) {
     try {
-      // Get existing groups for this news item with descriptions
-      const existingGroups = await CommentGroup.find({ newsId });
-
-      // Classify the comment using both labels and descriptions
-      const classification = await llmService.classifyCommentWithDescriptions(commentText, existingGroups);
-      
       let group = null;
 
-      if (classification.matchedGroup) {
-        // Find existing group
-        group = await CommentGroup.findOne({ 
-          label: classification.matchedGroup, 
-          newsId 
-        });
-        
-        // Update label if needed
-        if (classification.newLabel && classification.newLabel !== classification.matchedGroup) {
-          group.label = classification.newLabel;
-          await group.save();
-        }
-      } else if (classification.shouldCreateNew) {
-        // Create new group
-        // Generate description for the new group
-        const description = await llmService.generateGroupDescription(commentText);
-        
-        group = new CommentGroup({
-          label: classification.newLabel,
-          description: description || `Group discussing: ${classification.newLabel}`,
-          newsId,
-          embedding: [], // TODO: Add embedding generation
-          comments: []
-        });
-        await group.save();
+      // ── 1. Fast vector match ──────────────────────────────────────────
+      const vecMatch = await vectorService.matchNewsComment(commentText, newsId);
+
+      if (vecMatch) {
+        group = await CommentGroup.findById(vecMatch.groupId);
       }
 
-      // Create the filtered comment entry
+      // ── 2. LLM fallback when vector miss ──────────────────────────────
+      if (!group) {
+        const existingGroups = await CommentGroup.find({ newsId }).lean();
+        const labels = existingGroups.map(g => g.label);
+
+        const classification = await llmService.classifyComment(commentText, labels);
+
+        if (classification.matchedGroup) {
+          group = await CommentGroup.findOne({ label: classification.matchedGroup, newsId });
+        }
+
+        if (!group && classification.shouldCreateNew) {
+          const description = await llmService.generateGroupDescription(commentText);
+          group = new CommentGroup({
+            label: classification.newLabel,
+            description: description || `Group discussing: ${classification.newLabel}`,
+            newsId,
+            comments: [],
+          });
+          await group.save();
+
+          // Store in Pinecone (fire-and-forget, graceful fallback)
+          vectorService.storeNewsGroup(
+            group._id.toString(), group.label, group.description, newsId
+          ).catch(err => console.error('Pinecone storeNewsGroup error:', err.message));
+        }
+      }
+
+      // ── 3. Save filtered comment ──────────────────────────────────────
       const commentFilter = new CommentFilter({
         text: commentText,
         originalCommentId,
         commentType,
         newsId,
-        embedding: [], // TODO: Add embedding generation
-        groupId: group ? group._id : null
+        groupId: group?._id || null,
       });
-
       await commentFilter.save();
 
-      // Add comment to group
       if (group) {
         group.comments.push(commentFilter._id);
         await group.save();
 
-        // Check if group now has 3 or more comments and regenerate name and description
+        // Auto-regenerate label when 3+ comments
         if (group.comments.length >= 3) {
-          await this.regenerateGroupNameAndDescriptionIfNeeded(group);
+          this._regenerateInBackground(group);
         }
       }
 
-      return {
-        success: true,
-        commentFilter,
-        group
-      };
-
+      return { success: true, commentFilter, group };
     } catch (error) {
       console.error('Error processing comment for filtering:', error);
       throw error;
     }
   }
 
+  /** Fire-and-forget background regeneration */
+  _regenerateInBackground(group) {
+    this.regenerateGroupNameAndDescriptionIfNeeded(group).catch(err =>
+      console.error('Background regeneration error:', err.message)
+    );
+  }
+
+  // ====================================================================
+  //  READ  OPERATIONS  (lean queries)
+  // ====================================================================
+
   async getGroupedComments(newsId) {
     try {
-      // Updated to work with direct CommentGroup population
       const groups = await CommentGroup.find({ newsId, comments: { $ne: [] } })
         .populate({
           path: 'comments',
-          populate: {
-            path: 'commenter',
-            select: 'username fullName'
-          }
+          populate: { path: 'commenter', select: 'username fullName' },
         })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
 
-      // Map to frontend-expected structure
       return groups.map(group => ({
         _id: group._id,
         label: group.label,
@@ -96,14 +101,14 @@ class CommentFilteringService {
         newsId: group.newsId,
         createdAt: group.createdAt,
         commentCount: group.comments.length,
-        comments: group.comments.map(comment => ({
-          _id: comment._id,
-          text: comment.comment, // Map 'comment' field to 'text' for frontend
-          commentType: 'community', // Since these are all community comments
-          username: comment.commenter?.username || 'Anonymous',
-          userFullName: comment.commenter?.fullName || 'Unknown User',
-          createdAt: comment.createdAt
-        }))
+        comments: group.comments.map(c => ({
+          _id: c._id,
+          text: c.text || c.comment,
+          commentType: 'community',
+          username: c.commenter?.username || 'Anonymous',
+          userFullName: c.commenter?.fullName || 'Unknown User',
+          createdAt: c.createdAt,
+        })),
       }));
     } catch (error) {
       console.error('Error fetching grouped comments:', error);
@@ -113,11 +118,10 @@ class CommentFilteringService {
 
   async getAllFilteredComments(newsId) {
     try {
-      const comments = await CommentFilter.find({ newsId })
+      return await CommentFilter.find({ newsId })
         .populate('groupId')
-        .sort({ createdAt: -1 });
-
-      return comments;
+        .sort({ createdAt: -1 })
+        .lean();
     } catch (error) {
       console.error('Error fetching filtered comments:', error);
       throw error;
@@ -127,42 +131,40 @@ class CommentFilteringService {
   async getCommentsByGroup(groupId) {
     try {
       const group = await CommentGroup.findById(groupId)
-        .populate('comments');
+        .populate('comments')
+        .lean();
 
-      if (!group) {
-        throw new Error('Group not found');
-      }
+      if (!group) throw new Error('Group not found');
 
-      // Populate original comment details
-      const populatedComments = await Promise.all(group.comments.map(async (commentFilter) => {
-        let originalComment = null;
-        
-        // Populate based on comment type
-        if (commentFilter.commentType === 'community') {
-          originalComment = await require('../models/Comments').CommunityComment
-            .findById(commentFilter.originalCommentId)
-            .populate('commenter', 'username name');
-        } else if (commentFilter.commentType === 'expert') {
-          originalComment = await require('../models/Comments').ExpertComment
-            .findById(commentFilter.originalCommentId)
-            .populate('expert', 'username name');
-        }
+      const CommunityComment = require('../models/Comments').CommunityComment;
+      const ExpertComment = require('../models/Comments').ExpertComment;
 
-        return {
-          _id: commentFilter._id,
-          text: commentFilter.text || 'No comment text',
-          commentType: commentFilter.commentType,
-          createdAt: commentFilter.createdAt,
-          originalComment: originalComment,
-          // Flatten user data for easier frontend access
-          username: commentFilter.commentType === 'expert' 
-            ? (originalComment?.expert?.username || 'Unknown Expert')
-            : (originalComment?.commenter?.username || 'Unknown User'),
-          userFullName: commentFilter.commentType === 'expert' 
-            ? (originalComment?.expert?.name || 'Unknown Expert')
-            : (originalComment?.commenter?.name || 'Unknown User')
-        };
-      }));
+      const populatedComments = await Promise.all(
+        group.comments.map(async (cf) => {
+          let orig = null;
+          if (cf.commentType === 'community') {
+            orig = await CommunityComment.findById(cf.originalCommentId)
+              .populate('commenter', 'username name').lean();
+          } else if (cf.commentType === 'expert') {
+            orig = await ExpertComment.findById(cf.originalCommentId)
+              .populate('expert', 'username name').lean();
+          }
+
+          return {
+            _id: cf._id,
+            text: cf.text || 'No comment text',
+            commentType: cf.commentType,
+            createdAt: cf.createdAt,
+            originalComment: orig,
+            username: cf.commentType === 'expert'
+              ? (orig?.expert?.username || 'Unknown Expert')
+              : (orig?.commenter?.username || 'Unknown User'),
+            userFullName: cf.commentType === 'expert'
+              ? (orig?.expert?.name || 'Unknown Expert')
+              : (orig?.commenter?.name || 'Unknown User'),
+          };
+        })
+      );
 
       return {
         _id: group._id,
@@ -170,7 +172,7 @@ class CommentFilteringService {
         newsId: group.newsId,
         createdAt: group.createdAt,
         comments: populatedComments,
-        commentCount: populatedComments.length
+        commentCount: populatedComments.length,
       };
     } catch (error) {
       console.error('Error fetching comments by group:', error);
@@ -178,178 +180,133 @@ class CommentFilteringService {
     }
   }
 
-  async updateGroupLabel(groupId, newLabel) {
-    try {
-      const group = await CommentGroup.findByIdAndUpdate(
-        groupId,
-        { label: newLabel },
-        { new: true }
-      );
+  // ====================================================================
+  //  MUTATIONS
+  // ====================================================================
 
-      return group;
-    } catch (error) {
-      console.error('Error updating group label:', error);
-      throw error;
+  async updateGroupLabel(groupId, newLabel) {
+    const group = await CommentGroup.findByIdAndUpdate(groupId, { label: newLabel }, { new: true });
+    // Sync Pinecone
+    if (group) {
+      vectorService.storeNewsGroup(
+        group._id.toString(), group.label, group.description, group.newsId
+      ).catch(() => {});
     }
+    return group;
   }
 
   async updateGroupDescription(groupId, newDescription) {
-    try {
-      const group = await CommentGroup.findByIdAndUpdate(
-        groupId,
-        { description: newDescription },
-        { new: true }
-      );
-
-      return group;
-    } catch (error) {
-      console.error('Error updating group description:', error);
-      throw error;
+    const group = await CommentGroup.findByIdAndUpdate(groupId, { description: newDescription }, { new: true });
+    if (group) {
+      vectorService.storeNewsGroup(
+        group._id.toString(), group.label, group.description, group.newsId
+      ).catch(() => {});
     }
+    return group;
   }
 
   async deleteGroup(groupId) {
-    try {
-      // Remove group reference from all comments in the group
-      await CommentFilter.updateMany(
-        { groupId },
-        { $unset: { groupId: 1 } }
-      );
-
-      // Delete the group
-      await CommentGroup.findByIdAndDelete(groupId);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting group:', error);
-      throw error;
-    }
+    await CommentFilter.updateMany({ groupId }, { $unset: { groupId: 1 } });
+    await CommentGroup.findByIdAndDelete(groupId);
+    // Remove from Pinecone
+    vectorService.deleteVector(groupId, vectorService.getNamespaces().NEWS_GROUPS).catch(() => {});
+    return { success: true };
   }
+
+  // ====================================================================
+  //  REGENERATION  (name + description)
+  // ====================================================================
 
   async regenerateGroupNameAndDescriptionIfNeeded(group) {
     try {
-      // Get all comments in this group
-      const groupWithComments = await CommentGroup.findById(group._id)
-        .populate('comments');
+      const g = await CommentGroup.findById(group._id).populate('comments').lean();
+      if (!g || g.comments.length < 3) return;
 
-      if (!groupWithComments || groupWithComments.comments.length < 3) {
-        return; // Not enough comments to regenerate
-      }
-
-      // Extract comment texts
-      const commentTexts = groupWithComments.comments.map(comment => comment.text);
-      
-      // Generate new group name and description based on all comments
-      const [newGroupName, newDescription] = await Promise.all([
-        llmService.regenerateGroupName(commentTexts, group.label),
-        llmService.generateGroupDescription(commentTexts.join(' | '))
+      const texts = g.comments.map(c => c.text).filter(Boolean);
+      const [newName, newDesc] = await Promise.all([
+        llmService.regenerateGroupName(texts, g.label),
+        llmService.generateGroupDescription(texts.join(' | ')),
       ]);
-      
-      let updated = false;
-      
-      // Update group name if it's different
-      if (newGroupName && newGroupName !== group.label) {
-        console.log(`Updating group name from "${group.label}" to "${newGroupName}"`);
-        group.label = newGroupName;
-        updated = true;
-      }
 
-      // Update group description
-      if (newDescription && newDescription !== group.description) {
-        console.log(`Updating group description for "${group.label}"`);
-        group.description = newDescription;
-        updated = true;
-      }
+      const update = {};
+      if (newName && newName !== g.label) update.label = newName;
+      if (newDesc && newDesc !== g.description) update.description = newDesc;
 
-      if (updated) {
-        await group.save();
+      if (Object.keys(update).length) {
+        await CommentGroup.findByIdAndUpdate(g._id, update);
+        // Update Pinecone
+        vectorService.storeNewsGroup(
+          g._id.toString(), update.label || g.label, update.description || g.description, g.newsId
+        ).catch(() => {});
       }
-
     } catch (error) {
-      console.error('Error regenerating group name and description:', error);
-      // Don't throw error - this is not critical for the main functionality
+      console.error('Error regenerating group name/desc:', error.message);
     }
   }
 
-  // Method to manually regenerate all group names and descriptions for a news item
   async regenerateAllGroupNames(newsId) {
     try {
-      const groups = await CommentGroup.find({ newsId })
-        .populate('comments');
-
+      const groups = await CommentGroup.find({ newsId }).populate('comments').lean();
       const results = [];
 
-      for (const group of groups) {
-        if (group.comments.length >= 2) { // Allow regeneration with 2+ comments for manual trigger
-          const commentTexts = group.comments.map(comment => comment.text);
-          const oldLabel = group.label;
-          const oldDescription = group.description || '';
-          
-          const [newGroupName, newDescription] = await Promise.all([
-            llmService.regenerateGroupName(commentTexts, group.label),
-            llmService.generateGroupDescription(commentTexts.join(' | '))
-          ]);
-          
-          let updated = false;
-          
-          if (newGroupName && newGroupName !== group.label) {
-            group.label = newGroupName;
-            updated = true;
-          }
+      for (const g of groups) {
+        if (g.comments.length < 2) continue;
 
-          if (newDescription && newDescription !== group.description) {
-            group.description = newDescription;
-            updated = true;
-          }
+        const texts = g.comments.map(c => c.text).filter(Boolean);
+        const [newName, newDesc] = await Promise.all([
+          llmService.regenerateGroupName(texts, g.label),
+          llmService.generateGroupDescription(texts.join(' | ')),
+        ]);
 
-          if (updated) {
-            await group.save();
-            
-            results.push({
-              groupId: group._id,
-              oldLabel,
-              newLabel: group.label,
-              oldDescription,
-              newDescription: group.description,
-              commentCount: group.comments.length
-            });
-          }
+        const update = {};
+        if (newName && newName !== g.label) update.label = newName;
+        if (newDesc && newDesc !== g.description) update.description = newDesc;
+
+        if (Object.keys(update).length) {
+          await CommentGroup.findByIdAndUpdate(g._id, update);
+          vectorService.storeNewsGroup(
+            g._id.toString(), update.label || g.label, update.description || g.description, g.newsId
+          ).catch(() => {});
+
+          results.push({
+            groupId: g._id,
+            oldLabel: g.label, newLabel: update.label || g.label,
+            oldDescription: g.description || '', newDescription: update.description || g.description,
+            commentCount: g.comments.length,
+          });
         }
       }
 
-      return {
-        success: true,
-        updatedGroups: results,
-        totalGroupsProcessed: groups.length
-      };
-
+      return { success: true, updatedGroups: results, totalGroupsProcessed: groups.length };
     } catch (error) {
       console.error('Error regenerating all group names:', error);
       throw error;
     }
   }
 
-  // Get filtering summary for a news item
+  // ====================================================================
+  //  SUMMARY
+  // ====================================================================
+
   async getFilteringSummary(newsId) {
     try {
-      const [groups, totalComments] = await Promise.all([
-        CommentGroup.find({ newsId }).populate('comments'),
-        CommentFilter.countDocuments({ newsId })
+      const [groups, totalComments, ungrouped] = await Promise.all([
+        CommentGroup.find({ newsId }).populate('comments').lean(),
+        CommentFilter.countDocuments({ newsId }),
+        CommentFilter.countDocuments({ newsId, groupId: null }),
       ]);
 
-      const summary = {
+      return {
         totalGroups: groups.length,
-        totalComments: totalComments,
-        ungroupedComments: await CommentFilter.countDocuments({ newsId, groupId: null }),
-        groups: groups.map(group => ({
-          _id: group._id,
-          label: group.label,
-          commentCount: group.comments.length,
-          createdAt: group.createdAt
-        }))
+        totalComments,
+        ungroupedComments: ungrouped,
+        groups: groups.map(g => ({
+          _id: g._id,
+          label: g.label,
+          commentCount: g.comments.length,
+          createdAt: g.createdAt,
+        })),
       };
-
-      return summary;
     } catch (error) {
       console.error('Error getting filtering summary:', error);
       throw error;

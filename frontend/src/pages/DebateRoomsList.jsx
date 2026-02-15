@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import NavigationHeader from '../components/NavigationHeader';
 import { useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
+import { UserContext } from '../context/userContext';
 import { toast } from 'react-toastify';
 import { 
   PlusIcon, 
@@ -10,7 +11,8 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
   TagIcon,
-  FireIcon
+  FireIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 const DebateRoomsList = () => {
@@ -18,6 +20,7 @@ const DebateRoomsList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [deletingRoomId, setDeletingRoomId] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -26,6 +29,7 @@ const DebateRoomsList = () => {
   });
 
   const navigate = useNavigate();
+  const { userType, userInfo } = useContext(UserContext);
 
   useEffect(() => {
     fetchDebateRooms();
@@ -67,6 +71,21 @@ const DebateRoomsList = () => {
     } catch (error) {
       console.error('Error joining debate room:', error);
       toast.error(error.response?.data?.message || 'Failed to join debate room');
+    }
+  };
+
+  const handleDeleteRoom = async (roomId) => {
+    if (!window.confirm('Are you sure you want to delete this debate room? All comments and groups will be permanently deleted.')) return;
+    try {
+      setDeletingRoomId(roomId);
+      await debateRoomAPI.deleteDebateRoom(roomId);
+      setDebateRooms(prev => prev.filter(r => r._id !== roomId));
+      toast.success('Debate room deleted successfully');
+    } catch (error) {
+      console.error('Error deleting debate room:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete debate room');
+    } finally {
+      setDeletingRoomId(null);
     }
   };
 
@@ -221,6 +240,20 @@ const DebateRoomsList = () => {
                     >
                       View Room
                     </button>
+                    {(userType === 'admin' || (userInfo && room.creator && room.creator._id === userInfo._id)) && (
+                      <button
+                        onClick={() => handleDeleteRoom(room._id)}
+                        disabled={deletingRoomId === room._id}
+                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete debate room"
+                      >
+                        {deletingRoomId === room._id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <TrashIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

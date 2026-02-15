@@ -363,6 +363,102 @@ const getExpertCommentVotes = async (req, res) => {
   }
 };
 
+// Delete community comment (author or admin)
+const deleteCommunityComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user._id || req.user.id;
+
+    const comment = await CommunityComment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Allow author or admin to delete
+    const isAuthor = comment.commenter.toString() === userId.toString();
+    const isAdmin = req.userType === 'admin';
+    if (!isAuthor && !isAdmin) {
+      return res.status(403).json({ message: 'Only the comment author or admin can delete this comment' });
+    }
+
+    // Remove from News.comments array
+    await News.findByIdAndUpdate(comment.newsId, { $pull: { comments: commentId } });
+
+    // Clean up CommentFilter if it links to this comment
+    const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
+    const filter = await CommentFilter.findOne({ originalCommentId: commentId });
+    if (filter && filter.groupId) {
+      // Remove from comment group
+      const group = await CommentGroup.findByIdAndUpdate(
+        filter.groupId,
+        { $pull: { comments: filter._id } },
+        { new: true }
+      );
+      // If group is empty, delete it + its vector
+      if (group && group.comments.length === 0) {
+        const vectorService = require('../services/vectorService');
+        vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().NEWS_GROUPS)
+          .catch(() => {});
+        await CommentGroup.findByIdAndDelete(group._id);
+      }
+    }
+    await CommentFilter.deleteMany({ originalCommentId: commentId });
+
+    await CommunityComment.findByIdAndDelete(commentId);
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting community comment:', err);
+    res.status(500).json({ message: 'Error deleting comment', error: err.message });
+  }
+};
+
+// Delete expert comment (author or admin)
+const deleteExpertComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user._id || req.user.id;
+
+    const comment = await ExpertComment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Allow author or admin to delete
+    const isAuthor = comment.expert.toString() === userId.toString();
+    const isAdmin = req.userType === 'admin';
+    if (!isAuthor && !isAdmin) {
+      return res.status(403).json({ message: 'Only the comment author or admin can delete this comment' });
+    }
+
+    // Remove from News.comments array
+    await News.findByIdAndUpdate(comment.newsId, { $pull: { comments: commentId } });
+
+    // Clean up CommentFilter
+    const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
+    const filter = await CommentFilter.findOne({ originalCommentId: commentId });
+    if (filter && filter.groupId) {
+      const group = await CommentGroup.findByIdAndUpdate(
+        filter.groupId,
+        { $pull: { comments: filter._id } },
+        { new: true }
+      );
+      if (group && group.comments.length === 0) {
+        const vectorService = require('../services/vectorService');
+        vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().NEWS_GROUPS)
+          .catch(() => {});
+        await CommentGroup.findByIdAndDelete(group._id);
+      }
+    }
+    await CommentFilter.deleteMany({ originalCommentId: commentId });
+
+    await ExpertComment.findByIdAndDelete(commentId);
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting expert comment:', err);
+    res.status(500).json({ message: 'Error deleting comment', error: err.message });
+  }
+};
+
 module.exports = { 
   addCommunityComment, 
   addExpertComment,
@@ -371,5 +467,7 @@ module.exports = {
   expertVoteOnCommunityComment,
   expertVoteOnExpertComment,
   getCommunityCommentVotes,
-  getExpertCommentVotes
+  getExpertCommentVotes,
+  deleteCommunityComment,
+  deleteExpertComment,
 };

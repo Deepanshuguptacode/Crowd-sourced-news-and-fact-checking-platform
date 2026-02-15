@@ -25,10 +25,6 @@ const CommentFilterSchema = new Schema({
     type: Date, 
     default: Date.now 
   },
-  embedding: { 
-    type: [Number], 
-    default: [] 
-  },
   groupId: { 
     type: Schema.Types.ObjectId, 
     ref: 'CommentGroup', 
@@ -51,13 +47,9 @@ const CommentGroupSchema = new Schema({
     ref: 'News',
     required: true
   },
-  embedding: { 
-    type: [Number], 
-    default: [] 
-  },
   comments: [{ 
     type: Schema.Types.ObjectId, 
-    ref: 'CommunityComment' 
+    ref: 'CommentFilter' 
   }],
   createdAt: { 
     type: Date, 

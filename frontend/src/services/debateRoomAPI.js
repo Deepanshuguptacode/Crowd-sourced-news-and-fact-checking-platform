@@ -105,6 +105,18 @@ export const debateRoomAPI = {
     return response.data;
   },
 
+  // Delete a debate comment (creator or admin only)
+  deleteDebateComment: async (roomId, commentId) => {
+    const response = await api.delete(`/debate-rooms/${roomId}/comments/${commentId}`);
+    return response.data;
+  },
+
+  // Undo a debate comment (creator only, within 30 seconds)
+  undoDebateComment: async (roomId, commentId) => {
+    const response = await api.post(`/debate-rooms/${roomId}/comments/${commentId}/undo`);
+    return response.data;
+  },
+
   // Regenerate group content
   regenerateGroup: async (roomId, groupId) => {
     const response = await api.put(`/debate-rooms/${roomId}/groups/${groupId}/regenerate`);

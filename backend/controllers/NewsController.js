@@ -343,9 +343,60 @@ const getCombinedFeed = async (req, res) => {
   }
 };
 
+// Delete a news post (only by uploader or admin) — full cascade
+const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user._id;
+
+    const news = await News.findById(postId);
+    if (!news) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Allow uploader or admin to delete
+    const isUploader = news.uploadedBy.toString() === userId.toString();
+    const isAdmin = req.userType === 'admin';
+    if (!isUploader && !isAdmin) {
+      return res.status(403).json({ message: 'Only the post creator or admin can delete this post' });
+    }
+
+    const { CommunityComment, ExpertComment } = require('../models/Comments');
+    const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
+    const AIVerdict = require('../models/AIVerdict');
+    const vectorService = require('../services/vectorService');
+
+    // 1. Collect comment group IDs for vector cleanup
+    const commentGroups = await CommentGroup.find({ newsId: postId }).select('_id').lean();
+    const groupIds = commentGroups.map(g => g._id.toString());
+
+    // 2. Delete Pinecone vectors for comment groups
+    if (groupIds.length > 0) {
+      vectorService.deleteMany(groupIds, vectorService.getNamespaces().NEWS_GROUPS)
+        .catch(err => console.error('Vector cleanup error (news groups):', err.message));
+    }
+
+    // 3. Delete all related data from MongoDB
+    await CommunityComment.deleteMany({ newsId: postId });
+    await ExpertComment.deleteMany({ newsId: postId });
+    await CommentFilter.deleteMany({ newsId: postId });
+    await CommentGroup.deleteMany({ newsId: postId });
+    await AIVerdict.deleteMany({ newsId: postId });
+    await News.findByIdAndDelete(postId);
+
+    res.json({
+      message: 'Post and all related data deleted successfully'
+    });
+  } catch (err) {
+    console.error('Error deleting post:', err);
+    res.status(500).json({ message: 'Error deleting post', error: err.message });
+  }
+};
+
 module.exports = {
   uploadNews,
   getAllPosts,
   getCombinedFeed,
   voteNews,
+  deletePost,
 };

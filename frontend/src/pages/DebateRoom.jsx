@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
+import { UserContext } from '../context/userContext';
 import { toast } from 'react-toastify';
 import CounterChatView from '../components/CounterChatView';
 import NavigationHeader from '../components/NavigationHeader';
@@ -14,16 +15,19 @@ import {
   SparklesIcon,
   LinkIcon,
   InformationCircleIcon,
-  EyeIcon
+  EyeIcon,
+  ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline';
 import { 
   HandThumbUpIcon as HandThumbUpIconSolid,
-  HandThumbDownIcon as HandThumbDownIconSolid
+  HandThumbDownIcon as HandThumbDownIconSolid,
+  TrashIcon
 } from '@heroicons/react/24/solid';
 
 const DebateRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const { userType, userInfo } = useContext(UserContext);
   const [debateRoom, setDebateRoom] = useState(null);
   const [groups, setGroups] = useState({ for: [], against: [] });
   const [loading, setLoading] = useState(true);
@@ -32,6 +36,7 @@ const DebateRoom = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [viewMode, setViewMode] = useState('groups'); // 'groups' or 'counter'
+  const [recentComments, setRecentComments] = useState(new Map()); // Track recent comments for undo
   const commentInputRef = useRef(null);
 
   useEffect(() => {
@@ -80,6 +85,27 @@ const DebateRoom = () => {
 
       if (response.success) {
         setNewComment('');
+        const comment = response.data;
+        
+        // Add to recent comments for undo functionality
+        setRecentComments(prev => {
+          const updated = new Map(prev);
+          updated.set(comment._id, {
+            ...comment,
+            postedAt: Date.now()
+          });
+          return updated;
+        });
+        
+        // Remove from undo tracking after 30 seconds
+        setTimeout(() => {
+          setRecentComments(prev => {
+            const updated = new Map(prev);
+            updated.delete(comment._id);
+            return updated;
+          });
+        }, 30000);
+        
         toast.success('Comment added successfully!');
         fetchComments(); // Refresh comments
       }
@@ -120,6 +146,46 @@ const DebateRoom = () => {
       console.error('Error regenerating group:', error);
       toast.error('Failed to regenerate group content');
     }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    try {
+      await debateRoomAPI.deleteDebateComment(roomId, commentId);
+      toast.success('Comment deleted successfully');
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete comment');
+    }
+  };
+
+  const handleUndoComment = async (commentId) => {
+    try {
+      const response = await debateRoomAPI.undoDebateComment(roomId, commentId);
+      
+      // Remove from recent comments tracking
+      setRecentComments(prev => {
+        const updated = new Map(prev);
+        updated.delete(commentId);
+        return updated;
+      });
+      
+      toast.success('Comment undone successfully');
+      fetchComments();
+    } catch (error) {
+      console.error('Error undoing comment:', error);
+      toast.error(error.response?.data?.message || 'Failed to undo comment');
+    }
+  };
+
+  // Helper function to check if comment can be undone (within 30 seconds)
+  const canUndoComment = (commentId) => {
+    const recentComment = recentComments.get(commentId);
+    if (!recentComment) return false;
+    
+    const timeDifference = Date.now() - recentComment.postedAt;
+    return timeDifference < 30000; // 30 seconds
   };
 
   const handleRelinkGroups = async () => {
@@ -358,6 +424,9 @@ const DebateRoom = () => {
                     onDislike={handleDislikeComment}
                     onRegenerate={() => handleRegenerateGroup(group._id)}
                     onOpenCounterChat={handleOpenCounterChat}
+                    onDeleteComment={handleDeleteComment}                    onUndoComment={handleUndoComment}
+                    canUndoComment={canUndoComment}                    userType={userType}
+                    userInfo={userInfo}
                     stance="for"
                   />
                 ))}
@@ -384,6 +453,9 @@ const DebateRoom = () => {
                     onDislike={handleDislikeComment}
                     onRegenerate={() => handleRegenerateGroup(group._id)}
                     onOpenCounterChat={handleOpenCounterChat}
+                    onDeleteComment={handleDeleteComment}                    onUndoComment={handleUndoComment}
+                    canUndoComment={canUndoComment}                    userType={userType}
+                    userInfo={userInfo}
                     stance="against"
                   />
                 ))}
@@ -403,8 +475,9 @@ const DebateRoom = () => {
 };
 
 // Individual Debate Group Component
-const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat, stance }) => {
+const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat, onDeleteComment, onUndoComment, canUndoComment, userType, userInfo, stance }) => {
   const [expanded, setExpanded] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
   const stanceColor = stance === 'for' ? 'green' : 'red';
 
   return (
@@ -497,6 +570,16 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
                     </div>
                   )}
                   <div className="flex items-center gap-4">
+                    {(userInfo && comment.author && comment.author._id === userInfo._id && canUndoComment(comment._id)) && (
+                      <button
+                        onClick={() => onUndoComment(comment._id)}
+                        className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                        title="Undo comment (available for 30 seconds)"
+                      >
+                        <ArrowUturnLeftIcon className="h-4 w-4" />
+                        <span>Undo</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => onLike(comment._id)}
                       className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
@@ -511,6 +594,24 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
                       <HandThumbDownIcon className="h-4 w-4" />
                       <span>{comment.dislikes?.length || 0}</span>
                     </button>
+                    {(userType === 'admin' || (userInfo && comment.author && comment.author._id === userInfo._id)) && !canUndoComment(comment._id) && (
+                      <button
+                        onClick={async () => {
+                          setDeletingCommentId(comment._id);
+                          await onDeleteComment(comment._id);
+                          setDeletingCommentId(null);
+                        }}
+                        disabled={deletingCommentId === comment._id}
+                        className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                        title="Delete comment"
+                      >
+                        {deletingCommentId === comment._id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                        ) : (
+                          <TrashIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -18,6 +18,8 @@ import DebateRoomsList from './pages/DebateRoomsList';
 import DebateRoom from './pages/DebateRoom';
 import AdvancedDebateRoom from './components/AdvancedDebateRoom';
 import TestAccuracy from './pages/TestAccuracy';
+import AdminLogin from './pages/AdminLogin';
+import AdminSignup from './pages/AdminSignup';
 import ProtectedRoute from './components/ProtectedRoute';
 import { UserProvider } from './context/userContext';
 import { ToastContainer } from 'react-toastify';
@@ -32,6 +34,8 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupForm />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/signup" element={<AdminSignup />} />
             <Route 
               path="/home" 
               element={
@@ -43,7 +47,7 @@ function App() {
             <Route 
               path="/submit-news" 
               element={
-                <ProtectedRoute allowedUserTypes={['normal', 'community', 'expert']}>
+                <ProtectedRoute allowedUserTypes={['normal', 'community', 'expert', 'admin']}>
                   <NewsSubmissionForm />
                 </ProtectedRoute>
               } 

@@ -52,6 +52,18 @@ export const authAPI = {
     return response.data;
   },
 
+  // Admin login
+  adminLogin: async (credentials) => {
+    const response = await api.post('/users/admin/login', credentials);
+    return response.data;
+  },
+
+  // Admin signup (requires security password)
+  adminSignup: async (userData) => {
+    const response = await api.post('/users/admin/signup', userData);
+    return response.data;
+  },
+
   // Face Authentication APIs
   registerFace: async (userType, faceData) => {
     const response = await api.post(`/users/${userType}/register-face`, faceData);
@@ -106,6 +118,12 @@ export const newsAPI = {
     const response = await api.post(`/news/vote/${postId}`, { voteType });
     return response.data;
   },
+
+  // Delete a news post (creator or admin only)
+  deletePost: async (postId) => {
+    const response = await api.delete(`/news/post/${postId}`);
+    return response.data;
+  },
 };
 
 // Comments APIs
@@ -153,6 +171,18 @@ export const commentsAPI = {
 
   getExpertCommentVotes: async (commentId) => {
     const response = await api.get(`/news/expert-comment/${commentId}/votes`);
+    return response.data;
+  },
+
+  // Delete community comment (creator or admin only)
+  deleteCommunityComment: async (commentId) => {
+    const response = await api.delete(`/news/community-comment/${commentId}`);
+    return response.data;
+  },
+
+  // Delete expert comment (creator or admin only)
+  deleteExpertComment: async (commentId) => {
+    const response = await api.delete(`/news/expert-comment/${commentId}`);
     return response.data;
   },
 };

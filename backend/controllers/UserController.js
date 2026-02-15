@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const NormalUser = require('../models/NormalUser');
 const CommunityUser = require('../models/CommunityUser');
 const ExpertUser = require('../models/ExpertUser');
+const Admin = require('../models/Admin');
 
 // Import Face Authentication Service
 const HttpFaceAuthService = require('../services/httpFaceAuthService');
@@ -450,6 +451,118 @@ const getFaceAuthStatus = async (req, res, UserModel) => {
   }
 };
 
+// =========================================================================
+//  ADMIN  SIGNUP / LOGIN
+// =========================================================================
+
+/**
+ * Admin signup — requires ADMIN_SECURITY_PASSWORD from .env
+ */
+const adminSignup = async (req, res) => {
+  try {
+    const { name, username, email, password, securityPassword } = req.body;
+
+    // Validate security password
+    const envSecurityPassword = process.env.ADMIN_SECURITY_PASSWORD;
+    if (!envSecurityPassword) {
+      return res.status(500).json({ message: 'Admin security password not configured on server' });
+    }
+
+    if (!securityPassword || securityPassword !== envSecurityPassword) {
+      return res.status(403).json({ message: 'Invalid security password. Admin registration denied.' });
+    }
+
+    // Check if admin already exists
+    const existingAdmin = await Admin.findOne({ $or: [{ email }, { username }] });
+    if (existingAdmin) {
+      return res.status(400).json({ message: 'Admin with this email or username already exists!' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newAdmin = new Admin({
+      name,
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    await newAdmin.save();
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: newAdmin._id, email: newAdmin.email, role: 'Admin' },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      message: 'Admin account created successfully!',
+      user: {
+        id: newAdmin._id,
+        name: newAdmin.name,
+        username: newAdmin.username,
+        email: newAdmin.email,
+        role: 'Admin',
+      },
+    });
+  } catch (error) {
+    console.error('Admin signup error:', error);
+    res.status(500).json({ message: 'Admin signup failed!', error: error.message });
+  }
+};
+
+/**
+ * Admin login
+ */
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(400).json({ message: 'Admin account does not exist!' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials!' });
+    }
+
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email, role: 'Admin' },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      message: 'Admin login successful!',
+      token,
+      user: {
+        id: admin._id,
+        name: admin.name,
+        username: admin.username,
+        email: admin.email,
+        role: 'Admin',
+      },
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ message: 'Admin login failed!', error: error.message });
+  }
+};
+
 // Export Functions
 module.exports = {
   normalUserSignup: (req, res) => signup(req, res, NormalUser),
@@ -470,4 +583,6 @@ module.exports = {
   expertUserFaceAuthStatus: (req, res) => getFaceAuthStatus(req, res, ExpertUser),
   getAllExperts,
   getExpertById,
+  adminSignup,
+  adminLogin,
 };
