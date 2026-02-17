@@ -141,6 +141,11 @@ const regenerateDebateGroup = async (req, res) => {
 };
 
 // Re-evaluate all counter-group matchings for a debate room (vector-powered)
+// Uses a global optimal matching strategy to ensure bidirectional consistency:
+//   1. Clear ALL existing links
+//   2. Let each FOR group find its best AGAINST match
+//   3. Resolve conflicts (two FOR groups wanting the same AGAINST group)
+//   4. Write clean bidirectional links
 const relinkDebateGroups = async (req, res) => {
   try {
     const { roomId } = req.params;
@@ -155,31 +160,86 @@ const relinkDebateGroups = async (req, res) => {
       DebateGroup.find({ debateRoomId: roomId, stance: 'against' }).lean(),
     ]);
 
-    let updated = 0;
+    // Step 1: Clear ALL existing counter-group links in this room
+    const allGroupIds = [...forGroups, ...againstGroups].map(g => g._id);
+    await DebateGroup.updateMany(
+      { _id: { $in: allGroupIds } },
+      { $set: { counterGroupId: null } }
+    );
 
-    // Match FOR → AGAINST
+    // Step 2: For each FOR group, find best AGAINST match with score
+    // candidateLinks = [{ forId, againstId, score }]
+    const candidateLinks = [];
+
     for (const g of forGroups) {
       const match = await vectorService.findCounterGroup(
         g._id.toString(), g.title, g.description, roomId, 'against'
       );
-      if (match && match.counterGroupId !== g.counterGroupId?.toString()) {
-        await DebateGroup.findByIdAndUpdate(g._id, { counterGroupId: match.counterGroupId });
-        updated++;
+      if (match) {
+        candidateLinks.push({
+          forId: g._id.toString(),
+          againstId: match.counterGroupId,
+          score: match.score,
+        });
       }
     }
 
-    // Match AGAINST → FOR
+    // Also check AGAINST→FOR to find links that FOR→AGAINST might miss
     for (const g of againstGroups) {
       const match = await vectorService.findCounterGroup(
         g._id.toString(), g.title, g.description, roomId, 'for'
       );
-      if (match && match.counterGroupId !== g.counterGroupId?.toString()) {
-        await DebateGroup.findByIdAndUpdate(g._id, { counterGroupId: match.counterGroupId });
-        updated++;
+      if (match) {
+        candidateLinks.push({
+          forId: match.counterGroupId,
+          againstId: g._id.toString(),
+          score: match.score,
+        });
       }
     }
 
-    res.json({ success: true, message: `Re-evaluated counter-group links. Updated ${updated} groups.` });
+    // Step 3: Greedy optimal matching — sort by score descending,
+    // then assign each pair only if neither side is already taken
+    candidateLinks.sort((a, b) => b.score - a.score);
+
+    const usedFor = new Set();
+    const usedAgainst = new Set();
+    const finalPairs = [];
+
+    for (const link of candidateLinks) {
+      if (!usedFor.has(link.forId) && !usedAgainst.has(link.againstId)) {
+        finalPairs.push(link);
+        usedFor.add(link.forId);
+        usedAgainst.add(link.againstId);
+      }
+    }
+
+    // Step 4: Write bidirectional links
+    let updated = 0;
+    for (const pair of finalPairs) {
+      await DebateGroup.findByIdAndUpdate(pair.forId, { counterGroupId: pair.againstId });
+      await DebateGroup.findByIdAndUpdate(pair.againstId, { counterGroupId: pair.forId });
+
+      // Sync display order
+      const againstGroup = await DebateGroup.findById(pair.againstId);
+      if (againstGroup) {
+        await DebateGroup.findByIdAndUpdate(pair.forId, { displayOrder: againstGroup.displayOrder + 0.5 });
+      }
+      updated++;
+    }
+
+    console.log(`🔗 relinkDebateGroups: ${finalPairs.length} pairs linked out of ${forGroups.length} for / ${againstGroups.length} against groups`);
+
+    res.json({
+      success: true,
+      message: `Re-evaluated counter-group links. Created ${updated} bidirectional pairs.`,
+      data: {
+        forGroups: forGroups.length,
+        againstGroups: againstGroups.length,
+        pairedGroups: updated,
+        pairs: finalPairs.map(p => ({ for: p.forId, against: p.againstId, score: p.score.toFixed(3) })),
+      },
+    });
   } catch (error) {
     console.error('Error relinking debate groups:', error);
     res.status(500).json({ success: false, message: 'Failed to relink debate groups', error: error.message });

@@ -36,6 +36,19 @@ const DebateGroupSchema = new Schema({
     ref: 'DebateGroup',
     default: null
   },
+  counterMatchInfo: {
+    type: {
+      method: { type: String, enum: ['llm', 'vector', 'manual'], default: null },
+      llmReason: { type: String, default: null },
+      llmCounterTitle: { type: String, default: null },
+      llmConfidence: { type: Number, default: null },
+      vectorCounterGroupId: { type: Schema.Types.ObjectId, ref: 'DebateGroup', default: null },
+      vectorCounterTitle: { type: String, default: null },
+      vectorScore: { type: Number, default: null },
+      updatedAt: { type: Date, default: null },
+    },
+    default: {}
+  },
   displayOrder: {
     type: Number,
     default: 0

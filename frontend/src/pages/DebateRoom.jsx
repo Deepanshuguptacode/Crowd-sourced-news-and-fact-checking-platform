@@ -85,7 +85,7 @@ const DebateRoom = () => {
 
       if (response.success) {
         setNewComment('');
-        const comment = response.data;
+        const comment = response.data?.comment || response.data;
         
         // Add to recent comments for undo functionality
         setRecentComments(prev => {
@@ -98,7 +98,7 @@ const DebateRoom = () => {
         });
         
         // Remove from undo tracking after 30 seconds
-        setTimeout(() => {
+        const undoTimer = setTimeout(() => {
           setRecentComments(prev => {
             const updated = new Map(prev);
             updated.delete(comment._id);
@@ -106,7 +106,28 @@ const DebateRoom = () => {
           });
         }, 30000);
         
-        toast.success('Comment added successfully!');
+        // Show success toast with undo option
+        const toastId = toast.success(
+          <div className="flex items-center justify-between gap-4">
+            <span>Comment posted successfully!</span>
+            <button
+              onClick={async () => {
+                clearTimeout(undoTimer);
+                toast.dismiss(toastId);
+                await handleUndoComment(comment._id);
+              }}
+              className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded text-sm font-medium transition-colors"
+            >
+              Undo
+            </button>
+          </div>,
+          {
+            autoClose: 30000,
+            closeButton: true,
+            position: 'bottom-right'
+          }
+        );
+        
         fetchComments(); // Refresh comments
       }
     } catch (error) {
@@ -478,7 +499,9 @@ const DebateRoom = () => {
 const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat, onDeleteComment, onUndoComment, canUndoComment, userType, userInfo, stance }) => {
   const [expanded, setExpanded] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [showMatchComparison, setShowMatchComparison] = useState(false);
   const stanceColor = stance === 'for' ? 'green' : 'red';
+  const matchInfo = group.counterMatchInfo;
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-${stanceColor}-500 border border-gray-200 dark:border-gray-700 overflow-hidden`} data-group-id={group._id}>
@@ -524,8 +547,106 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
               <span>View counter-chat</span>
             </button>
           )}
+          {/* Counter-match comparison button */}
+          {matchInfo && matchInfo.method && (
+            <button
+              onClick={() => setShowMatchComparison(true)}
+              className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              title="Compare LLM vs Vector counter-match"
+            >
+              <InformationCircleIcon className="h-3 w-3" />
+              <span>Match info</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Counter-Match Comparison Popup */}
+      {showMatchComparison && matchInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowMatchComparison(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-800">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                  <InformationCircleIcon className="h-5 w-5" />
+                  Counter-Match Comparison
+                </h3>
+                <button onClick={() => setShowMatchComparison(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                  ✕
+                </button>
+              </div>
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                LLM result is the actual link. Vector result shown for comparison.
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* LLM Result (Primary) */}
+              <div className="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">LLM (Active)</span>
+                  <span className="text-xs text-green-600 dark:text-green-400">Used for actual linking</span>
+                  {matchInfo.llmConfidence != null && (
+                    <span className={`ml-auto px-2 py-0.5 text-xs rounded-full font-medium ${
+                      matchInfo.llmConfidence >= 85 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-yellow-600 text-white'
+                    }`}>
+                      {matchInfo.llmConfidence}% confidence
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {matchInfo.llmCounterTitle || 'No counter-group found'}
+                </p>
+                {matchInfo.llmReason && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 italic">
+                    "{matchInfo.llmReason}"
+                  </p>
+                )}
+              </div>
+
+              {/* Vector Result (Comparison) */}
+              <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full font-medium">Vector</span>
+                  <span className="text-xs text-blue-600 dark:text-blue-400">For comparison only</span>
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {matchInfo.vectorCounterTitle || 'No counter-group found'}
+                </p>
+                {matchInfo.vectorScore != null && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Similarity:</span>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 max-w-[120px]">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${Math.min(matchInfo.vectorScore * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                      {(matchInfo.vectorScore * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Agreement indicator */}
+              {matchInfo.llmCounterTitle && matchInfo.vectorCounterTitle && (
+                <div className={`text-center text-xs py-2 rounded-lg ${
+                  matchInfo.llmCounterTitle === matchInfo.vectorCounterTitle
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                }`}>
+                  {matchInfo.llmCounterTitle === matchInfo.vectorCounterTitle
+                    ? '✅ LLM and Vector agree on the same counter-group'
+                    : '⚠️ LLM and Vector picked different counter-groups'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Comments */}
       <div className={`${expanded ? 'block' : 'hidden'}`}>

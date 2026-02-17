@@ -31,6 +31,77 @@ function background(fn) {
   fn().catch(err => console.error('[bg]', err.message));
 }
 
+// ── per-room lock to prevent concurrent counter-link races ───────────────
+const _roomLocks = new Map();
+async function withRoomLock(roomId, fn) {
+  const key = String(roomId);
+  while (_roomLocks.get(key)) {
+    await _roomLocks.get(key);
+  }
+  let resolve;
+  const promise = new Promise(r => { resolve = r; });
+  _roomLocks.set(key, promise);
+  try {
+    return await fn();
+  } finally {
+    _roomLocks.delete(key);
+    resolve();
+  }
+}
+
+/**
+ * Safely update bidirectional counter-group links.
+ * Ensures consistency: if A↔B, then both point at each other.
+ * Cleans up any old links that would become orphaned.
+ */
+async function updateCounterLinks(group, newCounterId) {
+  const groupId = group._id.toString();
+  const currentCounterId = group.counterGroupId?.toString() || null;
+
+  // Nothing to do
+  if (currentCounterId === newCounterId) return false;
+
+  console.log(`🔗 Updating counter-links: ${groupId} -> ${newCounterId || 'NONE'} (was: ${currentCounterId || 'NONE'})`);
+
+  // 1. Clear OLD bidirectional link
+  if (currentCounterId) {
+    const oldCounter = await DebateGroup.findById(currentCounterId);
+    // Only clear the old counter's link if it still points back at us
+    if (oldCounter?.counterGroupId?.toString() === groupId) {
+      await DebateGroup.findByIdAndUpdate(currentCounterId, { counterGroupId: null });
+      console.log(`   Cleared old counter ${currentCounterId} → null`);
+    }
+  }
+
+  if (!newCounterId) {
+    // Just clearing, no new link
+    await DebateGroup.findByIdAndUpdate(groupId, { counterGroupId: null });
+    return true;
+  }
+
+  // 2. If the NEW counter-group is already linked to someone else, clear that
+  const newCounter = await DebateGroup.findById(newCounterId);
+  if (newCounter?.counterGroupId && newCounter.counterGroupId.toString() !== groupId) {
+    const thirdPartyId = newCounter.counterGroupId.toString();
+    const thirdParty = await DebateGroup.findById(thirdPartyId);
+    if (thirdParty?.counterGroupId?.toString() === newCounterId) {
+      await DebateGroup.findByIdAndUpdate(thirdPartyId, { counterGroupId: null });
+      console.log(`   Cleared third-party ${thirdPartyId} → null`);
+    }
+  }
+
+  // 3. Create new bidirectional link
+  await DebateGroup.findByIdAndUpdate(groupId, { counterGroupId: newCounterId });
+  await DebateGroup.findByIdAndUpdate(newCounterId, { counterGroupId: groupId });
+  console.log(`   Linked: ${groupId} ↔ ${newCounterId}`);
+
+  // 4. Sync display order
+  if (newCounter) {
+    await DebateGroup.findByIdAndUpdate(groupId, { displayOrder: newCounter.displayOrder + 0.5 });
+  }
+  return true;
+}
+
 // =========================================================================
 //  CREATE COMMENT
 // =========================================================================
@@ -112,73 +183,78 @@ const createDebateComment = async (req, res) => {
         group.updatedAt = new Date();
         await group.save();
 
-        // Background: regenerate title/description + update vector + counter-match
+        // Background: regenerate title/description + LLM counter-match + vector comparison
         background(async () => {
           geminiKeyRotation.advanceKey();
           const allComments = await DebateComment.find({ _id: { $in: group.commentIds } });
-          const { title, description } = await llmService.generateGroupContent(allComments);
-          group.title = title;
-          group.description = description;
+          const opposingStance = stance === 'for' ? 'against' : 'for';
+          const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
+
+          // Enrich opposing groups with comment text previews for LLM
+          for (const og of opposingGroups) {
+            const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
+            og.commentTexts = ogComments.map(c => c.text);
+          }
+
+          const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
+
+          // Single LLM call: regenerate title/description + find counter-group
+          const llmResult = await llmService.generateGroupContentWithCounter(allComments, opposingGroups, debateContext);
+          group.title = llmResult.title;
+          group.description = llmResult.description;
           await group.save();
 
-          // Update Pinecone
-          const stored = await vectorService.storeDebateGroup(group._id, title, description, roomId, stance);
+          // Update Pinecone — AWAIT so vector is indexed
+          const stored = await vectorService.storeDebateGroup(group._id, llmResult.title, llmResult.description, roomId, stance);
           if (!stored) console.log(`Vector store failed for group ${group._id}, will retry later`);
 
-          // Re-evaluate counter-matching (always check for better matches)
-          console.log(`🔗 Background: Re-evaluating counter-group matching`);
+          // Also run vector counter-match FOR COMPARISON ONLY
           geminiKeyRotation.advanceKey();
-          const opposingStance = stance === 'for' ? 'against' : 'for';
-          const counter = await vectorService.findCounterGroup(group._id, title, description, roomId, opposingStance);
-          
-          if (counter) {
-            const currentCounterId = group.counterGroupId?.toString();
-            const newCounterId = counter.counterGroupId;
-            const shouldUpdate = !currentCounterId || newCounterId !== currentCounterId;
-            
-            console.log(`🔍 Counter-match evaluation:`);
-            console.log(`   Current counter: ${currentCounterId || 'NONE'}`);
-            console.log(`   New best match: ${newCounterId} (score: ${counter.score})`);
-            console.log(`   Should update: ${shouldUpdate}`);
-            
-            if (shouldUpdate) {
-              console.log(`🔗 Background: Updating counter-group links`);
-              
-              // Clear old counter-group link if it exists
-              if (currentCounterId && currentCounterId !== newCounterId) {
-                console.log(`🔗 Clearing old counter-link: ${currentCounterId}`);
-                await DebateGroup.findByIdAndUpdate(currentCounterId, { counterGroupId: null });
+          const vectorCounter = await vectorService.findCounterGroup(group._id, llmResult.title, llmResult.description, roomId, opposingStance);
+
+          console.log(`📊 Counter-match comparison:`);
+          console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
+          console.log(`   LLM reason: ${llmResult.counterReason}`);
+          console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
+
+          // Use LLM result as the ACTUAL link, but preserve existing links if new confidence is low
+          await withRoomLock(roomId, async () => {
+            const freshGroup = await DebateGroup.findById(group._id);
+            if (!freshGroup) return;
+
+            // Store comparison info
+            freshGroup.counterMatchInfo = {
+              method: 'llm',
+              llmReason: llmResult.counterReason,
+              llmCounterTitle: llmResult.counterGroupTitle || null,
+              llmConfidence: llmResult.confidence || 0,
+              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
+              vectorCounterTitle: vectorCounter?.title || null,
+              vectorScore: vectorCounter?.score || null,
+              updatedAt: new Date(),
+            };
+            await freshGroup.save();
+
+            // STABILITY RULE: Only update counter-link if new match meets threshold
+            const currentCounterId = freshGroup.counterGroupId?.toString();
+            const newCounterId = llmResult.counterGroupId;
+            const confidence = llmResult.confidence || 0;
+
+            if (newCounterId && confidence >= 85) {
+              // New high-confidence match
+              if (currentCounterId !== newCounterId) {
+                console.log(`🔄 Updating counter-link: ${currentCounterId || 'NONE'} → ${newCounterId} (confidence: ${confidence}%)`);
+                await updateCounterLinks(freshGroup, newCounterId);
+              } else {
+                console.log(`✅ Counter-link unchanged (already linked to same group with ${confidence}% confidence)`);
               }
-              
-              // Clear any existing link the new counter-group might have
-              const newCounterGroup = await DebateGroup.findById(newCounterId);
-              if (newCounterGroup?.counterGroupId && newCounterGroup.counterGroupId.toString() !== group._id.toString()) {
-                console.log(`🔗 Clearing existing link from new counter-group`);
-                await DebateGroup.findByIdAndUpdate(newCounterGroup.counterGroupId, { counterGroupId: null });
-              }
-              
-              // Create bidirectional links
-              await DebateGroup.findByIdAndUpdate(group._id, { counterGroupId: newCounterId });
-              await DebateGroup.findByIdAndUpdate(newCounterId, { counterGroupId: group._id });
-              
-              // Sync display order
-              if (newCounterGroup) {
-                await DebateGroup.findByIdAndUpdate(group._id, { displayOrder: newCounterGroup.displayOrder + 0.5 });
-                console.log(`✅ Background: Counter-group linking complete with synchronized display order`);
-              }
+            } else if (!newCounterId && currentCounterId) {
+              console.log(`⚠️ New LLM result suggests no counter (confidence: ${confidence}%), but existing link preserved for stability`);
+              // Keep existing link - don't break it unless we have a better candidate
             } else {
-              console.log(`ℹ️ Background: Counter-group link unchanged (already optimal)`);
+              console.log(`ℹ️ No valid counter-match (confidence: ${confidence}% < 85%)`);
             }
-          } else {
-            console.log(`ℹ️ Background: No suitable counter-group found`);
-            
-            // If we had a counter-group but no longer have a good match, consider clearing it
-            if (group.counterGroupId) {
-              console.log(`🔗 Background: Clearing poor-quality counter-group link`);
-              await DebateGroup.findByIdAndUpdate(group.counterGroupId, { counterGroupId: null });
-              await DebateGroup.findByIdAndUpdate(group._id, { counterGroupId: null });
-            }
-          }
+          });
         });
       } else {
         // group deleted between check and find — treat as miss
@@ -222,36 +298,84 @@ const createDebateComment = async (req, res) => {
         await group.save();
         isNewGroup = false;
 
-        // Background: refresh title/desc with all comments
+        // Background: refresh title/desc + LLM counter-match + vector comparison
         background(async () => {
           geminiKeyRotation.advanceKey();
           const allComments = await DebateComment.find({ _id: { $in: group.commentIds } });
-          const { title, description } = await llmService.generateGroupContent(allComments);
-          group.title = title; group.description = description;
+          const opposingStance = stance === 'for' ? 'against' : 'for';
+          const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
+
+          // Enrich opposing groups with comment text previews for LLM
+          for (const og of opposingGroups) {
+            const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
+            og.commentTexts = ogComments.map(c => c.text);
+          }
+
+          const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
+
+          // Single LLM call: regenerate title/description + find counter-group
+          const llmResult = await llmService.generateGroupContentWithCounter(allComments, opposingGroups, debateContext);
+          group.title = llmResult.title; group.description = llmResult.description;
           await group.save();
-          vectorService.storeDebateGroup(group._id, title, description, roomId, stance);
+
+          await vectorService.storeDebateGroup(group._id, llmResult.title, llmResult.description, roomId, stance);
+
+          // Vector counter-match for comparison
+          geminiKeyRotation.advanceKey();
+          const vectorCounter = await vectorService.findCounterGroup(group._id, llmResult.title, llmResult.description, roomId, opposingStance);
+
+          console.log(`📊 Counter-match comparison (LLM-matched path):`);
+          console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
+          console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
+
+          await withRoomLock(roomId, async () => {
+            const freshGroup = await DebateGroup.findById(group._id);
+            if (!freshGroup) return;
+
+            const vectorCounterGroup = vectorCounter ? await DebateGroup.findById(vectorCounter.counterGroupId) : null;
+            freshGroup.counterMatchInfo = {
+              method: 'llm',
+              llmReason: llmResult.counterReason,
+              llmCounterTitle: llmResult.counterGroupTitle || null,
+              llmConfidence: llmResult.confidence || 0,
+              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
+              vectorCounterTitle: vectorCounter?.title || vectorCounterGroup?.title || null,
+              vectorScore: vectorCounter?.score || null,
+              updatedAt: new Date(),
+            };
+            await freshGroup.save();
+
+            // STABILITY RULE: Only update counter-link if new match meets threshold
+            const currentCounterId = freshGroup.counterGroupId?.toString();
+            const newCounterId = llmResult.counterGroupId;
+            const confidence = llmResult.confidence || 0;
+
+            if (newCounterId && confidence >= 85) {
+              if (currentCounterId !== newCounterId) {
+                console.log(`🔄 Updating counter-link: ${currentCounterId || 'NONE'} → ${newCounterId} (confidence: ${confidence}%)`);
+                await updateCounterLinks(freshGroup, newCounterId);
+              } else {
+                console.log(`✅ Counter-link unchanged (already linked to same group with ${confidence}% confidence)`);
+              }
+            } else if (!newCounterId && currentCounterId) {
+              console.log(`⚠️ New LLM result suggests no counter (confidence: ${confidence}%), but existing link preserved for stability`);
+            } else {
+              console.log(`ℹ️ No valid counter-match (confidence: ${confidence}% < 85%)`);
+            }
+          });
         });
       } else {
         // Create brand-new group (title+desc already from combined LLM call)
         const title = result.title;
         const description = result.description;
 
-        // Counter-match via vector
-        geminiKeyRotation.advanceKey();
+        // Determine display order for the new group
         const opposingStance = stance === 'for' ? 'against' : 'for';
-        let counterGroupId = null;
         let displayOrder = 0;
+        const maxOrder = await DebateGroup.findOne({ debateRoomId: roomId, stance }).sort({ displayOrder: -1 });
+        displayOrder = maxOrder ? maxOrder.displayOrder + 1 : 0;
 
-        const counter = await vectorService.findCounterGroup(null, title, description, roomId, opposingStance);
-        if (counter) {
-          counterGroupId = counter.counterGroupId;
-          const cg = await DebateGroup.findById(counterGroupId);
-          displayOrder = cg ? cg.displayOrder + 0.5 : 0;
-        } else {
-          const maxOrder = await DebateGroup.findOne({ debateRoomId: roomId, stance }).sort({ displayOrder: -1 });
-          displayOrder = maxOrder ? maxOrder.displayOrder + 1 : 0;
-        }
-
+        // Create group first (so it has an _id)
         group = new DebateGroup({
           debateRoomId: roomId,
           label: result.newLabel,
@@ -259,19 +383,76 @@ const createDebateComment = async (req, res) => {
           description,
           stance,
           commentIds: [comment._id],
-          counterGroupId,
+          counterGroupId: null,
           displayOrder,
         });
         await group.save();
 
-        // Bidirectional counter-link
-        if (counterGroupId) {
-          await DebateGroup.findByIdAndUpdate(counterGroupId, { counterGroupId: group._id });
-        }
+        // AWAIT Pinecone store so the group is visible to future queries
+        await vectorService.storeDebateGroup(group._id, title, description, roomId, stance);
 
-        // Store in Pinecone (fire-and-forget)
-        vectorService.storeDebateGroup(group._id, title, description, roomId, stance)
-          .catch(err => console.error('Vector store error:', err.message));
+        // Counter-match via LLM + vector comparison
+        background(async () => {
+          await withRoomLock(roomId, async () => {
+            geminiKeyRotation.advanceKey();
+            const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
+
+            // Enrich opposing groups with comment text previews for LLM
+            for (const og of opposingGroups) {
+              const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
+              og.commentTexts = ogComments.map(c => c.text);
+            }
+
+            const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
+
+            // LLM counter-match (uses group's own text)
+            const llmResult = await llmService.generateGroupContentWithCounter(
+              [{ text: text }], // Use the actual comment text, not just title+desc
+              opposingGroups,
+              debateContext
+            );
+
+            // Vector counter-match for comparison
+            geminiKeyRotation.advanceKey();
+            const vectorCounter = await vectorService.findCounterGroup(
+              group._id.toString(), title, description, roomId, opposingStance
+            );
+
+            console.log(`📊 Counter-match comparison (new group):`);
+            console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
+            console.log(`   LLM reason: ${llmResult.counterReason}`);
+            console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
+
+            // Store comparison info
+            const freshGroup = await DebateGroup.findById(group._id);
+            if (!freshGroup) return;
+
+            freshGroup.counterMatchInfo = {
+              method: 'llm',
+              llmReason: llmResult.counterReason,
+              llmCounterTitle: llmResult.counterGroupTitle || null,
+              llmConfidence: llmResult.confidence || 0,
+              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
+              vectorCounterTitle: vectorCounter?.title || null,
+              vectorScore: vectorCounter?.score || null,
+              updatedAt: new Date(),
+            };
+            await freshGroup.save();
+
+            // Use LLM result for actual linking (only if confidence >= 85%)
+            const confidence = llmResult.confidence || 0;
+            if (llmResult.counterGroupId && confidence >= 85) {
+              console.log(`✅ Linking new group to counter (confidence: ${confidence}%)`);
+              await updateCounterLinks(freshGroup, llmResult.counterGroupId);
+            } else if (llmResult.counterGroupId && confidence < 85) {
+              console.log(`❌ Counter-match rejected - confidence ${confidence}% < 85% threshold`);
+            } else if (vectorCounter) {
+              console.log(`ℹ️ Vector found match but LLM rejected it (confidence: ${confidence}%) — not linking`);
+            } else {
+              console.log(`ℹ️ No valid counter-match found (confidence: ${confidence}%)`);
+            }
+          });
+        });
       }
     }
 

@@ -49,7 +49,7 @@ const NAMESPACES = {
 
 const SIMILARITY_THRESHOLDS = {
   GROUP_MATCH:   0.70,   // comment→group match (high = confident match)
-  COUNTER_MATCH: 0.55,   // group→counter-group match
+  COUNTER_MATCH: 0.35,   // group→counter-group match (lowered for multi-query strategy)
   OFF_TOPIC:     0.25,   // below this = off-topic
   TANGENTIAL:    0.40,   // between OFF_TOPIC and this = tangential
 };
@@ -306,17 +306,34 @@ class VectorService {
    */
   async findCounterGroup(groupId, title, description, roomId, opposingStance) {
     console.log(`🔍 Finding counter-group for "${title}" (stance: ${opposingStance})`);
-    
-    const combined = `${title}. ${description}`;
-    const matches = await this.queryVector(combined, 5, {
-      roomId: String(roomId),
-      stance: opposingStance,
-    }, NAMESPACES.DEBATE_GROUPS);
 
-    console.log(`📊 Found ${matches.length} potential counter-matches`);
-    
-    // Filter out self and log all candidates
-    const candidates = matches.filter(m => m.id !== String(groupId));
+    // Use multiple query strategies and combine results for better accuracy
+    const queryTexts = [
+      `${title}. ${description}`,                                          // direct content
+      `Counter-argument to: ${title}. Opposing view of: ${description}`,  // counter-framed query
+    ];
+
+    // Collect all unique candidates across queries
+    const candidateMap = new Map(); // id → { score, metadata }
+    for (const queryText of queryTexts) {
+      const matches = await this.queryVector(queryText, 8, {
+        roomId: String(roomId),
+        stance: opposingStance,
+      }, NAMESPACES.DEBATE_GROUPS);
+      for (const m of matches) {
+        if (m.id === String(groupId)) continue; // skip self
+        const existing = candidateMap.get(m.id);
+        if (!existing || m.score > existing.score) {
+          candidateMap.set(m.id, { score: m.score, metadata: m.metadata });
+        }
+      }
+    }
+
+    const candidates = Array.from(candidateMap.entries())
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.score - a.score);
+
+    console.log(`📊 Found ${candidates.length} unique counter-candidates (across ${queryTexts.length} queries)`);
     candidates.forEach((match, i) => {
       console.log(`   ${i + 1}. ${match.metadata?.title || 'Unknown'} (score: ${match.score.toFixed(3)})`);
     });
@@ -324,9 +341,9 @@ class VectorService {
     const best = candidates[0];
     if (best && best.score >= SIMILARITY_THRESHOLDS.COUNTER_MATCH) {
       console.log(`✅ Best counter-match: "${best.metadata?.title}" (score: ${best.score.toFixed(3)})`);
-      return { counterGroupId: best.id, score: best.score };
+      return { counterGroupId: best.id, score: best.score, title: best.metadata?.title };
     }
-    
+
     console.log(`❌ No suitable counter-match found (threshold: ${SIMILARITY_THRESHOLDS.COUNTER_MATCH})`);
     return null;
   }
