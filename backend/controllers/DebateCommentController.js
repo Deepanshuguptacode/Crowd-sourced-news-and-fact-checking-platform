@@ -1,10 +1,5 @@
 /**
- * DebateCommentController  (vector-optimised, LLM-reduced)
- *
- * Optimisations:
- *   • Single embedding generated once, reused for topic check + group match
- *   • Combined LLM call (classify + generate) saves 1 call in miss case
- *   • API key rotation between embedding and LLM calls
+ * DebateCommentController  (ideal-counter approach)
  *
  * Flow per comment (blocking path):
  *   1. generateEmbedding(text)               → 1 embedding call (~200 ms)
@@ -13,7 +8,9 @@
  *      • Hit  → add comment to group          → 0 LLM calls
  *      • Miss → classifyAndGenerateContent    → 1 LLM call      (~1 s)
  *   4. Background (non-blocking):
- *      • generateGroupContent + storeDebateGroup + findCounterGroup
+ *      • generateGroupContent → title + desc + 2 ideal counters
+ *      • storeDebateGroup
+ *      • findCounterByIdealMatch → embed ideal counters against opposing groups
  *
  *   Best case: 1 embedding, 0 LLM  (~300 ms)
  *   Worst case: 1 embedding, 1 LLM (~1.3 s)
@@ -50,56 +47,188 @@ async function withRoomLock(roomId, fn) {
 }
 
 /**
- * Safely update bidirectional counter-group links.
- * Ensures consistency: if A↔B, then both point at each other.
- * Cleans up any old links that would become orphaned.
+ * Add bidirectional counter-group links (many-to-many).
+ * Groups can link to multiple counter-groups, and links are NEVER removed.
+ * Once linked, groups stay linked forever.
  */
-async function updateCounterLinks(group, newCounterId) {
+async function addCounterLink(group, newCounterId, score = null) {
   const groupId = group._id.toString();
-  const currentCounterId = group.counterGroupId?.toString() || null;
 
-  // Nothing to do
-  if (currentCounterId === newCounterId) return false;
+  console.log(`\n🔗 [MANY-TO-MANY LINK] Adding counter-link:`);
+  console.log(`   Group ID: ${groupId}`);
+  console.log(`   New Counter: ${newCounterId}`);
+  console.log(`   Score: ${score?.toFixed(3) || 'N/A'}`);
 
-  console.log(`🔗 Updating counter-links: ${groupId} -> ${newCounterId || 'NONE'} (was: ${currentCounterId || 'NONE'})`);
+  // Check if link already exists
+  const existingLink = group.counterGroups?.find(
+    link => link.groupId?.toString() === newCounterId
+  );
 
-  // 1. Clear OLD bidirectional link
-  if (currentCounterId) {
-    const oldCounter = await DebateGroup.findById(currentCounterId);
-    // Only clear the old counter's link if it still points back at us
-    if (oldCounter?.counterGroupId?.toString() === groupId) {
-      await DebateGroup.findByIdAndUpdate(currentCounterId, { counterGroupId: null });
-      console.log(`   Cleared old counter ${currentCounterId} → null`);
+  if (existingLink) {
+    console.log(`   ℹ️ Link already exists (linked at ${existingLink.linkedAt}), skipping`);
+    
+    // Also maintain legacy field for backward compatibility (use first/best link)
+    if (!group.counterGroupId) {
+      await DebateGroup.findByIdAndUpdate(groupId, { 
+        counterGroupId: newCounterId, 
+        counterMatchScore: score 
+      });
     }
+    return false;
   }
 
-  if (!newCounterId) {
-    // Just clearing, no new link
-    await DebateGroup.findByIdAndUpdate(groupId, { counterGroupId: null });
-    return true;
+  // Verify counter group exists
+  const counterGroup = await DebateGroup.findById(newCounterId);
+  if (!counterGroup) {
+    console.log(`   ❌ ERROR: Counter group ${newCounterId} not found in database!`);
+    return false;
   }
 
-  // 2. If the NEW counter-group is already linked to someone else, clear that
-  const newCounter = await DebateGroup.findById(newCounterId);
-  if (newCounter?.counterGroupId && newCounter.counterGroupId.toString() !== groupId) {
-    const thirdPartyId = newCounter.counterGroupId.toString();
-    const thirdParty = await DebateGroup.findById(thirdPartyId);
-    if (thirdParty?.counterGroupId?.toString() === newCounterId) {
-      await DebateGroup.findByIdAndUpdate(thirdPartyId, { counterGroupId: null });
-      console.log(`   Cleared third-party ${thirdPartyId} → null`);
-    }
-  }
+  console.log(`   📋 Counter group exists: "${counterGroup.title}" (stance: ${counterGroup.stance})`);
 
-  // 3. Create new bidirectional link
-  await DebateGroup.findByIdAndUpdate(groupId, { counterGroupId: newCounterId });
-  await DebateGroup.findByIdAndUpdate(newCounterId, { counterGroupId: groupId });
-  console.log(`   Linked: ${groupId} ↔ ${newCounterId}`);
+  // Add link to current group's counterGroups array
+  console.log(`   🔨 Adding link to group ${groupId}...`);
+  const update1 = await DebateGroup.findByIdAndUpdate(
+    groupId,
+    { 
+      $push: { 
+        counterGroups: { 
+          groupId: newCounterId, 
+          matchScore: score,
+          linkedAt: new Date()
+        } 
+      },
+      // Also update legacy fields for backward compatibility (first link or highest score)
+      $set: !group.counterGroupId ? {
+        counterGroupId: newCounterId,
+        counterMatchScore: score
+      } : {}
+    },
+    { new: true }
+  );
+  console.log(`   ✅ Added link to ${groupId}.counterGroups[] (array length: ${update1?.counterGroups?.length || 0})`);
 
-  // 4. Sync display order
-  if (newCounter) {
-    await DebateGroup.findByIdAndUpdate(groupId, { displayOrder: newCounter.displayOrder + 0.5 });
-  }
+  // Add reciprocal link to counter group's counterGroups array
+  console.log(`   🔨 Adding reciprocal link to group ${newCounterId}...`);
+  const update2 = await DebateGroup.findByIdAndUpdate(
+    newCounterId,
+    { 
+      $push: { 
+        counterGroups: { 
+          groupId: groupId, 
+          matchScore: score,
+          linkedAt: new Date()
+        } 
+      },
+      // Also update legacy fields
+      $set: !counterGroup.counterGroupId ? {
+        counterGroupId: groupId,
+        counterMatchScore: score
+      } : {}
+    },
+    { new: true }
+  );
+  console.log(`   ✅ Added reciprocal link to ${newCounterId}.counterGroups[] (array length: ${update2?.counterGroups?.length || 0})`);
+
+  // Verify the links were actually saved
+  const verifyGroup = await DebateGroup.findById(groupId).select('counterGroups counterGroupId counterMatchScore');
+  const verifyCounter = await DebateGroup.findById(newCounterId).select('counterGroups counterGroupId counterMatchScore');
+  
+  console.log(`   📋 Verification - Group ${groupId}:`);
+  console.log(`      counterGroups.length: ${verifyGroup?.counterGroups?.length || 0}`);
+  console.log(`      counterGroupId (legacy): ${verifyGroup?.counterGroupId || 'NULL'}`);
+  console.log(`      counterMatchScore (legacy): ${verifyGroup?.counterMatchScore || 'NULL'}`);
+  
+  console.log(`   📋 Verification - Group ${newCounterId}:`);
+  console.log(`      counterGroups.length: ${verifyCounter?.counterGroups?.length || 0}`);
+  console.log(`      counterGroupId (legacy): ${verifyCounter?.counterGroupId || 'NULL'}`);
+  console.log(`      counterMatchScore (legacy): ${verifyCounter?.counterMatchScore || 'NULL'}`);
+  
+  console.log(`   ✅ Linked: ${groupId} ↔ ${newCounterId} (score: ${score?.toFixed(3) || 'N/A'})`);
+  console.log(`✅ [MANY-TO-MANY LINK] Link added successfully\n`);
+  
   return true;
+}
+
+/**
+ * Background task: regenerate group content (title, desc, ideal counters),
+ * store embeddings, and find counter-group via ideal counter matching.
+ * 
+ * @param {Object} group           - the debate group
+ * @param {string} roomId          - debate room ID
+ * @param {string} stance          - 'for' | 'against'
+ * @param {Object} debateRoom      - the debate room object
+ * @param {Array}  commentEmbedding - the triggering comment's embedding vector
+ */
+async function backgroundRefreshGroup(group, roomId, stance, debateRoom, commentEmbedding) {
+  geminiKeyRotation.advanceKey();
+  const allComments = await DebateComment.find({ _id: { $in: group.commentIds } });
+  const opposingStance = stance === 'for' ? 'against' : 'for';
+
+  // Single LLM call: regenerate title/description + ideal counters
+  const llmResult = await llmService.generateGroupContent(allComments);
+  group.title = llmResult.title;
+  group.description = llmResult.description;
+  group.idealCounters = llmResult.idealCounters || [];
+  await group.save();
+
+  // Store group embedding in Pinecone
+  await vectorService.storeDebateGroup(group._id, llmResult.title, llmResult.description, roomId, stance);
+
+  // Store ideal counter embeddings
+  if (llmResult.idealCounters && llmResult.idealCounters.length > 0) {
+    geminiKeyRotation.advanceKey();
+    await vectorService.storeIdealCounters(group._id, llmResult.idealCounters, roomId, stance);
+  }
+
+  // Find counter-group via ideal counter matching (using original comment embedding)
+  if (commentEmbedding) {
+    geminiKeyRotation.advanceKey();
+    const counterMatch = await vectorService.findCounterByCombinedMatch(
+      group._id, commentEmbedding, roomId, opposingStance
+    );
+
+    console.log(`\n📊 [COUNTER DEBUG] Combined counter match result for "${llmResult.title}":`);
+    console.log(`   Group ID: ${group._id}`);
+    console.log(`   Stance: ${group.stance}`);
+    console.log(`   Match Found: ${counterMatch ? 'YES' : 'NO'}`);
+    if (counterMatch) {
+      console.log(`   Counter Group ID: ${counterMatch.counterGroupId}`);
+      console.log(`   Combined Score: ${(counterMatch.score * 100).toFixed(2)}%`);
+      console.log(`   Ideal Score: ${(counterMatch.idealScore * 100).toFixed(2)}%`);
+      console.log(`   Direct Score: ${(counterMatch.directScore * 100).toFixed(2)}%`);
+      console.log(`   Best Score: ${(counterMatch.bestScore * 100).toFixed(2)}%`);
+      console.log(`   Passes Threshold: ${counterMatch.passesThreshold ? 'YES ✅' : 'NO ❌'}`);
+    }
+
+    // Add counter-link (only if passes threshold, never delink)
+    await withRoomLock(roomId, async () => {
+      const freshGroup = await DebateGroup.findById(group._id);
+      if (!freshGroup) {
+        console.log(`   ❌ Group not found when trying to add link`);
+        return;
+      }
+
+      console.log(`   📋 Fresh group loaded: "${freshGroup.title}"`);
+      console.log(`   Current counter links: ${freshGroup.counterGroups?.length || 0}`);
+
+      if (counterMatch?.counterGroupId && counterMatch.passesThreshold) {
+        const newCounterId = counterMatch.counterGroupId;
+
+        console.log(`   ✅ Match passes threshold, attempting to add link...`);
+        const scoreToSave = counterMatch.bestScore || counterMatch.score;  // Use bestScore for display
+        const linkResult = await addCounterLink(freshGroup, newCounterId, scoreToSave);
+        console.log(`   Link add result: ${linkResult ? 'NEW LINK ADDED ✅' : 'ALREADY LINKED'}`);
+      } else if (counterMatch?.counterGroupId && !counterMatch.passesThreshold) {
+        console.log(`   ⚠️ Found match below threshold - not linking (group ${counterMatch.counterGroupId}, combined: ${(counterMatch.score * 100).toFixed(1)}%)`);
+      } else {
+        console.log(`   ℹ️ No counter match found for group ${group._id}`);
+      }
+    });
+    console.log(`[COUNTER DEBUG] Counter matching complete\n`);
+  } else {
+    console.log(`   ⚠️ No comment embedding available for counter-matching`);
+  }
 }
 
 // =========================================================================
@@ -131,7 +260,39 @@ const createDebateComment = async (req, res) => {
 
     console.log(`✅ Room verification passed for "${debateRoom.title}"`);
 
-    // ── Generate embedding ONCE — reused for topic check + group match ──
+    // ── 1. LLM-based off-topic detection with context ───────────────────
+    console.log(`🔍 Performing LLM-based topic relevance check...`);
+    let offTopic = { isOffTopic: false, label: 'Relevant', reason: '', confidence: 1 };
+    try {
+      // Fetch recent comments for context (last 5 comments from this room)
+      const recentComments = await DebateComment.find({ debateRoomId: roomId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('text stance')
+        .lean();
+      
+      console.log(`📋 Found ${recentComments.length} recent comments for context`);
+      
+      const result = await llmService.analyzeCommentRelevance(
+        text,
+        debateRoom.title,
+        debateRoom.description || '',
+        recentComments.reverse() // oldest first for chronological context
+      );
+      
+      if (result) {
+        offTopic = result;
+        console.log(`📊 Topic relevance: ${offTopic.label} (confidence: ${(offTopic.confidence * 100).toFixed(1)}%)`);
+        if (offTopic.isOffTopic) {
+          console.log(`❌ Comment is OFF-TOPIC - will skip group matching and counter-linking`);
+        }
+      }
+    } catch (err) { 
+      console.log(`⚠️ Topic relevance check failed:`, err.message);
+      /* default to relevant */ 
+    }
+
+    // ── 2. Generate embedding ONCE — reused for group match ─────────────
     console.log(`🧠 Starting vector processing...`);
     const embeddingStartTime = Date.now();
     const commentEmbedding = await vectorService.generateEmbedding(text);
@@ -146,16 +307,7 @@ const createDebateComment = async (req, res) => {
     // Use different API key for next call type
     geminiKeyRotation.advanceKey();
 
-    // ── 1. off-topic check (reuses pre-computed embedding) ─────────────
-    let offTopic = { isOffTopic: false, label: 'Relevant', reason: '' };
-    try {
-      const result = await vectorService.checkTopicRelevance(text, roomId, commentEmbedding);
-      if (result) offTopic = result;
-      // Ensure topic is stored for future checks (fire-and-forget)
-      background(async () => vectorService.storeDebateTopic(roomId, debateRoom.title, debateRoom.description));
-    } catch (_) { /* default to relevant */ }
-
-    // ── 2. save comment ─────────────────────────────────────────────────
+    // ── 3. save comment ─────────────────────────────────────────────────
     const comment = new DebateComment({
       debateRoomId: roomId,
       text,
@@ -168,8 +320,36 @@ const createDebateComment = async (req, res) => {
       topicRelevanceLabel: offTopic.label  || 'Relevant',
     });
     await comment.save();
+    console.log(`✅ Comment saved (ID: ${comment._id}, isOffTopic: ${comment.isOffTopic})`);
 
-    // ── 3. group matching (reuses SAME pre-computed embedding) ──────────
+    // ── 3. SKIP group matching and counter-linking if off-topic ─────────
+    if (offTopic.isOffTopic) {
+      const totalDuration = Date.now() - startTime;
+      console.log(`\n⚠️ OFF-TOPIC COMMENT - Skipping group matching and counter-linking`);
+      console.log(`✅ Off-topic comment creation completed (${totalDuration}ms):`);
+      console.log(`   Comment ID: ${comment._id}`);
+      console.log(`   Relevance: ${offTopic.label} (confidence: ${(offTopic.confidence * 100).toFixed(1)}%)`);
+      console.log(`   Reason: ${offTopic.reason}`);
+      console.log(`   Text: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"\n`);
+      
+      return res.json({
+        success: true,
+        message: 'Comment posted (marked as off-topic)',
+        data: { 
+          comment: {
+            ...comment.toObject(),
+            groupId: null
+          },
+          isOffTopic: true,
+          relevanceLabel: offTopic.label,
+          relevanceConfidence: offTopic.confidence,
+          relevanceReason: offTopic.reason
+        }
+      });
+    }
+
+    // ── 5. group matching (reuses SAME pre-computed embedding) ──────────
+    console.log(`🔍 Comment is on-topic, proceeding with group matching...`);
     let group;
     let isNewGroup = false;
 
@@ -183,79 +363,8 @@ const createDebateComment = async (req, res) => {
         group.updatedAt = new Date();
         await group.save();
 
-        // Background: regenerate title/description + LLM counter-match + vector comparison
-        background(async () => {
-          geminiKeyRotation.advanceKey();
-          const allComments = await DebateComment.find({ _id: { $in: group.commentIds } });
-          const opposingStance = stance === 'for' ? 'against' : 'for';
-          const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
-
-          // Enrich opposing groups with comment text previews for LLM
-          for (const og of opposingGroups) {
-            const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
-            og.commentTexts = ogComments.map(c => c.text);
-          }
-
-          const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
-
-          // Single LLM call: regenerate title/description + find counter-group
-          const llmResult = await llmService.generateGroupContentWithCounter(allComments, opposingGroups, debateContext);
-          group.title = llmResult.title;
-          group.description = llmResult.description;
-          await group.save();
-
-          // Update Pinecone — AWAIT so vector is indexed
-          const stored = await vectorService.storeDebateGroup(group._id, llmResult.title, llmResult.description, roomId, stance);
-          if (!stored) console.log(`Vector store failed for group ${group._id}, will retry later`);
-
-          // Also run vector counter-match FOR COMPARISON ONLY
-          geminiKeyRotation.advanceKey();
-          const vectorCounter = await vectorService.findCounterGroup(group._id, llmResult.title, llmResult.description, roomId, opposingStance);
-
-          console.log(`📊 Counter-match comparison:`);
-          console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
-          console.log(`   LLM reason: ${llmResult.counterReason}`);
-          console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
-
-          // Use LLM result as the ACTUAL link, but preserve existing links if new confidence is low
-          await withRoomLock(roomId, async () => {
-            const freshGroup = await DebateGroup.findById(group._id);
-            if (!freshGroup) return;
-
-            // Store comparison info
-            freshGroup.counterMatchInfo = {
-              method: 'llm',
-              llmReason: llmResult.counterReason,
-              llmCounterTitle: llmResult.counterGroupTitle || null,
-              llmConfidence: llmResult.confidence || 0,
-              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
-              vectorCounterTitle: vectorCounter?.title || null,
-              vectorScore: vectorCounter?.score || null,
-              updatedAt: new Date(),
-            };
-            await freshGroup.save();
-
-            // STABILITY RULE: Only update counter-link if new match meets threshold
-            const currentCounterId = freshGroup.counterGroupId?.toString();
-            const newCounterId = llmResult.counterGroupId;
-            const confidence = llmResult.confidence || 0;
-
-            if (newCounterId && confidence >= 85) {
-              // New high-confidence match
-              if (currentCounterId !== newCounterId) {
-                console.log(`🔄 Updating counter-link: ${currentCounterId || 'NONE'} → ${newCounterId} (confidence: ${confidence}%)`);
-                await updateCounterLinks(freshGroup, newCounterId);
-              } else {
-                console.log(`✅ Counter-link unchanged (already linked to same group with ${confidence}% confidence)`);
-              }
-            } else if (!newCounterId && currentCounterId) {
-              console.log(`⚠️ New LLM result suggests no counter (confidence: ${confidence}%), but existing link preserved for stability`);
-              // Keep existing link - don't break it unless we have a better candidate
-            } else {
-              console.log(`ℹ️ No valid counter-match (confidence: ${confidence}% < 85%)`);
-            }
-          });
-        });
+        // Background: regenerate title/description + ideal counters + counter-match
+        background(async () => backgroundRefreshGroup(group, roomId, stance, debateRoom, commentEmbedding));
       } else {
         // group deleted between check and find — treat as miss
         isNewGroup = true;
@@ -274,7 +383,7 @@ const createDebateComment = async (req, res) => {
       console.log(`🧠 Starting LLM classifyAndGenerate with ${groups.length} existing groups`);
       console.log(`📋 Existing labels: [${labels.slice(0, 3).join(', ')}${labels.length > 3 ? '...' : ''}]`);
 
-      // Single LLM call: classify + generate title/description
+      // Single LLM call: classify + generate title/description + ideal counters
       const llmStartTime = Date.now();
       const result = await llmService.classifyAndGenerateContent(text, labels);
       const llmDuration = Date.now() - llmStartTime;
@@ -283,6 +392,7 @@ const createDebateComment = async (req, res) => {
       console.log(`🎯 Result: ${result.shouldCreateNew ? 'NEW GROUP' : 'MATCHED EXISTING'}`);
       console.log(`📝 New Label: "${result.newLabel}"`);
       console.log(`🏷️ Title: "${result.title}"`);
+      console.log(`🎯 Ideal counters: ${result.idealCounters?.length || 0}`);
 
       // Did LLM find an existing match?
       let existingGroup = null;
@@ -298,84 +408,20 @@ const createDebateComment = async (req, res) => {
         await group.save();
         isNewGroup = false;
 
-        // Background: refresh title/desc + LLM counter-match + vector comparison
-        background(async () => {
-          geminiKeyRotation.advanceKey();
-          const allComments = await DebateComment.find({ _id: { $in: group.commentIds } });
-          const opposingStance = stance === 'for' ? 'against' : 'for';
-          const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
-
-          // Enrich opposing groups with comment text previews for LLM
-          for (const og of opposingGroups) {
-            const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
-            og.commentTexts = ogComments.map(c => c.text);
-          }
-
-          const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
-
-          // Single LLM call: regenerate title/description + find counter-group
-          const llmResult = await llmService.generateGroupContentWithCounter(allComments, opposingGroups, debateContext);
-          group.title = llmResult.title; group.description = llmResult.description;
-          await group.save();
-
-          await vectorService.storeDebateGroup(group._id, llmResult.title, llmResult.description, roomId, stance);
-
-          // Vector counter-match for comparison
-          geminiKeyRotation.advanceKey();
-          const vectorCounter = await vectorService.findCounterGroup(group._id, llmResult.title, llmResult.description, roomId, opposingStance);
-
-          console.log(`📊 Counter-match comparison (LLM-matched path):`);
-          console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
-          console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
-
-          await withRoomLock(roomId, async () => {
-            const freshGroup = await DebateGroup.findById(group._id);
-            if (!freshGroup) return;
-
-            const vectorCounterGroup = vectorCounter ? await DebateGroup.findById(vectorCounter.counterGroupId) : null;
-            freshGroup.counterMatchInfo = {
-              method: 'llm',
-              llmReason: llmResult.counterReason,
-              llmCounterTitle: llmResult.counterGroupTitle || null,
-              llmConfidence: llmResult.confidence || 0,
-              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
-              vectorCounterTitle: vectorCounter?.title || vectorCounterGroup?.title || null,
-              vectorScore: vectorCounter?.score || null,
-              updatedAt: new Date(),
-            };
-            await freshGroup.save();
-
-            // STABILITY RULE: Only update counter-link if new match meets threshold
-            const currentCounterId = freshGroup.counterGroupId?.toString();
-            const newCounterId = llmResult.counterGroupId;
-            const confidence = llmResult.confidence || 0;
-
-            if (newCounterId && confidence >= 85) {
-              if (currentCounterId !== newCounterId) {
-                console.log(`🔄 Updating counter-link: ${currentCounterId || 'NONE'} → ${newCounterId} (confidence: ${confidence}%)`);
-                await updateCounterLinks(freshGroup, newCounterId);
-              } else {
-                console.log(`✅ Counter-link unchanged (already linked to same group with ${confidence}% confidence)`);
-              }
-            } else if (!newCounterId && currentCounterId) {
-              console.log(`⚠️ New LLM result suggests no counter (confidence: ${confidence}%), but existing link preserved for stability`);
-            } else {
-              console.log(`ℹ️ No valid counter-match (confidence: ${confidence}% < 85%)`);
-            }
-          });
-        });
+        // Background: refresh title/desc + ideal counters + counter-match
+        background(async () => backgroundRefreshGroup(group, roomId, stance, debateRoom, commentEmbedding));
       } else {
-        // Create brand-new group (title+desc already from combined LLM call)
+        // Create brand-new group (title+desc+idealCounters from combined LLM call)
         const title = result.title;
         const description = result.description;
+        const idealCounters = result.idealCounters || [];
 
         // Determine display order for the new group
-        const opposingStance = stance === 'for' ? 'against' : 'for';
         let displayOrder = 0;
         const maxOrder = await DebateGroup.findOne({ debateRoomId: roomId, stance }).sort({ displayOrder: -1 });
         displayOrder = maxOrder ? maxOrder.displayOrder + 1 : 0;
 
-        // Create group first (so it has an _id)
+        // Create group
         group = new DebateGroup({
           debateRoomId: roomId,
           label: result.newLabel,
@@ -383,6 +429,7 @@ const createDebateComment = async (req, res) => {
           description,
           stance,
           commentIds: [comment._id],
+          idealCounters,
           counterGroupId: null,
           displayOrder,
         });
@@ -391,67 +438,53 @@ const createDebateComment = async (req, res) => {
         // AWAIT Pinecone store so the group is visible to future queries
         await vectorService.storeDebateGroup(group._id, title, description, roomId, stance);
 
-        // Counter-match via LLM + vector comparison
+        // Store ideal counter embeddings + find counter-match
         background(async () => {
-          await withRoomLock(roomId, async () => {
+          // Store ideal counter embeddings
+          if (idealCounters.length > 0) {
             geminiKeyRotation.advanceKey();
-            const opposingGroups = await DebateGroup.find({ debateRoomId: roomId, stance: opposingStance }).lean();
+            console.log(`\n📦 [NEW GROUP] Storing ideal counters for new group ${group._id}`);
+            await vectorService.storeIdealCounters(group._id, idealCounters, roomId, stance);
+          }
 
-            // Enrich opposing groups with comment text previews for LLM
-            for (const og of opposingGroups) {
-              const ogComments = await DebateComment.find({ _id: { $in: og.commentIds } }).select('text').limit(3).lean();
-              og.commentTexts = ogComments.map(c => c.text);
-            }
+          // Find counter-group via combined matching (ideal counters + direct group)
+          geminiKeyRotation.advanceKey();
+          const opposingStance = stance === 'for' ? 'against' : 'for';
+          console.log(`\n🔍 [NEW GROUP] Finding counter for new group ${group._id} (${stance})`);
+          const counterMatch = await vectorService.findCounterByCombinedMatch(
+            group._id, commentEmbedding, roomId, opposingStance
+          );
 
-            const debateContext = `${debateRoom.title}${debateRoom.description ? ' — ' + debateRoom.description : ''}`;
+          console.log(`\n📊 [NEW GROUP COUNTER] Match result:`);
+          console.log(`   Group ID: ${group._id}`);
+          console.log(`   Match Found: ${counterMatch ? 'YES' : 'NO'}`);
+          if (counterMatch) {
+            console.log(`   Counter Group ID: ${counterMatch.counterGroupId}`);
+            console.log(`   Combined Score: ${(counterMatch.score * 100).toFixed(2)}%`);
+            console.log(`   Ideal Score: ${(counterMatch.idealScore * 100).toFixed(2)}%`);
+            console.log(`   Direct Score: ${(counterMatch.directScore * 100).toFixed(2)}%`);
+            console.log(`   Best Score: ${(counterMatch.bestScore * 100).toFixed(2)}%`);
+            console.log(`   Passes Threshold: ${counterMatch.passesThreshold ? 'YES ✅' : 'NO ❌'}`);
+          }
 
-            // LLM counter-match (uses group's own text)
-            const llmResult = await llmService.generateGroupContentWithCounter(
-              [{ text: text }], // Use the actual comment text, not just title+desc
-              opposingGroups,
-              debateContext
-            );
-
-            // Vector counter-match for comparison
-            geminiKeyRotation.advanceKey();
-            const vectorCounter = await vectorService.findCounterGroup(
-              group._id.toString(), title, description, roomId, opposingStance
-            );
-
-            console.log(`📊 Counter-match comparison (new group):`);
-            console.log(`   LLM  → ${llmResult.counterGroupTitle || 'NONE'} (ID: ${llmResult.counterGroupId || 'NONE'}, confidence: ${llmResult.confidence}%)`);
-            console.log(`   LLM reason: ${llmResult.counterReason}`);
-            console.log(`   Vector → ${vectorCounter?.counterGroupId || 'NONE'} (score: ${vectorCounter?.score?.toFixed(3) || 'N/A'})`);
-
-            // Store comparison info
-            const freshGroup = await DebateGroup.findById(group._id);
-            if (!freshGroup) return;
-
-            freshGroup.counterMatchInfo = {
-              method: 'llm',
-              llmReason: llmResult.counterReason,
-              llmCounterTitle: llmResult.counterGroupTitle || null,
-              llmConfidence: llmResult.confidence || 0,
-              vectorCounterGroupId: vectorCounter?.counterGroupId || null,
-              vectorCounterTitle: vectorCounter?.title || null,
-              vectorScore: vectorCounter?.score || null,
-              updatedAt: new Date(),
-            };
-            await freshGroup.save();
-
-            // Use LLM result for actual linking (only if confidence >= 85%)
-            const confidence = llmResult.confidence || 0;
-            if (llmResult.counterGroupId && confidence >= 85) {
-              console.log(`✅ Linking new group to counter (confidence: ${confidence}%)`);
-              await updateCounterLinks(freshGroup, llmResult.counterGroupId);
-            } else if (llmResult.counterGroupId && confidence < 85) {
-              console.log(`❌ Counter-match rejected - confidence ${confidence}% < 85% threshold`);
-            } else if (vectorCounter) {
-              console.log(`ℹ️ Vector found match but LLM rejected it (confidence: ${confidence}%) — not linking`);
-            } else {
-              console.log(`ℹ️ No valid counter-match found (confidence: ${confidence}%)`);
-            }
-          });
+          if (counterMatch?.counterGroupId && counterMatch.passesThreshold) {
+            await withRoomLock(roomId, async () => {
+              const freshGroup = await DebateGroup.findById(group._id);
+              if (!freshGroup) {
+                console.log(`   ❌ Fresh group not found`);
+                return;
+              }
+              const scoreToSave = counterMatch.bestScore || counterMatch.score;  // Use bestScore for display
+              console.log(`   ✅ Match passes threshold, adding link to new group...`);
+              const linkResult = await addCounterLink(freshGroup, counterMatch.counterGroupId, scoreToSave);
+              console.log(`   Link result: ${linkResult ? 'NEW LINK ADDED ✅' : 'ALREADY LINKED'}`);
+            });
+          } else if (counterMatch?.counterGroupId && !counterMatch.passesThreshold) {
+            console.log(`   ⚠️ Found match below threshold for new group ${group._id} - not linking (combined: ${(counterMatch.score * 100).toFixed(1)}%)`);
+          } else {
+            console.log(`   ℹ️ No counter match found for new group ${group._id}`);
+          }
+          console.log(`[NEW GROUP COUNTER] Complete\n`);
         });
       }
     }
@@ -504,10 +537,21 @@ const getDebateComments = async (req, res) => {
         .populate('counterGroupId')
         .sort({ displayOrder: 1 })
         .lean();
-      return res.json({ success: true, data: groups });
+      
+      // Also fetch ungrouped comments for this stance
+      const ungrouped = await DebateComment.find({ 
+        debateRoomId: roomId, 
+        stance,
+        groupId: null 
+      })
+        .populate('author', 'name username _id')
+        .sort({ createdAt: -1 })
+        .lean();
+      
+      return res.json({ success: true, data: { groups, ungrouped } });
     }
 
-    const [forGroups, againstGroups] = await Promise.all([
+    const [forGroups, againstGroups, ungroupedComments] = await Promise.all([
       DebateGroup.find({ debateRoomId: roomId, stance: 'for' })
         .populate({
           path: 'commentIds',
@@ -530,9 +574,29 @@ const getDebateComments = async (req, res) => {
         .populate('counterGroupId')
         .sort({ displayOrder: 1 })
         .lean(),
+      // Fetch all ungrouped/off-topic comments
+      DebateComment.find({ 
+        debateRoomId: roomId, 
+        groupId: null 
+      })
+        .populate('author', 'name username _id')
+        .sort({ createdAt: -1 })
+        .lean(),
     ]);
 
-    res.json({ success: true, data: { for: forGroups, against: againstGroups } });
+    // Split ungrouped by stance
+    const ungroupedFor = ungroupedComments.filter(c => c.stance === 'for');
+    const ungroupedAgainst = ungroupedComments.filter(c => c.stance === 'against');
+
+    res.json({ 
+      success: true, 
+      data: { 
+        for: forGroups, 
+        against: againstGroups,
+        ungroupedFor,
+        ungroupedAgainst
+      } 
+    });
   } catch (error) {
     console.error('Error fetching debate comments:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch comments', error: error.message });
@@ -611,11 +675,13 @@ const deleteDebateComment = async (req, res) => {
       // If group is now empty, delete it + its vector
       const group = await DebateGroup.findById(comment.groupId);
       if (group && group.commentIds.length === 0) {
-        // Unlink counter group
-        if (group.counterGroupId) {
-          await DebateGroup.findByIdAndUpdate(group.counterGroupId, { counterGroupId: null });
-        }
+        // NOTE: We do NOT remove counter-links when deleting groups
+        // Counter-links are permanent and never delinked (per user requirement)
+        // This may leave orphaned references, but that's intentional
+        console.log(`🗑️ Deleting empty group ${group._id} (counter-links preserved)`);
+        
         await vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().DEBATE_GROUPS);
+        await vectorService.deleteIdealCounters(group._id.toString());
         await DebateGroup.findByIdAndDelete(comment.groupId);
       }
     }
@@ -665,12 +731,11 @@ const undoDebateComment = async (req, res) => {
 
       const group = await DebateGroup.findById(comment.groupId);
       if (group && group.commentIds.length === 0) {
-        console.log(`🔄 Undoing comment - deleting empty group: ${group._id}`);
+        console.log(`🔄 Undoing comment - deleting empty group: ${group._id} (counter-links preserved)`);
         
-        if (group.counterGroupId) {
-          await DebateGroup.findByIdAndUpdate(group.counterGroupId, { counterGroupId: null });
-        }
+        // NOTE: Counter-links are permanent and never delinked (per user requirement)
         await vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().DEBATE_GROUPS);
+        await vectorService.deleteIdealCounters(group._id.toString());
         await DebateGroup.findByIdAndDelete(comment.groupId);
       }
     }
@@ -774,6 +839,110 @@ const getDebugCounterStatus = async (req, res) => {
   }
 };
 
+/**
+ * TEST ENDPOINT: Show anti-comment scores for all groups in a room
+ * For debugging ideal counter matching
+ */
+const testAntiCommentScores = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    console.log(`\n🧪 [TEST] Testing anti-comment scores for room ${roomId}`);
+
+    const allGroups = await DebateGroup.find({ debateRoomId: roomId, isDeleted: false })
+      .sort({ createdAt: 1 });
+
+    if (allGroups.length === 0) {
+      return res.json({ success: true, message: 'No groups found in this room' });
+    }
+
+    const results = [];
+
+    for (const group of allGroups) {
+      console.log(`\n📊 Testing Group ${group._id} (${group.stance}):`);
+      console.log(`   Title: "${group.title}"`);
+      console.log(`   Ideal Counters: ${group.idealCounters?.length || 0}`);
+      
+      if (group.idealCounters && group.idealCounters.length > 0) {
+        group.idealCounters.forEach((ic, idx) => {
+          console.log(`   IC${idx + 1}: "${ic.substring(0, 100)}..." (${ic.split(' ').length} words)`);
+        });
+      }
+
+      // Get the first comment from this group to use for testing
+      const firstComment = await DebateComment.findOne({ groupId: group._id });
+      if (!firstComment) {
+        console.log(`   ⚠️ No comments in group, skipping`);
+        results.push({
+          groupId: group._id.toString(),
+          title: group.title,
+          stance: group.stance,
+          error: 'No comments in group',
+        });
+        continue;
+      }
+
+      // Generate embedding for the comment
+      geminiKeyRotation.advanceKey();
+      const commentEmbedding = await vectorService.generateEmbedding(firstComment.text);
+      
+      if (!commentEmbedding) {
+        console.log(`   ❌ Failed to generate embedding`);
+        results.push({
+          groupId: group._id.toString(),
+          title: group.title,
+          stance: group.stance,
+          error: 'Failed to generate embedding',
+        });
+        continue;
+      }
+
+      // Find counter matches using ideal counter matching
+      const opposingStance = group.stance === 'for' ? 'against' : 'for';
+      geminiKeyRotation.advanceKey();
+      const counterMatch = await vectorService.findCounterByIdealMatch(
+        group._id,
+        commentEmbedding,
+        roomId,
+        opposingStance
+      );
+
+      const matchInfo = counterMatch ? {
+        counterGroupId: counterMatch.counterGroupId,
+        avgScore: (counterMatch.score * 100).toFixed(2) + '%',
+        bestScore: (counterMatch.bestScore * 100).toFixed(2) + '%',
+        passesThreshold: counterMatch.passesThreshold,
+        currentlyLinked: group.counterGroupId?.toString() === counterMatch.counterGroupId,
+        savedScore: group.counterMatchScore ? (group.counterMatchScore * 100).toFixed(2) + '%' : null,
+      } : null;
+
+      console.log(`   Result: ${matchInfo ? `Match found (${matchInfo.avgScore} avg, ${matchInfo.bestScore} best, passes: ${matchInfo.passesThreshold})` : 'No match'}`);
+
+      results.push({
+        groupId: group._id.toString(),
+        title: group.title,
+        stance: group.stance,
+        idealCountersCount: group.idealCounters?.length || 0,
+        currentCounterGroupId: group.counterGroupId?.toString() || null,
+        testMatch: matchInfo,
+      });
+    }
+
+    console.log(`\n✅ [TEST] Completed anti-comment score testing for ${allGroups.length} groups`);
+
+    res.json({
+      success: true,
+      data: {
+        roomId,
+        totalGroups: allGroups.length,
+        results,
+      },
+    });
+  } catch (error) {
+    console.error('❌ [TEST] Error testing anti-comment scores:', error);
+    res.status(500).json({ success: false, message: 'Failed to test anti-comment scores', error: error.message });
+  }
+};
+
 module.exports = {
   createDebateComment,
   getDebateComments,
@@ -784,4 +953,5 @@ module.exports = {
   likeComment,
   dislikeComment,
   getDebugCounterStatus,
+  testAntiCommentScores,
 };

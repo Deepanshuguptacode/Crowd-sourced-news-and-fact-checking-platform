@@ -1,13 +1,15 @@
 /**
- * LLM Service — Gemini AI Integration  (cleaned & vector-aware)
+ * LLM Service — Gemini AI Integration  (ideal-counter approach)
  *
- * Responsibilities kept here (things that NEED an LLM):
- *   • generateGroupContent   – title + description from comments
- *   • classifyComment        – fallback when vector match is low-confidence
- *   • analyzeCommentRelevance – fallback off-topic detection via LLM
- *   • regenerateGroupName    – regenerate label from multiple comments
+ * Responsibilities:
+ *   • classifyAndGenerateContent – classify + title + description + 2 ideal counters
+ *   • generateGroupContent      – title + description + 2 ideal counters (regeneration)
+ *   • classifyComment            – fallback when vector match is low-confidence
+ *   • analyzeCommentRelevance    – fallback off-topic detection via LLM
+ *   • regenerateGroupName        – regenerate label from multiple comments
  *
- * Everything that can be done with embeddings goes through vectorService.
+ * ALL LLM work uses Gemini function calling.
+ * Counter-matching is done via embeddings of "ideal counters" in vectorService.
  */
 
 const { GoogleGenAI, Type } = require('@google/genai');
@@ -59,6 +61,7 @@ class LLMService {
         ...fallback,
         title: `Argument: ${comment.substring(0, 30)}…`,
         description: `Debate arguments focusing on: ${comment.substring(0, 80)}. This group contains comments with similar reasoning, evidence, or claims about this topic.`,
+        idealCounters: [],
       };
     }
   }
@@ -69,7 +72,7 @@ class LLMService {
     
     const fn = {
       name: 'classify_and_generate',
-      description: 'Classifies a comment into existing or new group. Always generates a title and description for the group.',
+      description: 'Classifies a comment into existing or new group. Generates title, description, and two ideal counter-argument descriptions.',
       parameters: {
         type: Type.OBJECT,
         properties: {
@@ -77,8 +80,10 @@ class LLMService {
           newLabel:     { type: Type.STRING, description: 'Concise label for the group (whether matched or new).' },
           title:        { type: Type.STRING, description: 'Short meaningful title for the group.' },
           description:  { type: Type.STRING, description: 'Rich paragraph summarising the group theme based on the comment.' },
+          idealCounter1: { type: Type.STRING, description: 'A specific counter-comment (30-50 words MAX) written as if it were a real opposing argument. Should directly contradict this group with concrete claims and evidence. Write it like an actual debate comment, not a description.' },
+          idealCounter2: { type: Type.STRING, description: 'A variation of idealCounter1 (30-50 words MAX) that presents the SAME opposing position but phrased differently or emphasizing a different aspect. Should feel like another person making the same counter-argument with slightly different wording or focus.' },
         },
-        required: ['matchedGroup', 'newLabel', 'title', 'description'],
+        required: ['matchedGroup', 'newLabel', 'title', 'description', 'idealCounter1', 'idealCounter2'],
       },
     };
 
@@ -106,6 +111,13 @@ class LLMService {
       `   - Key themes that would make other comments belong here\n`,
       `   - Bad: "Comments about economic aspects"\n`,
       `   - Good: "Arguments claiming AI moderation destroys jobs by replacing human moderators, citing unemployment statistics and industry reports. Focuses on economic displacement concerns and workforce transition challenges."\n`,
+      `4. idealCounter1 & idealCounter2: Two variations of the ideal counter-argument (30-50 words each, MAX 50 words).\n`,
+      `   - Write them as ACTUAL counter-comments, not descriptions\n`,
+      `   - Both should make the SAME opposing argument but with different phrasing/emphasis\n`,
+      `   - Use concrete, specific language like a real debate participant would\n`,
+      `   - Example for "AI creates jobs":\n`,
+      `     idealCounter1: "AI automation destroys far more jobs than it creates. Manufacturing and service industries have shed millions of positions due to AI replacements, with no comparable job growth. The retraining programs can't keep pace with displacement."\n`,
+      `     idealCounter2: "The jobs AI supposedly creates are inaccessible to most displaced workers. These positions require advanced degrees and technical skills that most people losing their jobs simply don't have. We're creating inequality, not opportunity."\n`,
       `\nFocus on CONCRETE specifics from the comment, not abstract themes.\n`,
       `Return only the JSON arguments.`,
     ].join('');
@@ -141,12 +153,17 @@ class LLMService {
       newLabel: args.newLabel || comment.substring(0, 40),
       title: args.title || 'Discussion Group',
       description: args.description || 'A group of related comments.',
+      idealCounters: [
+        args.idealCounter1 || '',
+        args.idealCounter2 || '',
+      ].filter(Boolean),
     };
     
     console.log(`✅ Processed LLM result:`, {
       matched: exists ? args.matchedGroup : 'NONE',
       newGroup: !exists,
-      label: result.newLabel
+      label: result.newLabel,
+      idealCounters: result.idealCounters.length,
     });
 
     return result;
@@ -235,11 +252,12 @@ class LLMService {
   }
 
   // =====================================================================
-  //  GROUP CONTENT GENERATION
+  //  GROUP CONTENT GENERATION  (with ideal counters)
   // =====================================================================
 
   /**
-   * Generate { title, description } for a debate group from its comments.
+   * Generate { title, description, idealCounters } for a debate group from its comments.
+   * Also produces two ideal counter-argument descriptions used for embedding-based matching.
    */
   async generateGroupContent(comments) {
     console.log(`🧠 LLM: generateGroupContent called`);
@@ -250,18 +268,37 @@ class LLMService {
 
     const fn = {
       name: 'generate_group_content',
-      description: 'Generates highly specific title and description for a group of debate comments.',
+      description: 'Generates title, description, and two ideal counter-argument descriptions for a group of debate comments.',
       parameters: {
         type: Type.OBJECT,
         properties: {
-          title:       { type: Type.STRING, description: 'Specific, detailed title capturing the exact argument theme (8-12 words).' },
-          description: { type: Type.STRING, description: 'Comprehensive paragraph (50-80 words) detailing the specific arguments, evidence types, reasoning patterns, and key themes of all comments.' },
+          title:         { type: Type.STRING, description: 'Specific, detailed title capturing the exact argument theme (8-12 words).' },
+          description:   { type: Type.STRING, description: 'Comprehensive paragraph (50-80 words) detailing the specific arguments, evidence types, reasoning patterns, and key themes of all comments.' },
+          idealCounter1: { type: Type.STRING, description: 'A specific counter-comment (30-50 words MAX) written as if it were a real opposing argument. Should directly contradict this group with concrete claims and evidence. Write it like an actual debate comment, not a description.' },
+          idealCounter2: { type: Type.STRING, description: 'A variation of idealCounter1 (30-50 words MAX) that presents the SAME opposing position but phrased differently or emphasizing a different aspect. Should feel like another person making the same counter-argument with slightly different wording or focus.' },
         },
-        required: ['title', 'description'],
+        required: ['title', 'description', 'idealCounter1', 'idealCounter2'],
       },
     };
 
-    const prompt = `Analyze this group of related debate comments and generate focused content:\n${texts}\n\nGeneration Requirements:\n1. Title (8-12 words):\n   - Must be SPECIFIC to the actual argument/claim\n   - Include key distinguishing details\n   - Bad: "Economic Concerns" Good: "Arguments that AI reduces human oversight and accountability"\n\n2. Description (50-80 words):\n   - Synthesize the SPECIFIC claims across all comments\n   - Identify common evidence types (statistics, case studies, expert quotes, etc.)\n   - Note the reasoning approach (ethical, practical, comparative, causal)\n   - Describe what makes comments belong in this group\n   - Be concrete about the argument's content, not generic\n\nFocus on actual substance, not vague discussion themes.\nReturn only the JSON arguments.`;
+    const prompt = [
+      `Analyze this group of related debate comments and generate focused content:\n${texts}`,
+      `\n\nGeneration Requirements:`,
+      `\n1. Title (8-12 words): SPECIFIC to the actual argument/claim, not generic`,
+      `\n   - Bad: "Economic Concerns" Good: "Arguments that AI reduces human oversight and accountability"`,
+      `\n2. Description (50-80 words): Synthesize specific claims, evidence types, reasoning approach`,
+      `\n3. idealCounter1 (30-50 words MAX): Write an ACTUAL counter-comment:`,
+      `\n   - NOT a description of what a counter would say`,
+      `\n   - Write it AS IF you're making the opposing argument yourself`,
+      `\n   - Be specific, concrete, and direct like a real debate comment`,
+      `\n   - Example for "AI creates new jobs": "AI automation destroys far more jobs than it creates. Manufacturing and service industries have shed millions of positions due to AI replacements. The retraining programs can't keep pace with displacement."`,
+      `\n4. idealCounter2 (30-50 words MAX): A variation of the same counter-argument:`,
+      `\n   - Same opposing position as idealCounter1, but rephrased or emphasizing different details`,
+      `\n   - Should feel like another person making the same point with different words`,
+      `\n   - Example: "The jobs AI supposedly creates are inaccessible to most displaced workers. These positions require advanced technical skills that most people losing their jobs don't have. We're creating inequality, not opportunity."`,
+      `\n\nFocus on actual substance, not vague discussion themes.`,
+      `\nReturn only the JSON arguments.`,
+    ].join('');
     
     console.log(`📝 Prompt length: ${prompt.length} chars`);
     console.log(`🔑 Using API key rotation...`);
@@ -272,200 +309,35 @@ class LLMService {
       const res = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: { tools: [{ functionDeclarations: [fn] }], functionInvocation: 'auto' },
+        config: {
+          tools: [{ functionDeclarations: [fn] }],
+          functionInvocation: 'auto',
+          temperature: 0.0,
+        },
       });
       const duration = Date.now() - startTime;
       
       console.log(`⚡ Gemini response received (${duration}ms)`);
       
       const call = res.functionCalls?.[0];
-      const result = call?.args ?? { title: 'Discussion Group', description: 'Related comments.' };
+      const args = call?.args ?? {};
+      
+      const result = {
+        title: args.title || 'Discussion Group',
+        description: args.description || 'Related comments.',
+        idealCounters: [args.idealCounter1 || '', args.idealCounter2 || ''].filter(Boolean),
+      };
       
       console.log(`✅ Group content generated successfully`);
       console.log(`📝 Title: "${result.title}"`);
       console.log(`📄 Description: "${result.description?.substring(0, 80)}..."`);
+      console.log(`🎯 Ideal counters: ${result.idealCounters.length}`);
+      result.idealCounters.forEach((ic, i) => console.log(`   IC${i+1}: "${ic.substring(0, 80)}..."`));
       
       return result;
     } catch (err) {
       console.error('❌ generateGroupContent error:', err.message);
-      const fallback = { title: 'Discussion Group', description: 'A group of related comments.' };
-      console.log(`🔄 Using fallback content: "${fallback.title}"`);
-      return fallback;
-    }
-  }
-
-  // =====================================================================
-  //  COMBINED GROUP CONTENT + COUNTER-GROUP MATCHING  (single LLM call)
-  // =====================================================================
-
-  /**
-   * Generate { title, description } AND pick the best counter-group from
-   * a list of opposing groups — all in ONE LLM call.
-   *
-   * @param {Array} comments       – DebateComment docs (or strings) in this group
-   * @param {Array} opposingGroups – [{ _id, title, description }] from opposite stance
-   * @returns {{ title, description, counterGroupId, counterGroupTitle, counterReason }}
-   */
-  async generateGroupContentWithCounter(comments, opposingGroups = [], debateContext = '') {
-    console.log(`🧠 LLM: generateGroupContentWithCounter called`);
-    console.log(`📝 Comments: ${comments.length}, Opposing groups: ${opposingGroups.length}`);
-
-    const texts = comments.map((c, i) => `${i + 1}. "${c.text ?? c}"`).join('\n');
-
-    // Build opposing groups list for the prompt
-    let opposingSection = '';
-    if (opposingGroups.length > 0) {
-      const opposingList = opposingGroups.map((g, i) => {
-        // Include up to 3 comment previews for richer context
-        const commentPreviews = (g.commentTexts || [])
-          .slice(0, 3)
-          .map(t => `     • "${t.substring(0, 120)}"`);
-        const previewStr = commentPreviews.length > 0 ? `\n${commentPreviews.join('\n')}` : '';
-        return `${i + 1}. [ID: ${g._id}] "${g.title}" — ${g.description}${previewStr}`;
-      }).join('\n');
-      opposingSection = [
-        `\n\n═══ OPPOSING ARGUMENT GROUPS (these argue the OPPOSITE stance) ═══`,
-        `\n${opposingList}`,
-        `\n\n═══ COUNTER-GROUP MATCHING RULES (STRICT CONFIDENCE THRESHOLD) ═══`,
-        `\n⚠️ CRITICAL: Only return a counterGroupId if your confidence is ≥85%. Otherwise leave it empty.`,
-        `\n`,
-        `\nYou MUST find the single opposing group that most directly CONTRADICTS, REBUTS, or RESPONDS to this group's core claim.`,
-        `\n`,
-        `\nWhat makes a GOOD counter-pair (confidence ≥85%):`,
-        `\n  ✓ "AI creates new jobs" ↔ "AI destroys existing jobs" (same topic, opposite conclusion) - CONFIDENCE: 95%`,
-        `\n  ✓ "Social media improves mental health" ↔ "Social media harms mental health" (direct opposition) - CONFIDENCE: 98%`,
-        `\n  ✓ "Regulation helps innovation" ↔ "Regulation stifles innovation" (same mechanism, opposite effect) - CONFIDENCE: 92%`,
-        `\n  ✓ "Evidence shows vaccines are safe" ↔ "Studies question vaccine side effects" (same evidence domain, opposing claims) - CONFIDENCE: 88%`,
-        `\n`,
-        `\nWhat makes a BAD counter-pair (confidence <85%, return empty):`,
-        `\n  ✗ "AI creates jobs" ↔ "AI has privacy issues" (completely different argument angle) - CONFIDENCE: 20%`,
-        `\n  ✗ "Vaccines save lives" ↔ "Healthcare is expensive" (different topic entirely) - CONFIDENCE: 10%`,
-        `\n  ✗ "Free speech matters" ↔ "Climate change is real" (unrelated arguments) - CONFIDENCE: 5%`,
-        `\n  ✗ "Economic benefits of policy X" ↔ "Environmental concerns about policy X" (related topic but different angles, not direct contradiction) - CONFIDENCE: 60%`,
-        `\n`,
-        `\nKey principle: Counter-arguments must address the SAME specific claim from the OPPOSITE perspective.`,
-        `\nThey should be arguing about the same thing but reaching different conclusions.`,
-        `\n`,
-        `\nConfidence scoring guidelines:`,
-        `\n  95-100: Same topic, directly opposite claims, crystal clear contradiction`,
-        `\n  85-94:  Same topic, opposing perspectives, strong counter-relationship`,
-        `\n  70-84:  Related topic, somewhat opposing but not direct counters (TOO LOW - return empty)`,
-        `\n  <70:    Different angles, weak opposition, or unrelated (TOO LOW - return empty)`,
-        `\n`,
-        `\nIf MULTIPLE opposing groups could be counters, pick the one with HIGHEST confidence.`,
-        `\nIf NO opposing group reaches ≥85% confidence, set counterGroupId to empty string.`,
-        `\nDo NOT force a match — a wrong match is worse than no match.`,
-        `\n`,
-        `\nIn counterReason: explain specifically WHAT claim is being countered, HOW the opposing group contradicts it, and WHY your confidence is at this level.`,
-      ].join('');
-    }
-
-    const fn = {
-      name: 'generate_group_content_with_counter',
-      description: 'Generates group title, description, and identifies the best counter-argument group with confidence scoring.',
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          title:             { type: Type.STRING, description: 'Specific, detailed title capturing the exact argument theme (8-12 words).' },
-          description:       { type: Type.STRING, description: 'Comprehensive paragraph (50-80 words) detailing the specific arguments, evidence types, reasoning patterns.' },
-          counterGroupId:    { type: Type.STRING, description: 'The MongoDB _id string of the best opposing group that directly counters this group. Must be one of the [ID: ...] values provided. ONLY return an ID if your confidence is ≥85%. Otherwise return empty string.' },
-          counterGroupTitle: { type: Type.STRING, description: 'Title of the matched counter-group, or empty string if confidence <85%.' },
-          counterReason:     { type: Type.STRING, description: 'Specific explanation: what claim is being countered and how the opposing group contradicts it. Or why no group qualifies or why confidence is below 85%.' },
-          confidence:        { type: Type.NUMBER, description: 'Your confidence (0-100) that this is a genuine counter-argument pair. Only values ≥85 will be accepted. Consider: Do they address the SAME topic from OPPOSITE perspectives? Are the claims directly contradictory? If unsure or topic overlap is weak, return <85.' },
-        },
-        required: ['title', 'description', 'counterGroupId', 'counterGroupTitle', 'counterReason', 'confidence'],
-      },
-    };
-
-    const contextLine = debateContext ? `\nDEBATE TOPIC: ${debateContext}\n` : '';
-
-    const prompt = [
-      `${contextLine}Analyze this group of related debate comments and generate focused content:\n${texts}`,
-      `\n\nTITLE & DESCRIPTION REQUIREMENTS:`,
-      `\n1. Title (8-12 words): SPECIFIC to the actual argument/claim, not generic`,
-      `\n2. Description (50-80 words): Synthesize specific claims, evidence types, reasoning approach`,
-      opposingSection,
-      `\n\nReturn only the JSON arguments.`,
-    ].join('');
-
-    console.log(`📝 Prompt length: ${prompt.length} chars`);
-
-    // Retry up to 3 times on failure
-    const MAX_RETRIES = 3;
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        const startTime = Date.now();
-        const ai = this._ai();
-        const res = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          config: {
-            tools: [{ functionDeclarations: [fn] }],
-            functionInvocation: 'auto',
-            temperature: 0.0, // Zero temperature for maximum determinism and consistency
-          },
-        });
-        const duration = Date.now() - startTime;
-
-        const call = res.functionCalls?.[0];
-        const args = call?.args ?? {};
-
-        console.log(`⚡ LLM response received (attempt ${attempt}, ${duration}ms)`);
-        console.log(`📝 Title: "${args.title}"`);
-        console.log(`🔗 Counter: "${args.counterGroupTitle || 'NONE'}" (ID: ${args.counterGroupId || 'NONE'})`);
-        console.log(`💬 Reason: "${args.counterReason}"`);
-        console.log(`🎯 Confidence: ${args.confidence}%`);
-
-        // Validate the counterGroupId actually exists in the opposing groups we passed
-        let validCounterId = null;
-        let validCounterTitle = null;
-        let confidence = parseFloat(args.confidence) || 0;
-
-        // STRICT THRESHOLD: Only accept if confidence >= 85%
-        if (args.counterGroupId && args.counterGroupId.trim() !== '' && confidence >= 85) {
-          const matched = opposingGroups.find(g => g._id.toString() === args.counterGroupId);
-          if (matched) {
-            validCounterId = matched._id.toString();
-            validCounterTitle = args.counterGroupTitle || matched.title;
-            console.log(`✅ Counter-match ACCEPTED (confidence: ${confidence}%)`);
-          } else {
-            console.log(`⚠️ LLM returned counterGroupId "${args.counterGroupId}" not found in opposing groups, ignoring`);
-            confidence = 0; // Reset confidence if ID is invalid
-          }
-        } else if (args.counterGroupId && args.counterGroupId.trim() !== '') {
-          console.log(`❌ Counter-match REJECTED - confidence ${confidence}% < 85% threshold`);
-        } else {
-          console.log(`ℹ️ No counter-match suggested (confidence: ${confidence}%)`);
-        }
-
-        return {
-          title: args.title || 'Discussion Group',
-          description: args.description || 'A group of related comments.',
-          counterGroupId: validCounterId,
-          counterGroupTitle: validCounterTitle,
-          counterReason: args.counterReason || '',
-          confidence: confidence,
-        };
-      } catch (err) {
-        console.error(`❌ generateGroupContentWithCounter attempt ${attempt}/${MAX_RETRIES} failed:`, err.message);
-        const isRateLimit = err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED');
-        if (attempt < MAX_RETRIES) {
-          const wait = isRateLimit ? 4000 * attempt : 2000 * attempt;
-          console.log(`⏳ Retrying in ${wait / 1000}s...`);
-          this.geminiKeyRotation.advanceKey(); // rotate key before retry
-          await new Promise(r => setTimeout(r, wait));
-          continue;
-        }
-        console.error('❌ All retries exhausted for generateGroupContentWithCounter');
-        return {
-          title: 'Discussion Group',
-          description: 'A group of related comments.',
-          counterGroupId: null,
-          counterGroupTitle: null,
-          counterReason: 'LLM call failed after retries',
-          confidence: 0,
-        };
-      }
+      return { title: 'Discussion Group', description: 'A group of related comments.', idealCounters: [] };
     }
   }
 
@@ -527,46 +399,104 @@ class LLMService {
   }
 
   // =====================================================================
-  //  OFF-TOPIC ANALYSIS  (LLM fallback)
+  //  OFF-TOPIC ANALYSIS  (LLM-based with context)
   // =====================================================================
 
-  async analyzeCommentRelevance(comment, debateTitle, debateDescription) {
+  /**
+   * Analyze whether a comment is relevant to the debate topic.
+   * Uses LLM with recent comment context for accurate classification.
+   * @param {string} comment - The comment to analyze
+   * @param {string} debateTitle - The debate room title
+   * @param {string} debateDescription - The debate room description
+   * @param {Array} recentComments - Recent comments for context (optional)
+   * @returns {Promise<{isOffTopic: boolean, label: string, reason: string, confidence: number}>}
+   */
+  async analyzeCommentRelevance(comment, debateTitle, debateDescription, recentComments = []) {
+    console.log(`🔍 LLM: Analyzing topic relevance...`);
+    console.log(`📝 Comment length: ${comment.length} chars`);
+    console.log(`📋 Context: ${recentComments.length} recent comments`);
+    
     try {
       if (!this.geminiKeyRotation.isConfigured()) {
+        console.log(`⚠️ Gemini not configured, using simple keyword-based relevance`);
         return this._simpleRelevance(comment, debateTitle, debateDescription);
       }
-      return await this._relevanceWithGemini(comment, debateTitle, debateDescription);
+      
+      const startTime = Date.now();
+      const result = await this._relevanceWithGemini(comment, debateTitle, debateDescription, recentComments);
+      const duration = Date.now() - startTime;
+      
+      console.log(`✅ LLM relevance analysis completed (${duration}ms)`);
+      console.log(`🎯 Result: ${result.label} (confidence: ${(result.confidence * 100).toFixed(0)}%)`);
+      console.log(`💬 Reason: ${result.reason}`);
+      
+      return result;
     } catch (err) {
-      console.error('analyzeCommentRelevance error:', err.message);
-      return { isOffTopic: false, reason: 'Analysis failed, defaulting to relevant', label: 'Relevant' };
+      console.error('❌ analyzeCommentRelevance error:', err.message);
+      return { isOffTopic: false, reason: 'Analysis failed, defaulting to relevant', label: 'Relevant', confidence: 0.5 };
     }
   }
 
-  async _relevanceWithGemini(comment, debateTitle, debateDescription) {
+  async _relevanceWithGemini(comment, debateTitle, debateDescription, recentComments) {
     const fn = {
       name: 'analyze_comment_relevance',
-      description: 'Classify comment relevance to debate topic.',
+      description: 'Classify comment relevance to debate topic with context awareness.',
       parameters: {
         type: Type.OBJECT,
         properties: {
-          isOffTopic: { type: Type.BOOLEAN, description: 'True if off-topic.' },
-          reason:     { type: Type.STRING,  description: 'Why relevant or off-topic.' },
-          label:      { type: Type.STRING,  description: 'Relevant | Tangential | Off-Topic' },
+          isOffTopic: { type: Type.BOOLEAN, description: 'True if the comment is completely off-topic and unrelated to the debate.' },
+          reason:     { type: Type.STRING,  description: 'Detailed explanation of why the comment is relevant, tangential, or off-topic.' },
+          label:      { type: Type.STRING,  description: 'Must be one of: "Relevant", "Tangential", or "Off-Topic"' },
+          confidence: { type: Type.NUMBER,  description: 'Confidence score between 0.0 and 1.0' },
         },
-        required: ['isOffTopic', 'reason', 'label'],
+        required: ['isOffTopic', 'reason', 'label', 'confidence'],
       },
     };
 
-    const prompt = `Topic: "${debateTitle}" — ${debateDescription}\nComment: "${comment}"\nClassify relevance. Return only JSON.`;
+    const contextSection = recentComments.length > 0
+      ? `\n\nRECENT DEBATE CONTEXT (last ${recentComments.length} comments):\n${recentComments.map((c, i) => `${i + 1}. [${c.stance}] "${c.text}"`).join('\n')}`
+      : '';
+
+    const prompt = [
+      `You are analyzing whether a comment is relevant to an ongoing debate.\n`,
+      `DEBATE TOPIC: "${debateTitle}"`,
+      debateDescription ? `DESCRIPTION: ${debateDescription}` : '',
+      contextSection,
+      `\n\nNEW COMMENT TO EVALUATE:\n"${comment}"\n`,
+      `\nANALYSIS GUIDELINES:`,
+      `- RELEVANT: Directly addresses the debate topic, responds to recent points, or presents arguments related to the core theme`,
+      `- TANGENTIAL: Loosely related but goes off on a side topic or makes indirect connections`,
+      `- OFF-TOPIC: Completely unrelated to the debate topic and recent discussion flow`,
+      `\nConsider:`,
+      `1. Does it address the core debate topic or closely related themes?`,
+      `2. Does it respond to or engage with points made in recent comments?`,
+      `3. Is it a reasonable tangent vs completely off-topic?`,
+      `4. Would this comment make sense in this debate context?`,
+      `\nProvide your classification with confidence score and detailed reasoning.`,
+    ].filter(Boolean).join('\n');
+
+    console.log(`📝 Prompt length: ${prompt.length} chars`);
+    
     const ai = this._ai();
     const res = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { tools: [{ functionDeclarations: [fn] }], functionInvocation: 'auto' },
+      config: { 
+        tools: [{ functionDeclarations: [fn] }], 
+        functionInvocation: 'auto',
+        temperature: 0.0,
+      },
     });
+    
     const call = res.functionCalls?.[0];
-    const { isOffTopic = false, reason = '', label = 'Relevant' } = call?.args ?? {};
-    return { isOffTopic: isOffTopic || label === 'Off-Topic', reason, label };
+    const { isOffTopic = false, reason = '', label = 'Relevant', confidence = 0.8 } = call?.args ?? {};
+    
+    return { 
+      isOffTopic: isOffTopic || label === 'Off-Topic', 
+      reason, 
+      label,
+      confidence: Math.min(Math.max(confidence, 0), 1)
+    };
   }
 
   _simpleRelevance(comment, debateTitle, debateDescription) {

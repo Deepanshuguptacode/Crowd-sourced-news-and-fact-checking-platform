@@ -31,23 +31,37 @@ const DebateGroupSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'DebateComment'
   }],
+  // Two LLM-generated descriptions of what the ideal counter-argument looks like
+  idealCounters: {
+    type: [String],
+    default: []
+  },
+  // Array of counter-group links (many-to-many, never delink)
+  counterGroups: [{
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DebateGroup',
+      required: true
+    },
+    matchScore: {
+      type: Number,
+      required: true
+    },
+    linkedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  // Legacy field - kept for backward compatibility, always use counterGroups array
   counterGroupId: {
     type: Schema.Types.ObjectId,
     ref: 'DebateGroup',
     default: null
   },
-  counterMatchInfo: {
-    type: {
-      method: { type: String, enum: ['llm', 'vector', 'manual'], default: null },
-      llmReason: { type: String, default: null },
-      llmCounterTitle: { type: String, default: null },
-      llmConfidence: { type: Number, default: null },
-      vectorCounterGroupId: { type: Schema.Types.ObjectId, ref: 'DebateGroup', default: null },
-      vectorCounterTitle: { type: String, default: null },
-      vectorScore: { type: Number, default: null },
-      updatedAt: { type: Date, default: null },
-    },
-    default: {}
+  // Legacy field - kept for backward compatibility
+  counterMatchScore: {
+    type: Number,
+    default: null
   },
   displayOrder: {
     type: Number,

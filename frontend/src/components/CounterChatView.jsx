@@ -154,8 +154,17 @@ const CounterChatView = ({ groups, onRegenerateGroup, onLikeComment, onDislikeCo
 
       {/* Connection line */}
       <div className="connection-line absolute left-1/2 top-1/2 w-10 h-0.5 bg-gray-400 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 px-2 text-gray-500 text-sm">
-          ↔
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 px-2 flex items-center gap-1">
+          <span className="text-gray-500 text-sm">↔</span>
+          {thread.matchScore != null && (
+            <span className={`px-1.5 py-0.5 text-xs font-semibold rounded-full text-white ${
+              thread.matchScore >= 0.85 ? 'bg-green-500' :
+              thread.matchScore >= 0.70 ? 'bg-yellow-500' :
+              'bg-orange-500'
+            }`}>
+              {(thread.matchScore * 100).toFixed(0)}%
+            </span>
+          )}
         </div>
       </div>
 
@@ -181,22 +190,42 @@ const CounterChatView = ({ groups, onRegenerateGroup, onLikeComment, onDislikeCo
 
   console.log('CounterChatView - groups data:', groups);
 
-  // Process each pro group and find its counter
+  // Process each pro group and find its counter(s)
   groups.for?.forEach(proGroup => {
-    console.log('Processing pro group:', proGroup.title, 'counterGroupId:', proGroup.counterGroupId);
+    console.log('Processing pro group:', proGroup.title, 'counterGroups:', proGroup.counterGroups?.length || 0, 'counterGroupId:', proGroup.counterGroupId);
     
-    const thread = {
-      pro: proGroup,
-      con: null
-    };
-
-    // Find the con group that counters this pro group
-    if (proGroup.counterGroupId) {
+    // Check for new many-to-many counterGroups array
+    if (proGroup.counterGroups && proGroup.counterGroups.length > 0) {
+      // Create a separate thread for each counter link
+      proGroup.counterGroups.forEach((link, linkIndex) => {
+        const counterGroupId = typeof link.groupId === 'string' 
+          ? link.groupId 
+          : link.groupId?._id || link.groupId;
+        
+        console.log(`  Counter link ${linkIndex + 1}:`, counterGroupId, 'score:', link.matchScore);
+        
+        const counterGroup = groups.against?.find(g => 
+          g._id.toString() === counterGroupId.toString()
+        );
+        
+        if (counterGroup) {
+          console.log('  Found counter group:', counterGroup.title);
+          threads.push({
+            pro: proGroup,
+            con: counterGroup,
+            matchScore: link.matchScore
+          });
+          processedConGroups.add(counterGroup._id.toString());
+        }
+      });
+    } 
+    // Fallback to legacy single counterGroupId field
+    else if (proGroup.counterGroupId) {
       const counterGroupId = typeof proGroup.counterGroupId === 'string' 
         ? proGroup.counterGroupId 
         : proGroup.counterGroupId._id || proGroup.counterGroupId;
       
-      console.log('Looking for counter group with ID:', counterGroupId);
+      console.log('Looking for counter group with ID (legacy):', counterGroupId);
       
       const counterGroup = groups.against?.find(g => 
         g._id.toString() === counterGroupId.toString()
@@ -205,12 +234,21 @@ const CounterChatView = ({ groups, onRegenerateGroup, onLikeComment, onDislikeCo
       console.log('Found counter group:', counterGroup?.title);
       
       if (counterGroup) {
-        thread.con = counterGroup;
+        threads.push({
+          pro: proGroup,
+          con: counterGroup,
+          matchScore: proGroup.counterMatchScore
+        });
         processedConGroups.add(counterGroup._id.toString());
       }
     }
-
-    threads.push(thread);
+    // No counter links found
+    else {
+      threads.push({
+        pro: proGroup,
+        con: null
+      });
+    }
   });
 
   // Add any remaining con groups that weren't processed as counters

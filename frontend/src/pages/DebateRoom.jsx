@@ -128,7 +128,14 @@ const DebateRoom = () => {
           }
         );
         
-        fetchComments(); // Refresh comments
+        fetchComments(); // Refresh comments immediately
+        
+        // Delayed refresh to catch background counter-matching results
+        // (Counter-matching runs in background after comment creation and may take 2-5 seconds)
+        setTimeout(() => {
+          console.log('🔄 Delayed refresh to catch counter-matching results...');
+          fetchComments();
+        }, 6000); // Wait 6 seconds for background tasks to complete
       }
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -487,6 +494,66 @@ const DebateRoom = () => {
                 )}
               </div>
             </div>
+
+            {/* Ungrouped/Off-Topic Comments Section */}
+            {(groups.ungroupedFor?.length > 0 || groups.ungroupedAgainst?.length > 0) && (
+              <div className="mt-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-8">
+                <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  Off-Topic & Ungrouped Comments ({(groups.ungroupedFor?.length || 0) + (groups.ungroupedAgainst?.length || 0)})
+                </h2>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Supporting Off-Topic */}
+                  {groups.ungroupedFor?.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-green-600 dark:text-green-400 mb-3">
+                        Supporting ({groups.ungroupedFor.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {groups.ungroupedFor.map((comment) => (
+                          <UngroupedComment
+                            key={comment._id}
+                            comment={comment}
+                            onLike={handleLikeComment}
+                            onDislike={handleDislikeComment}
+                            onDelete={handleDeleteComment}
+                            onUndo={handleUndoComment}
+                            canUndo={canUndoComment}
+                            userInfo={userInfo}
+                            stance="for"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Opposing Off-Topic */}
+                  {groups.ungroupedAgainst?.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-red-600 dark:text-red-400 mb-3">
+                        Opposing ({groups.ungroupedAgainst.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {groups.ungroupedAgainst.map((comment) => (
+                          <UngroupedComment
+                            key={comment._id}
+                            comment={comment}
+                            onLike={handleLikeComment}
+                            onDislike={handleDislikeComment}
+                            onDelete={handleDeleteComment}
+                            onUndo={handleUndoComment}
+                            canUndo={canUndoComment}
+                            userInfo={userInfo}
+                            stance="against"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -499,9 +566,9 @@ const DebateRoom = () => {
 const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat, onDeleteComment, onUndoComment, canUndoComment, userType, userInfo, stance }) => {
   const [expanded, setExpanded] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
-  const [showMatchComparison, setShowMatchComparison] = useState(false);
+  const [showIdealCounters, setShowIdealCounters] = useState(false);
   const stanceColor = stance === 'for' ? 'green' : 'red';
-  const matchInfo = group.counterMatchInfo;
+  const idealCounters = group.idealCounters || [];
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-${stanceColor}-500 border border-gray-200 dark:border-gray-700 overflow-hidden`} data-group-id={group._id}>
@@ -537,110 +604,160 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
             <ChatBubbleLeftRightIcon className="h-3 w-3" />
             <span>{group.commentIds.length} comments</span>
           </div>
-          {group.counterGroupId && (
-            <button
-              onClick={() => onOpenCounterChat(group._id)}
-              className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-              title="View counter discussion"
-            >
-              <LinkIcon className="h-3 w-3" />
-              <span>View counter-chat</span>
-            </button>
+          {/* Show counter links - support both new array and legacy single field */}
+          {(group.counterGroups?.length > 0 || group.counterGroupId) && (
+            <div className="flex items-center gap-2">
+              {group.counterGroups?.length > 0 ? (
+                <>
+                  <button
+                    onClick={() => onOpenCounterChat(group._id)}
+                    className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    title="View counter discussions"
+                  >
+                    <LinkIcon className="h-3 w-3" />
+                    <span>{group.counterGroups.length} counter-link{group.counterGroups.length !== 1 ? 's' : ''}</span>
+                  </button>
+                  {/* Show badges for each counter link */}
+                  <div className="flex gap-1">
+                    {group.counterGroups.slice(0, 3).map((link, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-1.5 py-0.5 text-xs font-semibold rounded-full text-white ${
+                          link.matchScore >= 0.85 ? 'bg-green-500' :
+                          link.matchScore >= 0.70 ? 'bg-yellow-500' :
+                          'bg-orange-500'
+                        }`}
+                        title={`Counter ${idx + 1}: ${(link.matchScore * 100).toFixed(0)}% match`}
+                      >
+                        {(link.matchScore * 100).toFixed(0)}%
+                      </span>
+                    ))}
+                    {group.counterGroups.length > 3 && (
+                      <span className="px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                        +{group.counterGroups.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                // Legacy single counter link support
+                <button
+                  onClick={() => onOpenCounterChat(group._id)}
+                  className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  title="View counter discussion"
+                >
+                  <LinkIcon className="h-3 w-3" />
+                  <span>View counter-chat</span>
+                  {group.counterMatchScore != null && (
+                    <span className={`ml-1 px-1.5 py-0.5 text-xs font-semibold rounded-full text-white ${
+                      group.counterMatchScore >= 0.85 ? 'bg-green-500' :
+                      group.counterMatchScore >= 0.70 ? 'bg-yellow-500' :
+                      'bg-orange-500'
+                    }`}>
+                      {(group.counterMatchScore * 100).toFixed(0)}%
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
           )}
-          {/* Counter-match comparison button */}
-          {matchInfo && matchInfo.method && (
+          {/* Ideal counter info button */}
+          {idealCounters.length > 0 && (
             <button
-              onClick={() => setShowMatchComparison(true)}
+              onClick={() => setShowIdealCounters(true)}
               className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-              title="Compare LLM vs Vector counter-match"
+              title="View ideal counter-arguments"
             >
               <InformationCircleIcon className="h-3 w-3" />
-              <span>Match info</span>
+              <span>Ideal counters</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Counter-Match Comparison Popup */}
-      {showMatchComparison && matchInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowMatchComparison(false)}>
+      {/* Ideal Counter Popup */}
+      {showIdealCounters && idealCounters.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowIdealCounters(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
                   <InformationCircleIcon className="h-5 w-5" />
-                  Counter-Match Comparison
+                  Ideal Counter-Arguments
                 </h3>
-                <button onClick={() => setShowMatchComparison(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <button onClick={() => setShowIdealCounters(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                   ✕
                 </button>
               </div>
               <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-                LLM result is the actual link. Vector result shown for comparison.
+                AI-generated descriptions of what the ideal counter-argument would look like for this group.
               </p>
             </div>
 
             <div className="p-6 space-y-4">
-              {/* LLM Result (Primary) */}
-              <div className="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">LLM (Active)</span>
-                  <span className="text-xs text-green-600 dark:text-green-400">Used for actual linking</span>
-                  {matchInfo.llmConfidence != null && (
-                    <span className={`ml-auto px-2 py-0.5 text-xs rounded-full font-medium ${
-                      matchInfo.llmConfidence >= 85 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-yellow-600 text-white'
+              {idealCounters.map((ic, index) => (
+                <div key={index} className={`border rounded-lg p-4 ${
+                  index === 0 
+                    ? 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20' 
+                    : 'border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 text-xs rounded-full font-medium text-white ${
+                      index === 0 ? 'bg-orange-600' : 'bg-teal-600'
                     }`}>
-                      {matchInfo.llmConfidence}% confidence
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {matchInfo.llmCounterTitle || 'No counter-group found'}
-                </p>
-                {matchInfo.llmReason && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 italic">
-                    "{matchInfo.llmReason}"
-                  </p>
-                )}
-              </div>
-
-              {/* Vector Result (Comparison) */}
-              <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full font-medium">Vector</span>
-                  <span className="text-xs text-blue-600 dark:text-blue-400">For comparison only</span>
-                </div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {matchInfo.vectorCounterTitle || 'No counter-group found'}
-                </p>
-                {matchInfo.vectorScore != null && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Similarity:</span>
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 max-w-[120px]">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full"
-                        style={{ width: `${Math.min(matchInfo.vectorScore * 100, 100)}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
-                      {(matchInfo.vectorScore * 100).toFixed(1)}%
+                      Angle {index + 1}
                     </span>
                   </div>
-                )}
-              </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {ic}
+                  </p>
+                </div>
+              ))}
 
-              {/* Agreement indicator */}
-              {matchInfo.llmCounterTitle && matchInfo.vectorCounterTitle && (
-                <div className={`text-center text-xs py-2 rounded-lg ${
-                  matchInfo.llmCounterTitle === matchInfo.vectorCounterTitle
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                }`}>
-                  {matchInfo.llmCounterTitle === matchInfo.vectorCounterTitle
-                    ? '✅ LLM and Vector agree on the same counter-group'
-                    : '⚠️ LLM and Vector picked different counter-groups'}
+              {/* Show linked counter-groups */}
+              {group.counterGroups?.length > 0 && (
+                <div className="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">
+                      Linked Counter-Groups ({group.counterGroups.length})
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {group.counterGroups.map((link, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-700 dark:text-gray-300">
+                          Counter link {idx + 1}
+                        </span>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${
+                          link.matchScore >= 0.85 ? 'bg-green-500' :
+                          link.matchScore >= 0.70 ? 'bg-yellow-500' :
+                          'bg-orange-500'
+                        }`}>
+                          {(link.matchScore * 100).toFixed(1)}% match
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
+                    These groups are permanently linked and will never be delinked.
+                  </p>
+                </div>
+              )}
+
+              {/* Show legacy counter-group if exists and no new links */}
+              {group.counterGroupId && !group.counterGroups?.length && (
+                <div className="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full font-medium">Matched Counter</span>
+                    {group.counterMatchScore != null && (
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        Similarity: {(group.counterMatchScore * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {typeof group.counterGroupId === 'object' ? group.counterGroupId.title : 'Counter-group paired'}
+                  </p>
                 </div>
               )}
             </div>
@@ -765,6 +882,128 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// Ungrouped/Off-Topic Comment Component
+const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUndo, userInfo, stance }) => {
+  const [deleting, setDeleting] = useState(false);
+  const stanceColor = stance === 'for' ? 'green' : 'red';
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    setDeleting(true);
+    try {
+      await onDelete(comment._id);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-${stanceColor}-500 border border-gray-200 dark:border-gray-700 p-4`}>
+      {/* Off-Topic Badge */}
+      {comment.isOffTopic && (
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            comment.topicRelevanceLabel === 'Off-Topic' 
+              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+          }`}>
+            {comment.topicRelevanceLabel === 'Off-Topic' ? '🚫 Off-Topic' : '📍 Tangential'}
+          </span>
+          {comment.offTopicReason && (
+            <span className="text-xs text-gray-500 dark:text-gray-400" title={comment.offTopicReason}>
+              (AI detected)
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Comment Author */}
+      <div className="flex items-start gap-3 mb-2">
+        <div className="flex-shrink-0">
+          <div className={`w-8 h-8 bg-${stanceColor}-100 dark:bg-${stanceColor}-900/30 rounded-full flex items-center justify-center`}>
+            <span className={`text-sm font-medium text-${stanceColor}-700 dark:text-${stanceColor}-300`}>
+              {comment.authorName?.charAt(0).toUpperCase() || '?'}
+            </span>
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
+              {comment.authorName || 'Anonymous'}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {formatDate(comment.createdAt)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Comment Text */}
+      <p className={`text-gray-700 dark:text-gray-300 text-sm mb-3 ${
+        comment.isOffTopic ? 'opacity-75 italic' : ''
+      }`}>
+        {comment.text}
+      </p>
+
+      {/* Off-Topic Reason */}
+      {comment.isOffTopic && comment.offTopicReason && (
+        <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex items-start gap-2">
+            <InformationCircleIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                AI Moderator Note:
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {comment.offTopicReason}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-4 text-sm">
+        {(userInfo && comment.author && comment.author._id === userInfo._id && canUndo(comment._id)) && (
+          <button
+            onClick={() => onUndo(comment._id)}
+            className="flex items-center gap-1 text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+            title="Undo comment (available for 30 seconds)"
+          >
+            <ArrowUturnLeftIcon className="h-4 w-4" />
+            <span>Undo</span>
+          </button>
+        )}
+        <button
+          onClick={() => onLike(comment._id)}
+          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+        >
+          <HandThumbUpIcon className="h-4 w-4" />
+          <span>{comment.likes?.length || 0}</span>
+        </button>
+        <button
+          onClick={() => onDislike(comment._id)}
+          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+        >
+          <HandThumbDownIcon className="h-4 w-4" />
+          <span>{comment.dislikes?.length || 0}</span>
+        </button>
+        {(userInfo && comment.author && comment.author._id === userInfo._id) && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+            title="Delete comment"
+          >
+            <TrashIcon className="h-4 w-4" />
+            {deleting && <span className="text-xs">Deleting...</span>}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

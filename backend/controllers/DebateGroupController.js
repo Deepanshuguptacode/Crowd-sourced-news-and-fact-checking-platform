@@ -19,6 +19,7 @@ const getDebateGroups = async (req, res) => {
       const groups = await DebateGroup.find({ debateRoomId: roomId, stance })
         .populate('commentIds')
         .populate('counterGroupId')
+        .populate('counterGroups.groupId') // Populate the new counterGroups array
         .sort({ displayOrder: 1 })
         .lean();
 
@@ -28,9 +29,17 @@ const getDebateGroups = async (req, res) => {
     // Return both stances
     const [forGroups, againstGroups] = await Promise.all([
       DebateGroup.find({ debateRoomId: roomId, stance: 'for' })
-        .populate('commentIds').populate('counterGroupId').sort({ displayOrder: 1 }).lean(),
+        .populate('commentIds')
+        .populate('counterGroupId')
+        .populate('counterGroups.groupId')
+        .sort({ displayOrder: 1 })
+        .lean(),
       DebateGroup.find({ debateRoomId: roomId, stance: 'against' })
-        .populate('commentIds').populate('counterGroupId').sort({ displayOrder: 1 }).lean(),
+        .populate('commentIds')
+        .populate('counterGroupId')
+        .populate('counterGroups.groupId')
+        .sort({ displayOrder: 1 })
+        .lean(),
     ]);
 
     res.json({ success: true, data: { for: forGroups, against: againstGroups } });
@@ -172,28 +181,37 @@ const relinkDebateGroups = async (req, res) => {
     const candidateLinks = [];
 
     for (const g of forGroups) {
-      const match = await vectorService.findCounterGroup(
-        g._id.toString(), g.title, g.description, roomId, 'against'
+      // Generate group embedding from title+desc as fallback (no specific comment)
+      const groupContent = `${g.title}. ${g.description}`;
+      const groupEmbedding = await vectorService.generateEmbedding(groupContent);
+      
+      const match = await vectorService.findCounterByIdealMatch(
+        g._id.toString(), groupEmbedding, roomId, 'against'
       );
-      if (match) {
+      if (match && match.passesThreshold) {
         candidateLinks.push({
           forId: g._id.toString(),
           againstId: match.counterGroupId,
           score: match.score,
+          bestScore: match.bestScore,
         });
       }
     }
 
     // Also check AGAINST→FOR to find links that FOR→AGAINST might miss
     for (const g of againstGroups) {
-      const match = await vectorService.findCounterGroup(
-        g._id.toString(), g.title, g.description, roomId, 'for'
+      const groupContent = `${g.title}. ${g.description}`;
+      const groupEmbedding = await vectorService.generateEmbedding(groupContent);
+      
+      const match = await vectorService.findCounterByIdealMatch(
+        g._id.toString(), groupEmbedding, roomId, 'for'
       );
-      if (match) {
+      if (match && match.passesThreshold) {
         candidateLinks.push({
           forId: match.counterGroupId,
           againstId: g._id.toString(),
           score: match.score,
+          bestScore: match.bestScore,
         });
       }
     }
@@ -217,8 +235,10 @@ const relinkDebateGroups = async (req, res) => {
     // Step 4: Write bidirectional links
     let updated = 0;
     for (const pair of finalPairs) {
-      await DebateGroup.findByIdAndUpdate(pair.forId, { counterGroupId: pair.againstId });
-      await DebateGroup.findByIdAndUpdate(pair.againstId, { counterGroupId: pair.forId });
+      // Use bestScore if available from the new matching system
+      const scoreToSave = pair.bestScore || pair.score;
+      await DebateGroup.findByIdAndUpdate(pair.forId, { counterGroupId: pair.againstId, counterMatchScore: scoreToSave });
+      await DebateGroup.findByIdAndUpdate(pair.againstId, { counterGroupId: pair.forId, counterMatchScore: scoreToSave });
 
       // Sync display order
       const againstGroup = await DebateGroup.findById(pair.againstId);
@@ -268,8 +288,11 @@ const getCounterAnalysis = async (req, res) => {
 
       if (counterGroup) {
         const opposingStance = group.stance === 'for' ? 'against' : 'for';
-        const match = await vectorService.findCounterGroup(
-          groupId, group.title, group.description, roomId, opposingStance
+        const groupContent = `${group.title}. ${group.description}`;
+        const groupEmbedding = await vectorService.generateEmbedding(groupContent);
+        
+        const match = await vectorService.findCounterByIdealMatch(
+          groupId, groupEmbedding, roomId, opposingStance
         );
 
         counterAnalysis = {

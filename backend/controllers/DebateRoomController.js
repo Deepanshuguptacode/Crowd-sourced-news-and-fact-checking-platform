@@ -45,6 +45,9 @@ const createDebateRoom = async (req, res) => {
 
     await debateRoom.save();
     
+    // Off-topic detection is now handled by LLM at comment posting time
+    // No need to pre-store topic vectors
+    
     res.status(201).json({
       success: true,
       message: 'Debate room created successfully',
@@ -502,12 +505,16 @@ const relinkGroups = async (req, res) => {
     // Re-evaluate FOR groups against AGAINST groups
     for (const forGroup of forGroups) {
       if (againstGroups.length > 0) {
-        const match = await vectorService.findCounterGroup(
-          forGroup._id.toString(), forGroup.title, forGroup.description, roomId, 'against'
+        const groupContent = `${forGroup.title}. ${forGroup.description}`;
+        const groupEmbedding = await vectorService.generateEmbedding(groupContent);
+        
+        const match = await vectorService.findCounterByIdealMatch(
+          forGroup._id.toString(), groupEmbedding, roomId, 'against'
         );
-        const counterGroupId = match?.counterGroupId || null;
+        const counterGroupId = (match?.passesThreshold && match?.counterGroupId) || null;
+        const counterMatchScore = (match?.bestScore || match?.score) || null;
         if (counterGroupId !== forGroup.counterGroupId?.toString()) {
-          await DebateGroup.findByIdAndUpdate(forGroup._id, { counterGroupId });
+          await DebateGroup.findByIdAndUpdate(forGroup._id, { counterGroupId, counterMatchScore });
           updated++;
         }
       }
@@ -516,12 +523,16 @@ const relinkGroups = async (req, res) => {
     // Re-evaluate AGAINST groups against FOR groups
     for (const againstGroup of againstGroups) {
       if (forGroups.length > 0) {
-        const match = await vectorService.findCounterGroup(
-          againstGroup._id.toString(), againstGroup.title, againstGroup.description, roomId, 'for'
+        const groupContent = `${againstGroup.title}. ${againstGroup.description}`;
+        const groupEmbedding = await vectorService.generateEmbedding(groupContent);
+        
+        const match = await vectorService.findCounterByIdealMatch(
+          againstGroup._id.toString(), groupEmbedding, roomId, 'for'
         );
-        const counterGroupId = match?.counterGroupId || null;
+        const counterGroupId = (match?.passesThreshold && match?.counterGroupId) || null;
+        const counterMatchScore = (match?.bestScore || match?.score) || null;
         if (counterGroupId !== againstGroup.counterGroupId?.toString()) {
-          await DebateGroup.findByIdAndUpdate(againstGroup._id, { counterGroupId });
+          await DebateGroup.findByIdAndUpdate(againstGroup._id, { counterGroupId, counterMatchScore });
           updated++;
         }
       }

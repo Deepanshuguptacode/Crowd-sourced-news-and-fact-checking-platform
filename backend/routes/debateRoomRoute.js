@@ -30,7 +30,8 @@ const {
   dislikeComment,
   deleteDebateComment,
   undoDebateComment,
-  getDebugCounterStatus: getCommentsDebugCounterStatus
+  getDebugCounterStatus: getCommentsDebugCounterStatus,
+  testAntiCommentScores
 } = require('../controllers/DebateCommentController');
 
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -55,6 +56,7 @@ router.delete('/:roomId', deleteDebateRoom);
 router.put('/:roomId/groups/:groupId/regenerate', regenerateGroupContent);
 router.post('/:roomId/relink-all', relinkGroups);
 router.get('/:roomId/debug/counter-status', getDebugCounterStatus);
+router.get('/:roomId/test/anti-scores', testAntiCommentScores);
 
 // Debate Group Routes
 router.get('/:roomId/groups', getDebateGroups);

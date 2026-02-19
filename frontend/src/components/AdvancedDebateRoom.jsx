@@ -317,26 +317,150 @@ const AdvancedDebateRoom = () => {
     </div>
   );
 
-  const renderChatView = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Against (Left) */}
-      <div>
-        <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
-          <HandThumbDownIcon className="h-6 w-6" />
-          Against ({groups.against.length})
-        </h2>
-        {groups.against.map(group => renderGroup(group, false))}
-      </div>
+  const renderUngroupedComment = (comment, isFor) => (
+    <div key={comment._id} className={`rounded-lg p-4 border ${
+      isFor 
+        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 border-l-4 border-l-green-500' 
+        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 border-l-4 border-l-red-500'
+    }`}>
+      {/* Off-Topic Badge */}
+      {comment.isOffTopic && (
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            comment.topicRelevanceLabel === 'Off-Topic' 
+              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+          }`}>
+            {comment.topicRelevanceLabel === 'Off-Topic' ? '🚫 Off-Topic' : '📍 Tangential'}
+          </span>
+          {comment.offTopicReason && (
+            <span className="text-xs text-gray-500 dark:text-gray-400" title={comment.offTopicReason}>
+              (AI detected)
+            </span>
+          )}
+        </div>
+      )}
 
-      {/* For (Right) */}
-      <div>
-        <h2 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4 flex items-center gap-2">
-          <HandThumbUpIcon className="h-6 w-6" />
-          For ({groups.for.length})
-        </h2>
-        {groups.for.map(group => renderGroup(group, true))}
+      {/* Comment Content */}
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            isFor ? 'bg-green-200 dark:bg-green-800' : 'bg-red-200 dark:bg-red-800'
+          }`}>
+            <span className={`text-sm font-medium ${
+              isFor ? 'text-green-700 dark:text-green-200' : 'text-red-700 dark:text-red-200'
+            }`}>
+              {comment.authorName?.charAt(0).toUpperCase() || '?'}
+            </span>
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
+              {comment.authorName || 'Anonymous'}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {new Date(comment.createdAt).toLocaleString()}
+            </span>
+          </div>
+          <p className={`text-sm text-gray-700 dark:text-gray-300 mb-2 ${
+            comment.isOffTopic ? 'opacity-75 italic' : ''
+          }`}>
+            {comment.text}
+          </p>
+
+          {/* Off-Topic Reason */}
+          {comment.isOffTopic && comment.offTopicReason && (
+            <div className="mb-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                🤖 AI Moderator Note:
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {comment.offTopicReason}
+              </p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 text-sm">
+            <button
+              onClick={() => handleLikeComment(comment._id)}
+              className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+            >
+              <HandThumbUpIcon className="h-4 w-4" />
+              <span>{comment.likes?.length || 0}</span>
+            </button>
+            <button
+              onClick={() => handleDislikeComment(comment._id)}
+              className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            >
+              <HandThumbDownIcon className="h-4 w-4" />
+              <span>{comment.dislikes?.length || 0}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+
+  const renderChatView = () => (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Against (Left) */}
+        <div>
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
+            <HandThumbDownIcon className="h-6 w-6" />
+            Against ({groups.against.length})
+          </h2>
+          {groups.against.map(group => renderGroup(group, false))}
+        </div>
+
+        {/* For (Right) */}
+        <div>
+          <h2 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4 flex items-center gap-2">
+            <HandThumbUpIcon className="h-6 w-6" />
+            For ({groups.for.length})
+          </h2>
+          {groups.for.map(group => renderGroup(group, true))}
+        </div>
+      </div>
+
+      {/* Ungrouped/Off-Topic Comments Section */}
+      {(groups.ungroupedFor?.length > 0 || groups.ungroupedAgainst?.length > 0) && (
+        <div className="mt-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-8">
+          <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+            Off-Topic & Ungrouped Comments ({(groups.ungroupedFor?.length || 0) + (groups.ungroupedAgainst?.length || 0)})
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Against Off-Topic */}
+            {groups.ungroupedAgainst?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-red-600 dark:text-red-400 mb-3">
+                  Against ({groups.ungroupedAgainst.length})
+                </h3>
+                <div className="space-y-3">
+                  {groups.ungroupedAgainst.map((comment) => renderUngroupedComment(comment, false))}
+                </div>
+              </div>
+            )}
+
+            {/* For Off-Topic */}
+            {groups.ungroupedFor?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-green-600 dark:text-green-400 mb-3">
+                  For ({groups.ungroupedFor.length})
+                </h3>
+                <div className="space-y-3">
+                  {groups.ungroupedFor.map((comment) => renderUngroupedComment(comment, true))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 
   const renderCounterView = () => {
@@ -347,22 +471,42 @@ const AdvancedDebateRoom = () => {
     const threads = [];
     const processedConGroups = new Set();
 
-    // Process each pro group and find its counter
+    // Process each pro group and find its counter(s)
     groups.for?.forEach(proGroup => {
-      console.log('Processing pro group:', proGroup.title, 'counterGroupId:', proGroup.counterGroupId);
+      console.log('Processing pro group:', proGroup.title, 'counterGroups:', proGroup.counterGroups?.length || 0, 'counterGroupId:', proGroup.counterGroupId);
       
-      const thread = {
-        pro: proGroup,
-        con: null
-      };
-
-      // Find the con group that counters this pro group
-      if (proGroup.counterGroupId) {
+      // Check for new many-to-many counterGroups array
+      if (proGroup.counterGroups && proGroup.counterGroups.length > 0) {
+        // Create a separate thread for each counter link
+        proGroup.counterGroups.forEach((link, linkIndex) => {
+          const counterGroupId = typeof link.groupId === 'string' 
+            ? link.groupId 
+            : link.groupId?._id || link.groupId;
+          
+          console.log(`  Counter link ${linkIndex + 1}:`, counterGroupId, 'score:', link.matchScore);
+          
+          const counterGroup = groups.against?.find(g => 
+            g._id.toString() === counterGroupId.toString()
+          );
+          
+          if (counterGroup) {
+            console.log('  Found counter group:', counterGroup.title);
+            threads.push({
+              pro: proGroup,
+              con: counterGroup,
+              matchScore: link.matchScore
+            });
+            processedConGroups.add(counterGroup._id.toString());
+          }
+        });
+      } 
+      // Fallback to legacy single counterGroupId field
+      else if (proGroup.counterGroupId) {
         const counterGroupId = typeof proGroup.counterGroupId === 'string' 
           ? proGroup.counterGroupId 
           : proGroup.counterGroupId._id || proGroup.counterGroupId;
         
-        console.log('Looking for counter group with ID:', counterGroupId);
+        console.log('Looking for counter group with ID (legacy):', counterGroupId);
         
         const counterGroup = groups.against?.find(g => 
           g._id.toString() === counterGroupId.toString()
@@ -371,12 +515,21 @@ const AdvancedDebateRoom = () => {
         console.log('Found counter group:', counterGroup?.title);
         
         if (counterGroup) {
-          thread.con = counterGroup;
+          threads.push({
+            pro: proGroup,
+            con: counterGroup,
+            matchScore: proGroup.counterMatchScore
+          });
           processedConGroups.add(counterGroup._id.toString());
         }
       }
-
-      threads.push(thread);
+      // No counter links found
+      else {
+        threads.push({
+          pro: proGroup,
+          con: null
+        });
+      }
     });
 
     // Add any remaining con groups that weren't processed as counters
@@ -452,8 +605,17 @@ const AdvancedDebateRoom = () => {
 
             {/* Connection line */}
             <div className="absolute left-1/2 top-1/2 w-10 h-0.5 bg-gray-400 transform -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 px-2 text-gray-500 text-sm">
-                ↔
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 px-2 flex items-center gap-1">
+                <span className="text-gray-500 text-sm">↔</span>
+                {thread.matchScore != null && (
+                  <span className={`px-1.5 py-0.5 text-xs font-semibold rounded-full text-white ${
+                    thread.matchScore >= 0.85 ? 'bg-green-500' :
+                    thread.matchScore >= 0.70 ? 'bg-yellow-500' :
+                    'bg-orange-500'
+                  }`}>
+                    {(thread.matchScore * 100).toFixed(0)}%
+                  </span>
+                )}
               </div>
             </div>
 
