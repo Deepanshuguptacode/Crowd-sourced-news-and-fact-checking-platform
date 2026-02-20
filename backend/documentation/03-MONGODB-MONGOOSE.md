@@ -1,796 +1,352 @@
-# 03 - MongoDB & Mongoose Fundamentals
+# 03 — MongoDB & Mongoose Deep Dive
 
-## What You'll Learn
-- MongoDB basics (collections, documents, queries)
-- What is Mongoose and why use it
-- Schema definition and validation
-- Data types in Mongoose
-- Relationships between documents
-- Common Mongoose methods
+## Why This File Exists
+MongoDB is our primary database. Mongoose is the Node.js library that lets us interact with MongoDB using JavaScript objects. Nearly every controller and service reads from or writes to MongoDB through Mongoose.
 
 ---
 
-## MongoDB Fundamentals
+## MongoDB Basics
 
-### What is MongoDB?
-
-MongoDB is a **NoSQL document database** that stores data in flexible, JSON-like documents.
+MongoDB is a **NoSQL document database**. Instead of tables with rows (like MySQL), it stores **documents** — JSON-like objects grouped into **collections**.
 
 ```
-SQL Database (MySQL, PostgreSQL):
-┌──────────────────────────────────────────────────────────┐
-│  Table: users                                            │
-├──────┬──────────┬─────────────────┬───────────────────────┤
-│ id   │ name     │ email           │ bio                   │
-├──────┼──────────┼─────────────────┼───────────────────────┤
-│ 1    │ John     │ john@email.com  │ Developer             │
-│ 2    │ Jane     │ jane@email.com  │ Designer              │
-└──────┴──────────┴─────────────────┴───────────────────────┘
-Fixed columns, every row must have same structure
-
-MongoDB (NoSQL):
-┌──────────────────────────────────────────────────────────┐
-│  Collection: users                                       │
-├──────────────────────────────────────────────────────────┤
-│ {                                                        │
-│   "_id": ObjectId("507f1f77bcf86cd799439011"),          │
-│   "name": "John",                                        │
-│   "email": "john@email.com",                             │
-│   "bio": "Developer",                                    │
-│   "skills": ["JavaScript", "Python"],  ← Array OK!      │
-│   "profile": {                          ← Nested object! │
-│     "avatar": "john.jpg",                                │
-│     "verified": true                                     │
-│   }                                                      │
-│ }                                                        │
-│ {                                                        │
-│   "_id": ObjectId("507f1f77bcf86cd799439012"),          │
-│   "name": "Jane",                                        │
-│   "email": "jane@email.com"                              │
-│   // No bio, skills, or profile - that's OK!            │
-│ }                                                        │
-└──────────────────────────────────────────────────────────┘
-Flexible structure, documents can have different fields
+Relational (MySQL):          Document (MongoDB):
+┌──────────────────┐         {
+│ users table       │           _id: "abc123",
+│ id | name | email │           name: "John",
+│ 1  | John | j@... │           email: "j@example.com",
+│ 2  | Jane | ...   │           interests: ["tech", "science"],
+└──────────────────┘           socialLinks: { twitter: "@john" }
+                             }
 ```
 
-### Key MongoDB Terminology
-
-| SQL Term | MongoDB Term | Description |
-|----------|--------------|-------------|
-| Database | Database | Container for collections |
-| Table | Collection | Container for documents |
-| Row | Document | Single record (JSON object) |
-| Column | Field | Key in document |
-| Primary Key | _id | Unique identifier (auto-generated) |
-| Foreign Key | Reference | ObjectId pointing to another document |
-| JOIN | $lookup / populate | Combining data from multiple collections |
-
-### ObjectId Explained
-
-```javascript
-// Every document in MongoDB has a unique _id field
-// By default, it's an ObjectId - a 12-byte identifier
-
-ObjectId("507f1f77bcf86cd799439011")
-         └──────────────────────────┘
-                  24 hex characters
-
-// What's inside an ObjectId:
-// Bytes 0-3:  Timestamp (when created)
-// Bytes 4-6:  Machine identifier
-// Bytes 7-8:  Process ID
-// Bytes 9-11: Counter (incrementing random value)
-
-// You can extract the timestamp:
-const id = new ObjectId("507f1f77bcf86cd799439011");
-console.log(id.getTimestamp()); // Date when document was created
-```
+**Key MongoDB advantages for VoxVeritas:**
+- **Flexible schemas** — different user types can have different fields
+- **Embedded documents** — store arrays of objects inside a single document
+- **ObjectId references** — link documents across collections (like foreign keys)
 
 ---
 
-## Mongoose: The ODM Layer
+## Mongoose — The Bridge Between Node.js and MongoDB
 
-### What is Mongoose?
+Mongoose gives us three things:
+1. **Schemas** — define what fields a document can have
+2. **Models** — provide CRUD methods (find, save, delete)
+3. **Validation** — enforce rules before saving
 
-**Mongoose** is an ODM (Object Document Mapper) for MongoDB and Node.js. It provides:
-- **Schemas** - Define structure for documents
-- **Validation** - Ensure data meets requirements
-- **Type casting** - Convert data types automatically
-- **Middleware** - Run functions before/after operations
-- **Population** - Fill in referenced documents
-
-### Why Use Mongoose?
+### Connection Setup (from `index.js`)
 
 ```javascript
-// ❌ Without Mongoose (raw MongoDB driver):
-
-const { MongoClient, ObjectId } = require('mongodb');
-
-// Connect
-const client = new MongoClient('mongodb://localhost:27017');
-await client.connect();
-const db = client.db('voxveritas');
-
-// Insert - No validation!
-await db.collection('users').insertOne({
-  name: 123,        // Should be string! No error.
-  email: 'invalid', // Not a real email! No error.
-  age: 'twenty'     // Should be number! No error.
-});
-
-// Find by ID - Verbose!
-const user = await db.collection('users').findOne({
-  _id: new ObjectId('507f1f77bcf86cd799439011')
-});
-
-
-
-// ✅ With Mongoose:
-
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Define schema with validation
-const userSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true  // Must be provided
-  },
-  email: { 
-    type: String, 
-    required: true,
-    match: /^.+@.+$/  // Must be email format
-  },
-  age: { 
-    type: Number,
-    min: 0,
-    max: 150
-  }
-});
-
-const User = mongoose.model('User', userSchema);
-
-// Insert - With validation!
-await User.create({
-  name: 123,        // Error! "Cast to string failed"
-  email: 'invalid', // Error! "Failed validation"
-  age: 'twenty'     // Error! "Cast to Number failed"
-});
-
-// Find by ID - Clean!
-const user = await User.findById('507f1f77bcf86cd799439011');
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 ```
+
+**What's happening:** `mongoose.connect()` opens a persistent connection to the MongoDB Atlas cluster. All subsequent model operations use this connection automatically.
 
 ---
 
-## Schema Definition
+## Schema → Model Pattern
 
-### Basic Schema Structure
-
-```javascript
-// models/NormalUser.js
-
-const mongoose = require('mongoose');
-
-// Define the schema (blueprint for documents)
-const normalUserSchema = new mongoose.Schema({
-  // Field definitions go here
-  fieldName: {
-    type: DataType,
-    // ... options
-  }
-});
-
-// Create and export the model
-module.exports = mongoose.model('NormalUser', normalUserSchema);
-//                              ↑ Model name   ↑ Schema
-// MongoDB will create collection called 'normalusers' (lowercased + pluralized)
-```
-
-### Real Example: NormalUser Schema
+Every model file follows this pattern:
 
 ```javascript
 const mongoose = require('mongoose');
 
-const normalUserSchema = new mongoose.Schema({
-  // ──────────────────────────────────────────
-  // REQUIRED STRING FIELD
-  // ──────────────────────────────────────────
-  name: {
-    type: String,     // Data type
-    required: true,   // Cannot be empty/missing
-  },
-  // If someone tries to create user without name:
-  // Error: "Path `name` is required."
-
-  // ──────────────────────────────────────────
-  // UNIQUE STRING FIELD
-  // ──────────────────────────────────────────
-  username: {
-    type: String,
-    required: true,
-    unique: true,     // No duplicate usernames allowed
-  },
-  // If someone tries to create user with existing username:
-  // Error: "E11000 duplicate key error"
-
-  // ──────────────────────────────────────────
-  // DEFAULT VALUE
-  // ──────────────────────────────────────────
-  role: {
-    type: String,
-    default: 'User',  // If not provided, use this value
-  },
-
-  // ──────────────────────────────────────────
-  // NULLABLE FIELD
-  // ──────────────────────────────────────────
-  bio: {
-    type: String,
-    default: null,    // Optional, defaults to null
-  },
-
-  // ──────────────────────────────────────────
-  // ARRAY OF STRINGS
-  // ──────────────────────────────────────────
-  interests: {
-    type: [String],   // Array of strings
-    default: null,
-  },
-  // Valid: ["tech", "news", "sports"]
-  // Invalid: ["tech", 123, true] - will cast to strings
-
-  // ──────────────────────────────────────────
-  // ARRAY OF NUMBERS (Face Authentication)
-  // ──────────────────────────────────────────
-  faceEmbedding: {
-    type: [Number],   // Array of 512 floating-point numbers
-    default: null,
-  },
-  // Stores: [0.234, -0.892, 0.445, ..., 0.123]
-
-  // ──────────────────────────────────────────
-  // BOOLEAN WITH DEFAULT
-  // ──────────────────────────────────────────
-  hasFaceAuth: {
-    type: Boolean,
-    default: false,
-  },
-
-  // ──────────────────────────────────────────
-  // DATE FIELDS
-  // ──────────────────────────────────────────
-  faceRegisteredAt: {
-    type: Date,
-    default: null,
-  },
-  
-  createdAt: {
-    type: Date,
-    default: Date.now,  // Function that returns current date
-  },
-  // Automatically set to current time when document created
-});
-
-module.exports = mongoose.model('NormalUser', normalUserSchema);
-```
-
-### Mongoose Data Types
-
-| Type | JavaScript | Example |
-|------|------------|---------|
-| `String` | string | `"Hello"` |
-| `Number` | number | `42`, `3.14` |
-| `Boolean` | boolean | `true`, `false` |
-| `Date` | Date | `new Date()` |
-| `ObjectId` | ObjectId | `mongoose.Types.ObjectId` |
-| `Array` | array | `[1, 2, 3]` |
-| `Buffer` | Buffer | Binary data |
-| `Mixed` | any | Anything (avoid if possible) |
-| `Map` | Map | Key-value pairs |
-
----
-
-## Document Relationships
-
-### 1. References (ObjectId)
-
-```javascript
-// models/News.js
-
+// Step 1: Define the schema (shape of the document)
 const newsSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  
-  // Reference to the user who uploaded
-  uploadedBy: {
-    type: mongoose.Schema.Types.ObjectId,  // Stores an ObjectId
-    ref: 'CommunityUser',  // Which model this ID refers to
-    required: true,
+  title:       { type: String, required: true },
+  description: { type: String },
+  status:      { type: String, enum: ['Pending', 'Verified', 'Fake'], default: 'Pending' },
+  uploadedAt:  { type: Date, default: Date.now },
+});
+
+// Step 2: Create the model (gives us CRUD methods)
+const News = mongoose.model('News', newsSchema);
+
+// Step 3: Export the model
+module.exports = News;
+```
+
+**Schema** = blueprint. **Model** = factory that creates/finds documents using that blueprint.
+
+---
+
+## Field Types We Use
+
+```javascript
+const schema = new mongoose.Schema({
+  // Basic types
+  name:        { type: String, required: true },       // Text
+  score:       { type: Number, default: 0 },           // Number
+  isOffTopic:  { type: Boolean, default: false },      // True/False
+  createdAt:   { type: Date, default: Date.now },      // Date
+
+  // Array types
+  tags:        [String],                               // Array of strings
+  upvotes:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'CommunityUser' }],  // Array of refs
+
+  // Enum (restricted values)
+  stance:      { type: String, enum: ['in_favor', 'against', 'general'] },
+
+  // Reference to another collection (like a foreign key)
+  newsId:      { type: mongoose.Schema.Types.ObjectId, ref: 'News', required: true },
+
+  // Embedded object
+  socialLinks: {
+    twitter:  { type: String, default: null },
+    linkedin: { type: String, default: null },
   },
-  
-  // Array of references (multiple users who upvoted)
-  upvotes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CommunityUser'
+
+  // Array of embedded objects
+  expertVotes: [{
+    expertId:    { type: mongoose.Schema.Types.ObjectId, ref: 'ExpertUser' },
+    vote:        { type: String, enum: ['credible', 'not_credible'] },
+    explanation: { type: String, required: true },
   }],
-});
 
-// What gets stored in MongoDB:
-{
-  "_id": ObjectId("..."),
-  "title": "Breaking News",
-  "uploadedBy": ObjectId("507f1f77bcf86cd799439011"),  // Just the ID!
-  "upvotes": [
-    ObjectId("507f1f77bcf86cd799439012"),
-    ObjectId("507f1f77bcf86cd799439013")
-  ]
-}
+  // Face embedding (array of numbers)
+  faceEmbedding: { type: [Number], default: [] },
+});
 ```
 
-### 2. Population (Fetching Referenced Documents)
+### `ref` — References Between Collections
+
+When we write `ref: 'News'`, we're saying "this field stores the `_id` of a document in the News collection." This lets Mongoose resolve the reference later via **population**.
+
+---
+
+## Common Query Methods
+
+### Find Documents
 
 ```javascript
-// ❌ Without population - just get IDs:
+// Find ALL news articles
+const allNews = await News.find({});
+
+// Find with conditions
+const fakeNews = await News.find({ status: 'Fake' });
+
+// Find ONE document
 const news = await News.findById(newsId);
-console.log(news.uploadedBy);  // ObjectId("507f1f77bcf86cd799439011")
-// Not helpful - we want the user's name!
+const news = await News.findOne({ link: someLink });
 
-
-// ✅ With population - get full documents:
-const news = await News.findById(newsId)
-  .populate('uploadedBy', 'username name');
-  //       ↑ field       ↑ which fields to include
-
-console.log(news.uploadedBy);
-// {
-//   "_id": ObjectId("507f1f77bcf86cd799439011"),
-//   "username": "john_doe",
-//   "name": "John Doe"
-// }
-
-// Multiple populations:
-const news = await News.findById(newsId)
-  .populate('uploadedBy', 'username')
-  .populate('upvotes', 'username');
+// Check if exists (returns _id or null — faster than findOne)
+const exists = await News.exists({ _id: roomId });
 ```
 
-**How Population Works:**
-
-```
-Step 1: Fetch news document
-{
-  "_id": "...",
-  "title": "Breaking News",
-  "uploadedBy": ObjectId("507f1f77...")
-}
-
-Step 2: Look up the ObjectId in CommunityUser collection
-{
-  "_id": ObjectId("507f1f77..."),
-  "username": "john_doe",
-  "name": "John Doe"
-}
-
-Step 3: Replace ObjectId with the document
-{
-  "_id": "...",
-  "title": "Breaking News",
-  "uploadedBy": {
-    "_id": ObjectId("507f1f77..."),
-    "username": "john_doe",
-    "name": "John Doe"
-  }
-}
-```
-
-### 3. Dynamic References (refPath)
-
-Sometimes a field can reference different collections:
+### Create Documents
 
 ```javascript
-// models/DebateRoom.js
+// Method 1: Create instance, then save
+const news = new News({ title: 'Test', description: 'Hello' });
+await news.save();
 
-const DebateRoomSchema = new mongoose.Schema({
-  title: String,
-  
-  // The creator can be any user type
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    refPath: 'creatorModel'  // Look at creatorModel to know which collection
-  },
-  
-  creatorModel: {
-    type: String,
-    required: true,
-    enum: ['NormalUser', 'CommunityUser', 'ExpertUser']  // Valid model names
-  },
+// Method 2: Create directly
+const news = await News.create({ title: 'Test', description: 'Hello' });
+```
+
+### Update Documents
+
+```javascript
+// Find and update (returns the updated document)
+const updated = await News.findByIdAndUpdate(
+  newsId,
+  { status: 'Verified' },      // Fields to change
+  { new: true }                 // Return updated doc (not the old one)
+);
+
+// Update with MongoDB operators
+await DebateGroup.findByIdAndUpdate(groupId, {
+  $push: { commentIds: commentId },    // Add to array
+  $pull: { commentIds: commentId },    // Remove from array
+  $addToSet: { likes: { userId } },    // Add only if not already present
+  $set: { title: 'New Title' },        // Set field value
 });
 
-// Example documents:
-// Created by NormalUser:
-{
-  "title": "Climate Debate",
-  "creator": ObjectId("507f1f77..."),
-  "creatorModel": "NormalUser"  // Population will look in NormalUser collection
-}
+// Update many documents at once
+await DebateGroup.updateMany(
+  { debateRoomId: roomId },            // Filter: which documents
+  { $set: { counterGroupId: null } }    // Update: what to change
+);
+```
 
-// Created by ExpertUser:
-{
-  "title": "Medical Debate",
-  "creator": ObjectId("608g2g88..."),
-  "creatorModel": "ExpertUser"  // Population will look in ExpertUser collection
-}
+### Delete Documents
 
-// Population works automatically:
-const room = await DebateRoom.findById(id).populate('creator');
-// Mongoose knows which collection to look in based on creatorModel
+```javascript
+await News.findByIdAndDelete(newsId);
+
+// Delete many
+await DebateComment.deleteMany({ debateRoomId: roomId });
 ```
 
 ---
 
-## Common Mongoose Methods
+## Population — Resolving References
 
-### Create (Insert)
+Population replaces an ObjectId with the actual document it references.
 
 ```javascript
-// Method 1: new + save()
-const user = new User({
-  name: 'John',
-  email: 'john@email.com'
-});
-await user.save();  // Saves to database
+// WITHOUT population:
+const group = await DebateGroup.findById(groupId);
+// group.commentIds = ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012']  ← just IDs
 
-// Method 2: create() - shorthand
-const user = await User.create({
-  name: 'John',
-  email: 'john@email.com'
-});
+// WITH population:
+const group = await DebateGroup.findById(groupId).populate('commentIds');
+// group.commentIds = [{ _id: '...', text: 'Great point!', stance: 'for' }, ...]  ← full objects
 
-// Method 3: insertMany() - bulk insert
-await User.insertMany([
-  { name: 'John', email: 'john@email.com' },
-  { name: 'Jane', email: 'jane@email.com' }
+// Nested population (populate a field INSIDE the populated document):
+const group = await DebateGroup.find({ debateRoomId: roomId })
+  .populate({
+    path: 'commentIds',           // Populate the comments array
+    populate: {
+      path: 'author',             // Then inside each comment, populate the author
+      select: 'name username _id' // Only get these fields from the author
+    }
+  })
+  .lean();
+```
+
+### `.select()` — Choose Which Fields to Return
+
+```javascript
+// Only get name and email (exclude everything else)
+const user = await NormalUser.findById(userId).select('name email');
+
+// Exclude password (get everything else)
+const user = await NormalUser.findById(userId).select('-password');
+```
+
+### `.lean()` — Get Plain Objects
+
+```javascript
+// Normal query returns Mongoose documents (with methods like .save())
+const group = await DebateGroup.findById(id);
+
+// .lean() returns plain JavaScript objects (faster, read-only)
+const group = await DebateGroup.findById(id).lean();
+```
+
+**Why `.lean()`?** When you only need to read data (like in GET endpoints), `.lean()` is faster because Mongoose doesn't need to create full document instances.
+
+---
+
+## Sorting and Pagination
+
+```javascript
+// Sort by date (newest first)
+const news = await News.find({})
+  .sort({ uploadedAt: -1 })    // -1 = descending, 1 = ascending
+  .skip(10)                     // Skip first 10 results (page 2)
+  .limit(10);                   // Return only 10 results
+```
+
+### Our Pagination Pattern (from NewsController)
+
+```javascript
+const page = parseInt(req.query.page) || 1;
+const limit = 10;
+const skip = (page - 1) * limit;
+const maxPages = 4;                              // Cap at 4 pages
+
+const effectivePage = Math.min(page, maxPages);
+const effectiveSkip = (effectivePage - 1) * limit;
+
+const totalDocs = await News.countDocuments();   // Total count for pagination info
+const news = await News.find().sort({ uploadedAt: -1 }).skip(effectiveSkip).limit(limit);
+```
+
+---
+
+## Aggregation Pipelines
+
+Aggregation pipelines are MongoDB's way of doing complex data processing — like GROUP BY in SQL.
+
+### Example: AI Verdict Statistics (from AIVerdictController)
+
+```javascript
+const stats = await AIVerdict.aggregate([
+  // Stage 1: Group all verdicts together and calculate averages
+  {
+    $group: {
+      _id: null,                                    // Group everything (no grouping field)
+      totalVerdicts: { $sum: 1 },                   // Count documents
+      averageScore: { $avg: '$score' },             // Average of 'score' field
+      averageConfidence: { $avg: '$confidence' },   // Average of 'confidence' field
+      minScore: { $min: '$score' },                 // Minimum score
+      maxScore: { $max: '$score' },                 // Maximum score
+    },
+  },
 ]);
 ```
 
-### Read (Query)
+### Example: Average Comment Length (from accuracyTestService)
 
 ```javascript
-// Find all
-const users = await User.find();
-
-// Find with conditions
-const admins = await User.find({ role: 'admin' });
-
-// Find one
-const user = await User.findOne({ email: 'john@email.com' });
-
-// Find by ID
-const user = await User.findById('507f1f77bcf86cd799439011');
-
-// Find with selection (only get specific fields)
-const user = await User.findById(id).select('name email');
-// Returns: { _id: ..., name: 'John', email: 'john@email.com' }
-
-// Find with sorting
-const users = await User.find().sort({ createdAt: -1 });  // -1 = descending
-
-// Find with pagination
-const users = await User.find()
-  .skip(10)   // Skip first 10
-  .limit(10); // Get 10
-
-// Find with complex conditions
-const users = await User.find({
-  age: { $gte: 18, $lte: 65 },  // 18 <= age <= 65
-  role: { $in: ['user', 'admin'] },  // role is 'user' OR 'admin'
-  $or: [
-    { name: /john/i },  // name contains 'john' (case insensitive)
-    { email: /john/i }  // OR email contains 'john'
-  ]
-});
-```
-
-### Update
-
-```javascript
-// Update one document
-await User.updateOne(
-  { _id: userId },  // Filter
-  { $set: { name: 'New Name' } }  // Update
-);
-
-// Update multiple documents
-await User.updateMany(
-  { role: 'user' },  // Filter
-  { $set: { active: true } }  // Update
-);
-
-// Find and update (returns the document)
-const user = await User.findByIdAndUpdate(
-  userId,
-  { $set: { name: 'New Name' } },
-  { new: true }  // Return updated document, not original
-);
-
-// Update operators:
-await User.updateOne({ _id: userId }, {
-  $set: { name: 'New Name' },      // Set field value
-  $unset: { oldField: 1 },         // Remove field
-  $inc: { loginCount: 1 },         // Increment number
-  $push: { interests: 'coding' },  // Add to array
-  $pull: { interests: 'sports' },  // Remove from array
-  $addToSet: { tags: 'new' }       // Add to array if not exists
-});
-```
-
-### Delete
-
-```javascript
-// Delete one
-await User.deleteOne({ _id: userId });
-
-// Delete many
-await User.deleteMany({ role: 'spam' });
-
-// Find and delete (returns deleted document)
-const deleted = await User.findByIdAndDelete(userId);
+const commentsWithLength = await CommunityComment.aggregate([
+  { $match: { comment: { $exists: true, $ne: "" } } },            // Filter non-empty
+  { $project: { length: { $strLenCP: "$comment" } } },            // Calculate string length
+  { $group: { _id: null, avgLength: { $avg: "$length" } } },      // Average all lengths
+]);
 ```
 
 ---
 
-## Schema Validation
+## Pre-save Hooks (Middleware)
 
-### Built-in Validators
+Mongoose lets you run code automatically before or after saving a document.
 
-```javascript
-const userSchema = new mongoose.Schema({
-  // Required field
-  name: {
-    type: String,
-    required: [true, 'Name is required']  // Custom error message
-  },
-  
-  // String length validation
-  username: {
-    type: String,
-    minlength: [3, 'Username must be at least 3 characters'],
-    maxlength: [20, 'Username cannot exceed 20 characters']
-  },
-  
-  // Number range validation
-  age: {
-    type: Number,
-    min: [0, 'Age cannot be negative'],
-    max: [150, 'Age seems unrealistic']
-  },
-  
-  // Enum validation (must be one of these values)
-  status: {
-    type: String,
-    enum: {
-      values: ['Pending', 'Verified', 'Fake'],
-      message: '{VALUE} is not a valid status'
-    },
-    default: 'Pending'
-  },
-  
-  // Regex validation
-  email: {
-    type: String,
-    match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Invalid email format']
-  },
-  
-  // Custom validator
-  password: {
-    type: String,
-    validate: {
-      validator: function(v) {
-        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(v);
-      },
-      message: 'Password must be 8+ chars with uppercase, lowercase, and number'
-    }
-  }
-});
-```
-
-### Nested Object Validation
+### Example: Auto-calculate Comment Score (from Comments.js)
 
 ```javascript
-// models/Comments.js
-
-const commentSchema = new mongoose.Schema({
-  comment: {
-    type: String,
-    required: true
-  },
-  
-  // Array of objects with validation
-  evidenceLinks: [{
-    url: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function(v) {
-          return /^https?:\/\/.+/.test(v);
-        },
-        message: 'Evidence link must be a valid URL'
-      }
-    },
-    explanation: {
-      type: String,
-      required: true,
-      maxlength: 500
-    },
-    addedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-});
-
-// Valid:
-{
-  comment: "This is verified",
-  evidenceLinks: [
-    {
-      url: "https://example.com/source",
-      explanation: "Official government source confirms this"
-    }
-  ]
-}
-
-// Invalid:
-{
-  comment: "This is verified",
-  evidenceLinks: [
-    {
-      url: "not-a-url",  // Error! Must be valid URL
-      explanation: ""    // Error! Required
-    }
-  ]
-}
-```
-
----
-
-## Middleware (Hooks)
-
-Mongoose allows running functions before/after operations:
-
-```javascript
-const userSchema = new mongoose.Schema({...});
-
-// Pre-save hook (runs BEFORE saving)
-userSchema.pre('save', function(next) {
+communityCommentSchema.pre('save', function (next) {
   // 'this' refers to the document being saved
-  console.log('About to save:', this.name);
-  
-  // Example: Update timestamp
-  this.updatedAt = new Date();
-  
-  next();  // Continue to save
-});
-
-// Post-save hook (runs AFTER saving)
-userSchema.post('save', function(doc) {
-  console.log('Saved successfully:', doc._id);
-});
-
-// Pre-find hook
-userSchema.pre('find', function() {
-  // 'this' is the query
-  // Example: Always exclude deleted users
-  this.where({ deleted: { $ne: true } });
-});
-
-// Real example from DebateRoomSchema:
-DebateRoomSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();  // Auto-update timestamp
-  next();
+  const credibleVotes = this.expertVotes.filter(v => v.vote === 'credible').length;
+  const notCredibleVotes = this.expertVotes.filter(v => v.vote === 'not_credible').length;
+  this.score = credibleVotes - notCredibleVotes;    // Auto-calculated!
+  next();  // Continue with the save
 });
 ```
 
+**Why pre-save hooks?** Every time a comment is saved (including when an expert votes on it), the score recalculates automatically. No controller needs to manually calculate it.
+
 ---
 
-## Indexes
+## `refPath` — Dynamic References
 
-Indexes speed up queries significantly:
+Sometimes a field can reference different collections depending on context.
 
 ```javascript
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,  // Creates unique index automatically
-    index: true    // Creates regular index
-  },
-  username: {
-    type: String,
-    unique: true
-  },
-  createdAt: Date
-});
-
-// Compound index (for queries that filter by multiple fields)
-userSchema.index({ role: 1, createdAt: -1 });
-// 1 = ascending, -1 = descending
-
-// Text index (for full-text search)
-const newsSchema = new mongoose.Schema({
-  title: String,
-  description: String
-});
-newsSchema.index({ title: 'text', description: 'text' });
-
-// Query with text search:
-const results = await News.find({ 
-  $text: { $search: 'climate change' } 
+// In DebateComment model:
+const debateCommentSchema = new mongoose.Schema({
+  author:      { type: mongoose.Schema.Types.ObjectId, refPath: 'authorModel' },
+  authorModel: { type: String, enum: ['NormalUser', 'CommunityUser', 'ExpertUser'] },
 });
 ```
 
+**What `refPath` does:** When Mongoose populates `author`, it looks at `authorModel` to know WHICH collection to query. If `authorModel` is `'ExpertUser'`, it queries the ExpertUser collection.
+
 ---
 
-## Interview Questions & Answers
+## Unique Indexes
 
-### Q1: What is the difference between SQL and MongoDB?
-**Answer:**
-| Aspect | SQL | MongoDB |
-|--------|-----|---------|
-| Data Model | Tables with rows and columns | Collections with documents (JSON) |
-| Schema | Fixed, predefined schema | Flexible, dynamic schema |
-| Relationships | JOINs between tables | References or embedded documents |
-| Scaling | Vertical (bigger server) | Horizontal (more servers) |
-| Transactions | Strong ACID support | Supports multi-document transactions |
-| Best For | Complex relationships, reporting | Rapid development, hierarchical data |
-
-### Q2: Why use Mongoose instead of the native MongoDB driver?
-**Answer:** Mongoose provides:
-1. **Schema validation** - Ensures data structure and types
-2. **Type casting** - Automatically converts data types
-3. **Middleware/hooks** - Run code before/after operations
-4. **Population** - Easy way to fetch related documents
-5. **Query building** - Chainable, readable query syntax
-6. **Plugin system** - Extend functionality
-
-### Q3: What is population in Mongoose?
-**Answer:** Population is Mongoose's way of replacing ObjectId references with actual documents from other collections. It's similar to a SQL JOIN but happens at the application level. Example:
 ```javascript
-// Instead of: { userId: ObjectId("...") }
-// You get: { userId: { _id: "...", name: "John", email: "john@email.com" } }
+// From News model:
+link: { type: String, required: true, unique: true }
+
+// From TrendingNews model:
+link: { type: String, required: true, unique: true }
+
+// From AIVerdict model:
+newsId: { type: mongoose.Schema.Types.ObjectId, ref: 'News', required: true, unique: true }
 ```
 
-### Q4: What is the difference between `ref` and `refPath`?
-**Answer:**
-- **`ref`**: Static reference to a single model. Example: `ref: 'User'` - always references the User collection.
-- **`refPath`**: Dynamic reference where another field specifies which model to use. Example: `refPath: 'userType'` - looks at the `userType` field to determine which collection to query.
-
-### Q5: How do you handle one-to-many relationships in MongoDB?
-**Answer:** Two approaches:
-1. **Embedding** (for small, bounded data):
-   ```javascript
-   { user: { comments: [{ text: "..." }, { text: "..." }] } }
-   ```
-2. **References** (for large, unbounded data):
-   ```javascript
-   // Comment collection
-   { _id: ..., userId: ObjectId("..."), text: "..." }
-   // Query: Comment.find({ userId: userId })
-   ```
+**Why `unique: true`?** MongoDB creates an index that prevents duplicate values. Two news articles can't have the same link, and there can only be one AI verdict per news article.
 
 ---
 
-## Summary
-
-- **MongoDB** stores data as flexible JSON-like documents
-- **Mongoose** adds schema validation and helpful methods
-- **Schemas** define document structure and validation rules
-- **References** link documents using ObjectIds
-- **Population** fetches referenced documents automatically
-- **Indexes** speed up query performance
-- **Middleware** runs code before/after database operations
-
----
-
-**Next: [04-USER-MODELS.md](./04-USER-MODELS.md)** - Understanding user types and their schemas →
+## Next Steps
+Now you understand how data is structured and queried. Move on to [04 — Data Models](04-DATA-MODELS.md) to see every model in detail.
