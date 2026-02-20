@@ -1,0 +1,15 @@
+{
+  "processedDate": "2025-10-15T13:15:32.581Z",
+  "totalNewsProcessed": 10,
+  "totalCommentsAdded": 200,
+  "totalInFavorComments": 120,
+  "totalAgainstComments": 80,
+  "communityUsersUsed": 5,
+  "expertUsersUsed": 5,
+  "filesGenerated": 12,
+  "averageCommentsPerNews": 20,
+  "commentDistribution": {
+    "inFavorPerNews": 12,
+    "againstPerNews": 8
+  }
+}

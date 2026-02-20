@@ -1,0 +1,202 @@
+[
+  {
+    "socialLinks": {
+      "twitter": null,
+      "linkedin": null,
+      "website": null
+    },
+    "_id": "68ef9722b6f49e167ec09efe",
+    "name": "Dr. Ananya Mehta",
+    "username": "dr_ananya_mehta1",
+    "role": "Expert",
+    "email": "expert1@mail.com",
+    "password": "$2b$10$d3DZzm0uldwpESrU4B3RX.c2s5EwL5LUBdSG17Yw3rNFWuafnYPv6",
+    "bio": "Senior journalist with 15 years experience in investigative reporting",
+    "interests": [
+      "Politics",
+      "Investigation",
+      "Media Ethics"
+    ],
+    "verificationId": null,
+    "photo": null,
+    "location": "Mumbai, Maharashtra",
+    "areaOfExpertise": [
+      "Investigative Journalism",
+      "Political Reporting",
+      "Fact Checking"
+    ],
+    "credentials": [
+      "Masters in Journalism from IIMC",
+      "Ramnath Goenka Excellence Award"
+    ],
+    "experience": 15,
+    "faceEmbedding": null,
+    "faceRegisteredAt": null,
+    "hasFaceAuth": false,
+    "isApproved": true,
+    "profession": "Journalist",
+    "joinedAt": "2025-10-15T12:44:18.212Z",
+    "createdAt": "2025-10-15T12:44:18.212Z",
+    "__v": 0
+  },
+  {
+    "socialLinks": {
+      "twitter": null,
+      "linkedin": null,
+      "website": null
+    },
+    "_id": "68ef9722b6f49e167ec09f01",
+    "name": "Rajesh Gupta",
+    "username": "rajesh_gupta2",
+    "role": "Expert",
+    "email": "expert2@mail.com",
+    "password": "$2b$10$Btf7BTJfVrdhWrO81pBh9u4Co4LRhYAhKvHgNSe4wTXH1f0qyxYde",
+    "bio": "Media analyst and former news anchor",
+    "interests": [
+      "Broadcasting",
+      "Media Studies",
+      "Communication"
+    ],
+    "verificationId": null,
+    "photo": null,
+    "location": "New Delhi, Delhi",
+    "areaOfExpertise": [
+      "Media Analysis",
+      "Broadcasting",
+      "News Verification"
+    ],
+    "credentials": [
+      "PhD in Mass Communication",
+      "20+ years in broadcast journalism"
+    ],
+    "experience": 20,
+    "faceEmbedding": null,
+    "faceRegisteredAt": null,
+    "hasFaceAuth": false,
+    "isApproved": true,
+    "profession": "Media Analyst",
+    "joinedAt": "2025-10-15T12:44:18.560Z",
+    "createdAt": "2025-10-15T12:44:18.560Z",
+    "__v": 0
+  },
+  {
+    "socialLinks": {
+      "twitter": null,
+      "linkedin": null,
+      "website": null
+    },
+    "_id": "68ef9722b6f49e167ec09f04",
+    "name": "Kavitha Iyer",
+    "username": "kavitha_iyer3",
+    "role": "Expert",
+    "email": "expert3@mail.com",
+    "password": "$2b$10$gWFnXBaoce7CiYznpWf7CustTuvO9RGLU.1pfxnWcZ53SKtLPX1yK",
+    "bio": "Fact-checking specialist and digital media expert",
+    "interests": [
+      "Fact Checking",
+      "Digital Literacy",
+      "Open Source Intelligence"
+    ],
+    "verificationId": null,
+    "photo": null,
+    "location": "Chennai, Tamil Nadu",
+    "areaOfExpertise": [
+      "Fact Checking",
+      "Digital Verification",
+      "OSINT"
+    ],
+    "credentials": [
+      "Certified Fact Checker",
+      "Google News Initiative Scholar"
+    ],
+    "experience": 8,
+    "faceEmbedding": null,
+    "faceRegisteredAt": null,
+    "hasFaceAuth": false,
+    "isApproved": true,
+    "profession": "Fact Checker",
+    "joinedAt": "2025-10-15T12:44:18.842Z",
+    "createdAt": "2025-10-15T12:44:18.842Z",
+    "__v": 0
+  },
+  {
+    "socialLinks": {
+      "twitter": null,
+      "linkedin": null,
+      "website": null
+    },
+    "_id": "68ef9723b6f49e167ec09f07",
+    "name": "Suresh Nair",
+    "username": "suresh_nair4",
+    "role": "Expert",
+    "email": "expert4@mail.com",
+    "password": "$2b$10$vdmURUXJdWN9T3FgRx0/A.tci7Ah3RWvfUN18ch5jJrzJWECk8zSW",
+    "bio": "Economics correspondent and financial news expert",
+    "interests": [
+      "Economics",
+      "Finance",
+      "Market Analysis"
+    ],
+    "verificationId": null,
+    "photo": null,
+    "location": "Kochi, Kerala",
+    "areaOfExpertise": [
+      "Economic Reporting",
+      "Financial Analysis",
+      "Market Research"
+    ],
+    "credentials": [
+      "MBA Finance",
+      "CFA Charter Holder"
+    ],
+    "experience": 12,
+    "faceEmbedding": null,
+    "faceRegisteredAt": null,
+    "hasFaceAuth": false,
+    "isApproved": true,
+    "profession": "Economics Correspondent",
+    "joinedAt": "2025-10-15T12:44:19.387Z",
+    "createdAt": "2025-10-15T12:44:19.387Z",
+    "__v": 0
+  },
+  {
+    "socialLinks": {
+      "twitter": null,
+      "linkedin": null,
+      "website": null
+    },
+    "_id": "68ef9723b6f49e167ec09f0a",
+    "name": "Manisha Agarwal",
+    "username": "manisha_agarwal5",
+    "role": "Expert",
+    "email": "expert5@mail.com",
+    "password": "$2b$10$urTKL5lsb2aqPAgj0IT1jObIA36U9QjD4h58vDe20ejS.KvZ6KYBS",
+    "bio": "Science journalist and health news specialist",
+    "interests": [
+      "Science",
+      "Health",
+      "Medical Research"
+    ],
+    "verificationId": null,
+    "photo": null,
+    "location": "Pune, Maharashtra",
+    "areaOfExpertise": [
+      "Science Communication",
+      "Health Reporting",
+      "Medical Journalism"
+    ],
+    "credentials": [
+      "MSc in Science Communication",
+      "Health Journalism Fellowship"
+    ],
+    "experience": 10,
+    "faceEmbedding": null,
+    "faceRegisteredAt": null,
+    "hasFaceAuth": false,
+    "isApproved": true,
+    "profession": "Science Journalist",
+    "joinedAt": "2025-10-15T12:44:19.618Z",
+    "createdAt": "2025-10-15T12:44:19.618Z",
+    "__v": 0
+  }
+]

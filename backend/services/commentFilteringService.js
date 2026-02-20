@@ -86,30 +86,185 @@ class CommentFilteringService {
 
   async getGroupedComments(newsId) {
     try {
-      const groups = await CommentGroup.find({ newsId, comments: { $ne: [] } })
-        .populate({
-          path: 'comments',
-          populate: { path: 'commenter', select: 'username fullName' },
-        })
+      const CommunityComment = require('../models/Comments').CommunityComment;
+      const ExpertComment = require('../models/Comments').ExpertComment;
+
+      const groups = await CommentGroup.find({ newsId })
         .sort({ createdAt: -1 })
         .lean();
 
-      return groups.map(group => ({
-        _id: group._id,
-        label: group.label,
-        description: group.description,
-        newsId: group.newsId,
-        createdAt: group.createdAt,
-        commentCount: group.comments.length,
-        comments: group.comments.map(c => ({
-          _id: c._id,
-          text: c.text || c.comment,
-          commentType: 'community',
-          username: c.commenter?.username || 'Anonymous',
-          userFullName: c.commenter?.fullName || 'Unknown User',
-          createdAt: c.createdAt,
-        })),
-      }));
+      if (!groups.length) return [];
+
+      // ── Source 1: group.comments array (legacy data — old backend stored
+      //   CommunityComment / ExpertComment IDs here directly) ────────────
+      // ── Source 2: CommentFilter.groupId (new-backend data) ───────────
+      // Merge both so all historic and new comments appear.
+
+      const groupIds = groups.map(g => g._id);
+
+      // Fetch new-style CommentFilter entries (one per comment from new backend)
+      const newStyleFilters = await CommentFilter.find({
+        groupId: { $in: groupIds },
+      }).lean();
+
+      // Build groupId → Set<originalCommentId string> to deduplicate later
+      const newStyleByGroup = {};
+      const newStyleOrigIds = new Set();
+      for (const cf of newStyleFilters) {
+        const key = cf.groupId.toString();
+        if (!newStyleByGroup[key]) newStyleByGroup[key] = [];
+        newStyleByGroup[key].push(cf);
+        if (cf.originalCommentId) newStyleOrigIds.add(cf.originalCommentId.toString());
+      }
+
+      const result = await Promise.all(
+        groups.map(async (group) => {
+          const comments = [];
+          // seenOrigIds tracks original CommunityComment/ExpertComment IDs only
+          // (NOT CommentFilter IDs) so Source B always processes new-style entries
+          const seenOrigIds = new Set();
+
+          // ── A. Legacy group.comments (CommunityComment / ExpertComment IDs) ──
+          const legacyIds = group.comments || [];
+          await Promise.all(legacyIds.map(async (rawId) => {
+            const id = rawId.toString();
+            if (seenOrigIds.has(id)) return;
+
+            try {
+              // Try CommunityComment first (most common in old data)
+              let doc = await CommunityComment.findById(rawId)
+                .populate('commenter', 'username fullName name _id').lean();
+              if (doc) {
+                seenOrigIds.add(id);
+                // Skip if a new-style CommentFilter entry covers this same comment
+                if (!newStyleOrigIds.has(id)) {
+                  comments.push({
+                    _id: doc._id,
+                    originalCommentId: doc._id.toString(),
+                    commenterId: doc.commenter?._id?.toString(),
+                    text: doc.comment || '',
+                    commentType: 'community',
+                    stance: doc.stance || 'general',
+                    username: doc.commenter?.username || 'Anonymous',
+                    userFullName: doc.commenter?.fullName || doc.commenter?.name || 'Unknown User',
+                    createdAt: doc.createdAt,
+                  });
+                }
+                return;
+              }
+
+              // Try ExpertComment next
+              doc = await ExpertComment.findById(rawId)
+                .populate('expert', 'username fullName name _id').lean();
+              if (doc) {
+                seenOrigIds.add(id);
+                if (!newStyleOrigIds.has(id)) {
+                  comments.push({
+                    _id: doc._id,
+                    originalCommentId: doc._id.toString(),
+                    commenterId: doc.expert?._id?.toString(),
+                    text: doc.comment || '',
+                    commentType: 'expert',
+                    stance: doc.stance || 'general',
+                    username: doc.expert?.username || 'Unknown Expert',
+                    userFullName: doc.expert?.fullName || doc.expert?.name || 'Unknown Expert',
+                    createdAt: doc.createdAt,
+                  });
+                }
+                return;
+              }
+
+              // rawId is a CommentFilter ID (new-style stored in old array).
+              // Do NOT add to seenOrigIds — Source B handles it.
+            } catch (_) {
+              // ignore individual lookup errors
+            }
+          }));
+
+          // ── B. New-style CommentFilter entries (current backend data) ──
+          const cfs = newStyleByGroup[group._id.toString()] || [];
+          await Promise.all(cfs.map(async (cf) => {
+            const origId = cf.originalCommentId?.toString();
+            // Skip only if the original comment was already added via legacy path
+            if (origId && seenOrigIds.has(origId)) return;
+
+            let orig = null;
+            try {
+              if (cf.commentType === 'expert') {
+                orig = await ExpertComment.findById(cf.originalCommentId)
+                  .populate('expert', 'username fullName name _id').lean();
+              } else {
+                orig = await CommunityComment.findById(cf.originalCommentId)
+                  .populate('commenter', 'username fullName name _id').lean();
+              }
+            } catch (_) {}
+
+            if (origId) seenOrigIds.add(origId);
+
+            comments.push({
+              _id: cf._id,
+              originalCommentId: origId || cf._id.toString(),
+              commenterId: cf.commentType === 'expert'
+                ? orig?.expert?._id?.toString()
+                : orig?.commenter?._id?.toString(),
+              text: cf.text || orig?.comment || '',
+              commentType: cf.commentType || 'community',
+              stance: orig?.stance || 'general',
+              username: cf.commentType === 'expert'
+                ? (orig?.expert?.username || 'Unknown Expert')
+                : (orig?.commenter?.username || 'Anonymous'),
+              userFullName: cf.commentType === 'expert'
+                ? (orig?.expert?.fullName || orig?.expert?.name || 'Unknown Expert')
+                : (orig?.commenter?.fullName || orig?.commenter?.name || 'Unknown User'),
+              createdAt: cf.createdAt || orig?.createdAt,
+            });
+          }));
+
+          // Skip groups that ended up with zero visible comments
+          if (!comments.length) return null;
+
+          // Treat empty or the old "Group discussing: <label>" fallback as no description.
+          // Those patterns give users no extra information — showing nothing is cleaner.
+          const rawDesc = group.description && group.description.trim();
+          const isFallbackDesc = rawDesc &&
+            (rawDesc.toLowerCase().startsWith('group discussing:') ||
+             rawDesc.toLowerCase() === group.label.toLowerCase());
+          const desc = rawDesc && !isFallbackDesc ? rawDesc : null;
+
+          // If description is missing/stale, regenerate it in the background using the
+          // comment texts we already have so it's available on the next fetch.
+          if (!desc && comments.length > 0) {
+            const texts = comments.map(c => c.text).filter(Boolean);
+            if (texts.length > 0) {
+              llmService.generateGroupDescription(texts.join(' | '))
+                .then(newDesc => {
+                  if (newDesc && newDesc.trim()) {
+                    CommentGroup.findByIdAndUpdate(group._id, { description: newDesc.trim() })
+                      .exec()
+                      .catch(() => {});
+                    vectorService.storeNewsGroup(
+                      group._id.toString(), group.label, newDesc.trim(), newsId
+                    ).catch(() => {});
+                  }
+                })
+                .catch(() => {});
+            }
+          }
+
+          return {
+            _id: group._id,
+            label: group.label,
+            description: desc,
+            newsId: group.newsId,
+            createdAt: group.createdAt,
+            commentCount: comments.length,
+            comments,
+          };
+        })
+      );
+
+      // Filter out null (empty) groups
+      return result.filter(Boolean);
     } catch (error) {
       console.error('Error fetching grouped comments:', error);
       throw error;

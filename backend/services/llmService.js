@@ -346,16 +346,19 @@ class LLMService {
    */
   async generateGroupDescription(commentText) {
     try {
-      const prompt = `Analyze this debate comment and create a focused description:\n"${commentText}"\n\nGenerate 2-3 sentences that:\n1. Identify the specific argument or evidence presented\n2. Describe what type of similar reasoning/claims would belong in this group\n3. Highlight the key points that define this argument category\n\nBe specific about the argument's content, not generic discussion topics.`;
+      const prompt = `Analyze these comments and write a description in EXACTLY 10-13 words (no more):\n"${commentText}"\n\nRules:\n- Maximum 13 words total\n- Summarize the core theme or argument of the group\n- No introductory phrases like "This group" or "Comments about"\n- Return ONLY the description, nothing else`;
       const ai = this._ai();
       const res = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
       });
-      return res.text?.trim() || res.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'General discussion.';
+      const raw = res.text?.trim() || res.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+      // Safety net: truncate to 13 words regardless of LLM output
+      const words = raw.split(/\s+/);
+      return words.length > 13 ? words.slice(0, 13).join(' ') + '…' : raw;
     } catch (err) {
       console.error('generateGroupDescription error:', err.message);
-      return `Arguments focusing on: ${commentText.substring(0, 50)}…`;
+      return '';
     }
   }
 

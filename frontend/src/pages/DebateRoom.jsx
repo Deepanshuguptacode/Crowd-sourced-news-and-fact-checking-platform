@@ -808,7 +808,7 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
                     </div>
                   )}
                   <div className="flex items-center gap-4">
-                    {(userInfo && comment.author && comment.author._id === userInfo._id && canUndoComment(comment._id)) && (
+                    {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()) && canUndoComment(comment._id)) && (
                       <button
                         onClick={() => onUndoComment(comment._id)}
                         className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
@@ -832,7 +832,7 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
                       <HandThumbDownIcon className="h-4 w-4" />
                       <span>{comment.dislikes?.length || 0}</span>
                     </button>
-                    {(userType === 'admin' || (userInfo && comment.author && comment.author._id === userInfo._id)) && !canUndoComment(comment._id) && (
+                    {(userType === 'admin' || (userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()))) && !canUndoComment(comment._id) && (
                       <button
                         onClick={async () => {
                           setDeletingCommentId(comment._id);
@@ -968,7 +968,7 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
 
       {/* Actions */}
       <div className="flex items-center gap-4 text-sm">
-        {(userInfo && comment.author && comment.author._id === userInfo._id && canUndo(comment._id)) && (
+        {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()) && canUndo(comment._id)) && (
           <button
             onClick={() => onUndo(comment._id)}
             className="flex items-center gap-1 text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
@@ -992,7 +992,7 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
           <HandThumbDownIcon className="h-4 w-4" />
           <span>{comment.dislikes?.length || 0}</span>
         </button>
-        {(userInfo && comment.author && comment.author._id === userInfo._id) && (
+        {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString())) && (
           <button
             onClick={handleDelete}
             disabled={deleting}

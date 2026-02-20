@@ -363,116 +363,6 @@ const getExpertCommentVotes = async (req, res) => {
   }
 };
 
-// Delete community comment (author or admin)
-const deleteCommunityComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const userId = req.user._id || req.user.id;
-
-    const comment = await CommunityComment.findById(commentId);
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
-
-    // Allow author or admin to delete
-    const isAuthor = comment.commenter.toString() === userId.toString();
-    const isAdmin = req.userType === 'admin';
-    if (!isAuthor && !isAdmin) {
-      return res.status(403).json({ message: 'Only the comment author or admin can delete this comment' });
-    }
-
-    // Remove from News.comments array
-    await News.findByIdAndUpdate(comment.newsId, { $pull: { comments: commentId } });
-
-    // Clean up CommentFilter if it links to this comment
-    const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
-    const mongoose = require('mongoose');
-    const filter = await CommentFilter.findOne({ originalCommentId: commentId });
-    const groupId = filter?.groupId;
-    if (groupId) {
-      // Pull both CommentFilter ID (new-style) and raw commentId (legacy-style)
-      // from group.comments so the empty-group check works for both data shapes.
-      const commentObjId = mongoose.Types.ObjectId.isValid(commentId)
-        ? new mongoose.Types.ObjectId(commentId) : null;
-      const pullIds = filter ? [filter._id] : [];
-      if (commentObjId) pullIds.push(commentObjId);
-      await CommentGroup.findByIdAndUpdate(groupId, { $pull: { comments: { $in: pullIds } } });
-    }
-    // Delete filter first so the remaining-count check below is accurate
-    await CommentFilter.deleteMany({ originalCommentId: commentId });
-    // If no remaining CommentFilter entries AND group.comments is empty → delete group
-    if (groupId) {
-      const remaining = await CommentFilter.countDocuments({ groupId });
-      const group = await CommentGroup.findById(groupId).lean();
-      if (group && remaining === 0 && group.comments.length === 0) {
-        const vectorService = require('../services/vectorService');
-        vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().NEWS_GROUPS)
-          .catch(() => {});
-        await CommentGroup.findByIdAndDelete(group._id);
-      }
-    }
-
-    await CommunityComment.findByIdAndDelete(commentId);
-    res.json({ message: 'Comment deleted successfully' });
-  } catch (err) {
-    console.error('Error deleting community comment:', err);
-    res.status(500).json({ message: 'Error deleting comment', error: err.message });
-  }
-};
-
-// Delete expert comment (author or admin)
-const deleteExpertComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const userId = req.user._id || req.user.id;
-
-    const comment = await ExpertComment.findById(commentId);
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
-
-    // Allow author or admin to delete
-    const isAuthor = comment.expert.toString() === userId.toString();
-    const isAdmin = req.userType === 'admin';
-    if (!isAuthor && !isAdmin) {
-      return res.status(403).json({ message: 'Only the comment author or admin can delete this comment' });
-    }
-
-    // Remove from News.comments array
-    await News.findByIdAndUpdate(comment.newsId, { $pull: { comments: commentId } });
-
-    // Clean up CommentFilter
-    const { CommentFilter, CommentGroup } = require('../models/CommentFilter');
-    const mongoose = require('mongoose');
-    const filter = await CommentFilter.findOne({ originalCommentId: commentId });
-    const groupId = filter?.groupId;
-    if (groupId) {
-      const commentObjId = mongoose.Types.ObjectId.isValid(commentId)
-        ? new mongoose.Types.ObjectId(commentId) : null;
-      const pullIds = filter ? [filter._id] : [];
-      if (commentObjId) pullIds.push(commentObjId);
-      await CommentGroup.findByIdAndUpdate(groupId, { $pull: { comments: { $in: pullIds } } });
-    }
-    await CommentFilter.deleteMany({ originalCommentId: commentId });
-    if (groupId) {
-      const remaining = await CommentFilter.countDocuments({ groupId });
-      const group = await CommentGroup.findById(groupId).lean();
-      if (group && remaining === 0 && group.comments.length === 0) {
-        const vectorService = require('../services/vectorService');
-        vectorService.deleteVector(group._id.toString(), vectorService.getNamespaces().NEWS_GROUPS)
-          .catch(() => {});
-        await CommentGroup.findByIdAndDelete(group._id);
-      }
-    }
-
-    await ExpertComment.findByIdAndDelete(commentId);
-    res.json({ message: 'Comment deleted successfully' });
-  } catch (err) {
-    console.error('Error deleting expert comment:', err);
-    res.status(500).json({ message: 'Error deleting comment', error: err.message });
-  }
-};
-
 module.exports = { 
   addCommunityComment, 
   addExpertComment,
@@ -481,7 +371,5 @@ module.exports = {
   expertVoteOnCommunityComment,
   expertVoteOnExpertComment,
   getCommunityCommentVotes,
-  getExpertCommentVotes,
-  deleteCommunityComment,
-  deleteExpertComment,
+  getExpertCommentVotes
 };

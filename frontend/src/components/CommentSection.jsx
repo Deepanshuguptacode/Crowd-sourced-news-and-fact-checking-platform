@@ -141,6 +141,45 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
     }
   };
 
+  const handleDeleteGroupedComment = async (comment) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    // Use originalCommentId for the actual delete API call
+    const deleteId = comment.originalCommentId || comment._id?.toString();
+    setDeletingCommentId(deleteId);
+    try {
+      if (comment.commentType === 'expert') {
+        await commentsAPI.deleteExpertComment(deleteId);
+      } else {
+        await commentsAPI.deleteCommunityComment(deleteId);
+      }
+      toast.success('Comment deleted successfully!');
+      // Remove comment from grouped state and drop empty groups
+      setGroupedComments(prev =>
+        prev
+          .map(g => ({
+            ...g,
+            comments: g.comments.filter(
+              c => (c.originalCommentId || c._id?.toString()) !== deleteId
+            ),
+          }))
+          .filter(g => g.comments.length > 0)
+      );
+      if (onCommentDeleted) onCommentDeleted(deleteId);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete comment');
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
+  const canDeleteGroupedComment = (comment) => {
+    if (userType === 'admin') return true;
+    const myId = userInfo?._id?.toString() || userInfo?.id?.toString();
+    const ownerId = comment.commenterId?.toString();
+    if (myId && ownerId && myId === ownerId) return true;
+    return false;
+  };
+
   return (
     <div className="mt-4 p-4 bg-white rounded shadow">
       <div className="flex justify-between items-center border-b pb-2">
@@ -207,7 +246,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
                   {item.createdAt && new Date(item.createdAt).toLocaleString()}
                 </span>
                 {/* Delete button - visible to admin or comment owner */}
-                {item._id && (userType === 'admin' || (userInfo?._id && item.commenterId && userInfo._id === item.commenterId)) && (
+                {item._id && (userType === 'admin' || (item.commenterId && (userInfo?._id || userInfo?.id) && (userInfo?._id?.toString() === item.commenterId?.toString() || userInfo?.id?.toString() === item.commenterId?.toString()))) && (
                   <button
                     onClick={() => handleDeleteComment(item._id, item.type)}
                     disabled={deletingCommentId === item._id}
@@ -266,30 +305,53 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
                   </p>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-b p-2 space-y-2">
-                  {group.comments?.map((comment, commentIndex) => (
+                  {group.comments?.map((comment, commentIndex) => {
+                    const deleteId = comment.originalCommentId || comment._id?.toString();
+                    return (
                     <div key={commentIndex} className="p-2 bg-gray-50 rounded border-l-4 border-blue-300">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <p className="text-sm text-gray-600 font-bold">
-                          {comment.commentType === "expert" ? "Expert" : "Community"} - {comment.username || 'Anonymous'}
-                        </p>
-                        {/* Stance Badge for grouped comments */}
-                        {comment.stance && (
-                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                            comment.stance === 'in_favor' 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : comment.stance === 'against'
-                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                          }`}>
-                            {comment.stance === 'in_favor' ? '👍' : 
-                             comment.stance === 'against' ? '👎' : 
-                             '💬'}
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          <p className="text-sm text-gray-600 font-bold">
+                            {comment.commentType === "expert" ? "Expert" : "Community"} - {comment.username || 'Anonymous'}
+                          </p>
+                          {/* Stance Badge for grouped comments */}
+                          {comment.stance && comment.stance !== 'general' && (
+                            <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                              comment.stance === 'in_favor'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {comment.stance === 'in_favor' ? '👍 In Favor' : '👎 Against'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 shrink-0">
+                          <span className="text-xs text-gray-400">
+                            {comment.createdAt && new Date(comment.createdAt).toLocaleDateString()}
                           </span>
-                        )}
+                          {/* Delete button — visible to admin or comment owner */}
+                          {isAuthenticated && canDeleteGroupedComment(comment) && (
+                            <button
+                              onClick={() => handleDeleteGroupedComment(comment)}
+                              disabled={deletingCommentId === deleteId}
+                              className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                              title="Delete comment"
+                            >
+                              {deletingCommentId === deleteId ? (
+                                <div className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin" />
+                              ) : (
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-gray-800">{comment.text}</p>
+                      <p className="text-gray-800 text-sm">{comment.text}</p>
                     </div>
-                  )) || <p className="text-gray-500 italic">No comments in this group</p>}
+                    );
+                  }) || <p className="text-gray-500 italic">No comments in this group</p>}
                 </div>
               </div>
             ))
