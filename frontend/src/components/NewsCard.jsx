@@ -23,6 +23,7 @@ const NewsCard = ({
   onVote,
   onCommentAdded,
   onPostDeleted,
+  isFirst,
 }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes || 0);
   const [downvotes, setDownvotes] = useState(initialDownvotes || 0);
@@ -371,6 +372,7 @@ const NewsCard = ({
         <div className="px-6 pb-4">
           <button 
             onClick={() => setShowAiAnalysis(!showAiAnalysis)}
+            data-tour={isFirst ? "home-ai-analysis" : undefined}
             className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200/50 dark:border-purple-700/50 hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/30 dark:hover:to-blue-900/30 transition-all duration-200"
           >
             <div className="flex items-center space-x-3">
@@ -435,6 +437,7 @@ const NewsCard = ({
       )}
 
       {/* AI Verdict Section */}
+      <div data-tour={isFirst ? "home-ai-verdict" : undefined}>
       <AIVerdictSection 
         newsId={postId} 
         onVerdictUpdate={(verdictData) => {
@@ -442,13 +445,14 @@ const NewsCard = ({
           console.log('AI Verdict updated:', verdictData);
         }} 
       />
+      </div>
 
       {/* Actions Bar */}
       <div className="px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-200/50 dark:border-gray-700/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {/* Voting Buttons */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" data-tour={isFirst ? "home-voting-buttons" : undefined}>
               <button 
                 className="flex items-center space-x-2 px-4 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-400 rounded-lg transition-colors group/vote" 
                 onClick={() => handleVotes('upvote')}
@@ -475,6 +479,7 @@ const NewsCard = ({
           <button 
             className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-lg transition-colors" 
             onClick={toggleComments}
+            data-tour={isFirst ? "home-comments-btn" : undefined}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -525,6 +530,7 @@ NewsCard.propTypes = {
   onVote: PropTypes.func,
   onCommentAdded: PropTypes.func,
   onPostDeleted: PropTypes.func,
+  isFirst: PropTypes.bool,
 };
 
 NewsCard.defaultProps = {
@@ -534,6 +540,7 @@ NewsCard.defaultProps = {
   imageUrl: [],
   aiReview: "PENDING",
   confidence: 0,
+  isFirst: false,
 };
 
 export default NewsCard;

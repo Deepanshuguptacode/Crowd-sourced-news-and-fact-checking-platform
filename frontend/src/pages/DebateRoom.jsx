@@ -273,9 +273,9 @@ const DebateRoom = () => {
   return (
     <>
       <NavigationHeader title="Debate Rooms" />
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117] pt-24 pb-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117] pt-24 pb-8" data-tour="debate-room-container">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700" data-tour="debate-room-header">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
@@ -344,7 +344,7 @@ const DebateRoom = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Admin Controls */}
-        <div className="mb-6 flex gap-2 flex-wrap">
+        <div className="mb-6 flex gap-2 flex-wrap" data-tour="debate-room-view-toggle">
           <button
             onClick={handleRelinkGroups}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
@@ -371,7 +371,7 @@ const DebateRoom = () => {
         </div>
 
         {/* Comment Input */}
-        <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6" data-tour="debate-room-comment-input">
           <form onSubmit={handleSubmitComment}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -428,15 +428,17 @@ const DebateRoom = () => {
 
         {/* Conditional View Rendering */}
         {viewMode === 'counter' ? (
+          <div data-tour="debate-room-counter-view">
           <CounterChatView
             groups={groups}
             onRegenerateGroup={handleRegenerateGroup}
             onLikeComment={handleLikeComment}
             onDislikeComment={handleDislikeComment}
           />
+          </div>
         ) : (
           /* Debate Groups Display */
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-8" data-tour="debate-room-groups">
             {/* For Groups */}
             <div>
               <h2 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-4 flex items-center gap-2">
@@ -444,10 +446,11 @@ const DebateRoom = () => {
                 Supporting Arguments ({groups.for.length})
               </h2>
               <div className="space-y-4">
-                {groups.for.map((group) => (
+                {groups.for.map((group, groupIndex) => (
                   <DebateGroup
                     key={group._id}
                     group={group}
+                    isFirst={groupIndex === 0}
                     onLike={handleLikeComment}
                     onDislike={handleDislikeComment}
                     onRegenerate={() => handleRegenerateGroup(group._id)}
@@ -497,7 +500,7 @@ const DebateRoom = () => {
 
             {/* Ungrouped/Off-Topic Comments Section */}
             {(groups.ungroupedFor?.length > 0 || groups.ungroupedAgainst?.length > 0) && (
-              <div className="mt-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-8">
+              <div className="mt-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-8" data-tour="debate-room-ungrouped">
                 <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
                   <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
                   Off-Topic & Ungrouped Comments ({(groups.ungroupedFor?.length || 0) + (groups.ungroupedAgainst?.length || 0)})
@@ -563,7 +566,7 @@ const DebateRoom = () => {
 };
 
 // Individual Debate Group Component
-const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat, onDeleteComment, onUndoComment, canUndoComment, userType, userInfo, stance }) => {
+const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCounterChat, onDeleteComment, onUndoComment, canUndoComment, userType, userInfo, stance }) => {
   const [expanded, setExpanded] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
   const [showIdealCounters, setShowIdealCounters] = useState(false);
@@ -571,7 +574,7 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
   const idealCounters = group.idealCounters || [];
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-${stanceColor}-500 border border-gray-200 dark:border-gray-700 overflow-hidden`} data-group-id={group._id}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-${stanceColor}-500 border border-gray-200 dark:border-gray-700 overflow-hidden`} data-group-id={group._id} data-tour={isFirst ? "debate-room-group-card" : undefined}>
       {/* Group Header */}
       <div className="p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
         <div className="flex items-start justify-between">
@@ -606,7 +609,7 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
           </div>
           {/* Show counter links - support both new array and legacy single field */}
           {(group.counterGroups?.length > 0 || group.counterGroupId) && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-tour={isFirst ? "debate-room-counter-links" : undefined}>
               {group.counterGroups?.length > 0 ? (
                 <>
                   <button
@@ -667,6 +670,7 @@ const DebateGroup = ({ group, onLike, onDislike, onRegenerate, onOpenCounterChat
               onClick={() => setShowIdealCounters(true)}
               className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
               title="View ideal counter-arguments"
+              data-tour={isFirst ? "debate-room-ideal-counters" : undefined}
             >
               <InformationCircleIcon className="h-3 w-3" />
               <span>Ideal counters</span>

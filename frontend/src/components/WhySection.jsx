@@ -9,55 +9,55 @@ export default function WhySection() {
     {
       id: 1,
       title: "Facts and rumors look the same.",
-      description: "Without verification, truth and misinformation appear identical online."
+      description: "Without multi-layer verification, truth and misinformation are indistinguishable online — fueling the spread of fake news."
     },
     {
       id: 2,
       title: "Endless comment threads obscure consensus.",
-      description: "Important viewpoints get lost in chaotic comment sections."
+      description: "Hundreds of comments without organization make it impossible to understand what the community actually thinks."
     },
     {
       id: 3,
       title: "Debates go off-topic and unbalanced.",
-      description: "Discussions lack structure and fair representation of all sides."
+      description: "Online discussions lack structure — no fair representation of both sides, arguments go in circles."
     },
     {
       id: 4,
-      title: "Busy readers can't stay informed on the go.",
-      description: "Text-heavy content doesn't work for multitasking lifestyles."
+      title: "Fake accounts manipulate public opinion.",
+      description: "Bot armies and multi-account spam distort voting, creating false consensus and undermining trust."
     },
     {
       id: 5,
       title: "No quick way to gauge a story's trustworthiness.",
-      description: "Readers have no reliable indicator of content credibility."
+      description: "Readers have no reliable real-time indicator combining AI analysis, expert opinion, and community consensus."
     }
   ];
 
   const solutions = [
     {
       id: 1,
-      title: "Multi-tier verification",
-      description: "Crowd review + expert sign-off to flag what's true."
+      title: "Multi-tier verification pipeline",
+      description: "Community votes → Expert analysis → AI Verdict with confidence scoring — 3 layers to catch misinformation."
     },
     {
       id: 2,
-      title: "Comment clustering",
-      description: "Surface the most common viewpoints at a glance."
+      title: "Agentic AI comment clustering",
+      description: "LLM-powered grouping by topic & stance. See community consensus at a glance, not endless threads."
     },
     {
       id: 3,
-      title: "Structured debate rooms",
-      description: "FOR vs. AGAINST format keeps discussions fair and focused."
+      title: "AI-powered debate rooms",
+      description: "Structured FOR vs AGAINST with automatic counter-argument pairing and off-topic detection."
     },
     {
       id: 4,
-      title: "Audio debates",
-      description: "Transform text discussions into on-demand podcast episodes."
+      title: "Face authentication anti-spam",
+      description: "ArcFace biometrics prevent fake accounts. Only math embeddings stored — privacy-first fraud prevention."
     },
     {
       id: 5,
-      title: "Credibility scores",
-      description: "Dynamically rate each submission based on verifications."
+      title: "AI credibility scores",
+      description: "Real-time scoring (0-100) combining content quality, source credibility, and linguistic analysis."
     }
   ];
   

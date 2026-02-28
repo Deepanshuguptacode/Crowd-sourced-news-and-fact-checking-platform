@@ -32,6 +32,10 @@ export const TOUR_TARGETS = {
     STANCE_SELECTOR: '[data-tour="home-stance-selector"]',
     COMMENT_INPUT: '[data-tour="home-comment-input"]',
     COMMENT_CARD: '[data-tour="home-comment-card"]',
+    VOTING_BUTTONS: '[data-tour="home-voting-buttons"]',
+    AI_ANALYSIS_BTN: '[data-tour="home-ai-analysis"]',
+    AI_VERDICT: '[data-tour="home-ai-verdict"]',
+    COMMENTS_BTN: '[data-tour="home-comments-btn"]',
   },
 
   // News Submission Form
@@ -75,6 +79,20 @@ export const TOUR_TARGETS = {
     ROOM_CARD: '[data-tour="debate-room-card"]',
     JOIN_BTN: '[data-tour="debate-join-btn"]',
     ROOM_LIST: '[data-tour="debate-room-list"]',
+  },
+
+  // Individual Debate Room
+  DEBATE_ROOM: {
+    CONTAINER: '[data-tour="debate-room-container"]',
+    HEADER: '[data-tour="debate-room-header"]',
+    VIEW_TOGGLE: '[data-tour="debate-room-view-toggle"]',
+    COMMENT_INPUT: '[data-tour="debate-room-comment-input"]',
+    GROUPS: '[data-tour="debate-room-groups"]',
+    GROUP_CARD: '[data-tour="debate-room-group-card"]',
+    COUNTER_LINKS: '[data-tour="debate-room-counter-links"]',
+    IDEAL_COUNTERS: '[data-tour="debate-room-ideal-counters"]',
+    COUNTER_VIEW: '[data-tour="debate-room-counter-view"]',
+    UNGROUPED: '[data-tour="debate-room-ungrouped"]',
   },
 
   // Trending Page

@@ -7,6 +7,10 @@ import { newsSubmissionTour } from "../tours/newsSubmissionTour";
 import { profilePageTour } from "../tours/profilePageTour";
 import { expertsPageTour } from "../tours/expertsPageTour";
 import { debateRoomsTour } from "../tours/debateRoomsTour";
+import { debateRoomTour } from "../tours/debateRoomTour";
+import { trendingPageTour } from "../tours/trendingPageTour";
+import FeaturesTour from "./FeaturesTour";
+import JourneyTour from "./JourneyTour";
 
 /**
  * Tour Context for manual control
@@ -24,18 +28,17 @@ export const useTour = () => {
 /**
  * Global Tour Provider Component
  * 
- * Responsibilities:
- * - Detect current route
- * - Load correct tour steps
- * - Provide manual tour control
- * - Persist completion in localStorage
- * - Handle tour state and callbacks
+ * Supports two tour modes:
+ * 1. Features Tour — Modal slideshow explaining all platform features
+ * 2. Platform Tour — Joyride walkthrough of current page UI elements
  */
 
 const TourProvider = ({ children }) => {
   const location = useLocation();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [showFeaturesTour, setShowFeaturesTour] = useState(false);
+  const [showJourneyTour, setShowJourneyTour] = useState(false);
 
   /**
    * Get tour steps based on current route
@@ -43,7 +46,6 @@ const TourProvider = ({ children }) => {
   const getSteps = () => {
     const path = location.pathname;
     
-    // Direct route matches
     switch (path) {
       case "/":
         return landingPageTour;
@@ -57,10 +59,11 @@ const TourProvider = ({ children }) => {
         return expertsPageTour;
       case "/debate-rooms":
         return debateRoomsTour;
+      case "/trending":
+        return trendingPageTour;
       default:
-        // Pattern matches for dynamic routes
         if (path.startsWith("/debate-room/")) {
-          return debateRoomsTour;
+          return debateRoomTour;
         }
         return [];
     }
@@ -69,7 +72,7 @@ const TourProvider = ({ children }) => {
   const steps = getSteps();
 
   /**
-   * Check if tour has been completed for this page
+   * Tour storage helpers
    */
   const getTourKey = () => {
     const routeKey = location.pathname.replace(/\//g, "_") || "root";
@@ -77,41 +80,67 @@ const TourProvider = ({ children }) => {
   };
 
   const isTourCompleted = () => {
-    const tourKey = getTourKey();
-    return localStorage.getItem(tourKey) === "true";
+    return localStorage.getItem(getTourKey()) === "true";
   };
 
   const markTourCompleted = () => {
-    const tourKey = getTourKey();
-    localStorage.setItem(tourKey, "true");
+    localStorage.setItem(getTourKey(), "true");
   };
 
   const markTourIncomplete = () => {
-    const tourKey = getTourKey();
-    localStorage.removeItem(tourKey);
+    localStorage.removeItem(getTourKey());
   };
 
   /**
-   * Manual tour control functions
+   * Features Tour controls
    */
-  const startTour = () => {
+  const startFeaturesTour = () => {
+    setRun(false); // stop platform tour if running
+    setShowJourneyTour(false);
+    setShowFeaturesTour(true);
+  };
+
+  const closeFeaturesTour = () => {
+    setShowFeaturesTour(false);
+  };
+
+  /**
+   * Journey Tour controls
+   */
+  const startJourneyTour = () => {
+    setRun(false);
+    setShowFeaturesTour(false);
+    setShowJourneyTour(true);
+  };
+
+  const closeJourneyTour = () => {
+    setShowJourneyTour(false);
+  };
+
+  /**
+   * Platform Tour controls
+   */
+  const startPlatformTour = () => {
     if (steps.length > 0) {
+      setShowFeaturesTour(false); // close features tour if open
+      setShowJourneyTour(false); // close journey tour if open
       setStepIndex(0);
-      setRun(true);
+      // Small delay to let elements render after any state changes
+      setTimeout(() => setRun(true), 300);
     }
   };
 
-  const stopTour = () => {
+  const stopPlatformTour = () => {
     setRun(false);
   };
 
-  const resetTour = () => {
+  const resetPlatformTour = () => {
     markTourIncomplete();
-    startTour();
+    startPlatformTour();
   };
 
   /**
-   * Reset tour state when route changes (no auto-start)
+   * Reset tour state when route changes
    */
   useEffect(() => {
     setStepIndex(0);
@@ -119,7 +148,7 @@ const TourProvider = ({ children }) => {
   }, [location.pathname]);
 
   /**
-   * Handle tour callback events
+   * Handle Joyride callback events
    */
   const handleJoyrideCallback = (data) => {
     const { action, index, status, type, step } = data;
@@ -128,7 +157,6 @@ const TourProvider = ({ children }) => {
     if (type === EVENTS.STEP_BEFORE) {
       const element = document.querySelector(step.target);
       if (element) {
-        // Give a moment for the previous tooltip to close
         setTimeout(() => {
           element.scrollIntoView({ 
             behavior: 'smooth', 
@@ -140,42 +168,44 @@ const TourProvider = ({ children }) => {
     }
 
     if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
-      // Update step index
-      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
-      
-      // If target not found, try to scroll to it manually
-      if (type === EVENTS.TARGET_NOT_FOUND && step?.target) {
-        const element = document.querySelector(step.target);
-        if (element) {
-          setTimeout(() => {
-            element.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'nearest'
-            });
-          }, 100);
-        }
-      }
+      const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+      setStepIndex(nextIndex);
     } else if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-      // Tour finished or skipped
       setRun(false);
       markTourCompleted();
     }
   };
 
-  // Provide tour control context
+  // Context value
   const tourContextValue = {
-    startTour,
-    stopTour,
-    resetTour,
-    isTourAvailable: steps.length > 0,
-    isTourCompleted: isTourCompleted(),
-    isRunning: run,
+    // Features Tour
+    startFeaturesTour,
+    closeFeaturesTour,
+    isFeaturesTourOpen: showFeaturesTour,
+    // Journey Tour
+    startJourneyTour,
+    closeJourneyTour,
+    isJourneyTourOpen: showJourneyTour,
+    // Platform Tour
+    startPlatformTour,
+    stopPlatformTour,
+    resetPlatformTour,
+    isPlatformTourAvailable: steps.length > 0,
+    isPlatformTourCompleted: isTourCompleted(),
+    isPlatformTourRunning: run,
   };
 
   return (
     <TourContext.Provider value={tourContextValue}>
       {children}
+
+      {/* Features Tour Modal */}
+      <FeaturesTour isOpen={showFeaturesTour} onClose={closeFeaturesTour} />
+
+      {/* Journey Tour Modal */}
+      <JourneyTour isOpen={showJourneyTour} onClose={closeJourneyTour} />
+
+      {/* Platform Tour (Joyride) */}
       {steps.length > 0 && (
         <Joyride
           steps={steps}
@@ -190,7 +220,7 @@ const TourProvider = ({ children }) => {
           disableOverlayClose
           disableCloseOnEsc={false}
           scrollOffset={150}
-          spotlightPadding={10}
+          spotlightPadding={8}
           callback={handleJoyrideCallback}
           styles={{
             options: {
@@ -200,26 +230,27 @@ const TourProvider = ({ children }) => {
               backgroundColor: "#ffffff",
               overlayColor: "rgba(0, 0, 0, 0.5)",
               arrowColor: "#ffffff",
-              width: 380,
+              width: 420,
             },
             tooltip: {
-              borderRadius: 12,
-              padding: 20,
-              boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+              borderRadius: 14,
+              padding: 24,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
             },
             tooltipContainer: {
               textAlign: "left",
             },
             tooltipContent: {
               padding: "10px 0",
-              fontSize: "15px",
-              lineHeight: "1.6",
+              fontSize: "14px",
+              lineHeight: "1.7",
             },
             buttonNext: {
               backgroundColor: "#3b82f6",
-              borderRadius: 8,
+              borderRadius: 10,
               fontSize: 14,
-              padding: "10px 20px",
+              fontWeight: 600,
+              padding: "10px 22px",
             },
             buttonBack: {
               color: "#6b7280",
@@ -227,14 +258,14 @@ const TourProvider = ({ children }) => {
               fontSize: 14,
             },
             buttonSkip: {
-              color: "#6b7280",
-              fontSize: 14,
+              color: "#9ca3af",
+              fontSize: 13,
             },
             buttonClose: {
               display: "none",
             },
             spotlight: {
-              borderRadius: 8,
+              borderRadius: 12,
             },
           }}
           floaterProps={{
@@ -247,10 +278,10 @@ const TourProvider = ({ children }) => {
             },
           }}
           locale={{
-            back: "Back",
+            back: "← Back",
             close: "Close",
-            last: "Finish",
-            next: "Next",
+            last: "Finish Tour ✓",
+            next: "Next →",
             skip: "Skip Tour",
           }}
         />

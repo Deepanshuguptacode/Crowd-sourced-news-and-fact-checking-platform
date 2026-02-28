@@ -104,13 +104,14 @@ const DebateRoomsList = () => {
       <NavigationHeader title="Debate Rooms List" />
       <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117] pt-24 pb-8" data-tour="debate-rooms-container">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
           {/* Header */}
           <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600" />
-                Debate Rooms
+                Active Debates
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Join ongoing debates or create your own discussion space
@@ -119,7 +120,7 @@ const DebateRoomsList = () => {
             <button
               data-tour="debate-create-btn"
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
             >
               <PlusIcon className="h-5 w-5" />
               Create Debate Room
@@ -138,12 +139,12 @@ const DebateRoomsList = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search debate rooms by title, topic, or tags..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
               />
             </div>
             <button
               type="submit"
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-xl transition-colors shadow-sm"
             >
               Search
             </button>
@@ -164,22 +165,27 @@ const DebateRoomsList = () => {
               <div
                 key={room._id}
                 data-tour={index === 0 ? "debate-room-card" : undefined}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
+                className="group bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 overflow-hidden hover:-translate-y-1"
               >
+                {/* Colored top bar */}
+                <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                
                 <div className="p-6">
                   {/* Room Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {room.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        Topic: {room.topic}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md font-medium">
+                          {room.topic}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-orange-500">
-                      <FireIcon className="h-4 w-4" />
-                      <span className="text-xs font-medium">Active</span>
+                    <div className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full">
+                      <FireIcon className="h-3.5 w-3.5" />
+                      <span className="text-xs font-bold">Live</span>
                     </div>
                   </div>
 
@@ -234,13 +240,13 @@ const DebateRoomsList = () => {
                     <button
                       data-tour="debate-join-btn"
                       onClick={() => handleJoinRoom(room._id)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-2.5 px-4 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md"
                     >
                       Join Debate
                     </button>
                     <button
                       onClick={() => navigate(`/debate-room/${room._id}`)}
-                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                      className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2.5 px-4 rounded-xl transition-colors text-sm font-medium"
                     >
                       View Room
                     </button>
@@ -267,17 +273,30 @@ const DebateRoomsList = () => {
 
         {/* Empty State */}
         {!loading && debateRooms.length === 0 && (
-          <div className="text-center py-12">
-            <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center">
+              <ChatBubbleLeftRightIcon className="h-10 w-10 text-indigo-500 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
               No debate rooms found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {searchTerm ? 'Try a different search term' : 'Be the first to create a debate room!'}
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+              {searchTerm ? 'Try a different search term' : 'Be the first to create a debate room! Start a structured discussion where AI helps organize FOR vs AGAINST arguments.'}
             </p>
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium">
+                <span>⚔️</span> Pro vs Con Format
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg text-xs font-medium">
+                <span>🤖</span> AI Counter-Arguments
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-medium">
+                <span>👁️</span> Dual View Modes
+              </div>
+            </div>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl font-bold hover:scale-[1.02]"
             >
               Create Debate Room
             </button>

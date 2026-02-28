@@ -34,42 +34,42 @@ const KeyFeature = ({ scrollToFeatures }) => {
       id: 1,
       icon: <FaUpload className="text-3xl" />,
       title: "Crowd-Sourced Submission",
-      description: "Empower anyone to break news—upload stories, images, or video.",
+      description: "Anyone can submit news articles with screenshots & sources. The community decides what's real — democratizing fact-checking for all.",
       color: "from-purple-500 to-purple-600"
     },
     {
       id: 2,
       icon: <FaShieldAlt className="text-3xl" />,
       title: "Multi-Tier Verification",
-      description: "Onlookers submit → Community users review → Experts give final sign-off.",
+      description: "3-layer verification: Community votes → Expert analysis → AI Verdict with confidence scoring. No single point of failure in truth-finding.",
       color: "from-blue-500 to-blue-600"
     },
     {
       id: 3,
       icon: <FaLayerGroup className="text-3xl" />,
-      title: "Comment Clustering",
-      description: "Similar viewpoints auto-grouped so you see the consensus at a glance.",
+      title: "AI Comment Clustering",
+      description: "Agentic AI groups hundreds of comments by topic & stance using LLM tool-calling. See community consensus at a glance, not chaos.",
       color: "from-green-500 to-green-600"
     },
     {
       id: 4,
       icon: <FaUsers className="text-3xl" />,
-      title: "Debate Room",
-      description: "Unique pro-vs-con debate spaces—rare in news platforms—to hash out every angle.",
+      title: "Debate Rooms",
+      description: "Structured FOR vs AGAINST format with AI counter-argument pairing. Both sides get equal representation — balanced discourse by design.",
       color: "from-orange-500 to-orange-600"
     },
     {
       id: 5,
       icon: <FaChartLine className="text-3xl" />,
-      title: "Trending & Notifications",
-      description: "Stay on top of hot stories, verified updates, and fresh debate turns.",
+      title: "Trending News Engine",
+      description: "AI-powered aggregation from trusted sources, updated every 10 minutes. Repost trending stories to the community for verification.",
       color: "from-red-500 to-red-600"
     },
     {
       id: 6,
       icon: <FaSoundcloud className="text-3xl" />,
-      title: "Podcast Episodes",
-      description: "Listen to full debate-room discussions as on‑demand audio episodes.",
+      title: "Face Auth Anti-Spam",
+      description: "ArcFace biometric authentication prevents fake accounts & bot armies. Only mathematical embeddings stored — privacy-first protection.",
       color: "from-yellow-500 to-yellow-600"
     }
   ];
