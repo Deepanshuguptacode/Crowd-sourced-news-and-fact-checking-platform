@@ -4,6 +4,8 @@
 
 ### Connect to VM via SSH
 ```bash
+#Start
+gcloud compute ssh voxveritas --zone=asia-south2-b
 # Windows (PowerShell)
 ssh -i C:\Users\deepa\.ssh\google_compute_engine deepanshuguptacode@34.131.44.0
 
