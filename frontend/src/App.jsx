@@ -23,13 +23,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { UserProvider } from './context/userContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import TourProvider from './components/TourProvider';
 
 function App() {
   return (
     <UserProvider>
       <Router>
-        <div className="App">
-          <Routes>
+        <TourProvider>
+          <div className="App">
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupForm />} />
@@ -122,7 +124,8 @@ function App() {
             pauseOnHover
             theme="colored"
           />
-        </div>
+          </div>
+        </TourProvider>
       </Router>
     </UserProvider>
   );

@@ -98,15 +98,16 @@ const NewsFeed = () => {
   );
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700" data-tour="home-news-feed">
       {news.length === 0 ? (
         <div className="text-center text-gray-400 py-8">
           <p>No news articles available at the moment.</p>
         </div>
       ) : (
-        news.map((item) => (
+        news.map((item, index) => (
           <NewsCard
             key={item._id}
+            data-tour={index === 0 ? "home-first-news-card" : undefined}
             postId={item._id}
             title={item.title}
             content={item.description}

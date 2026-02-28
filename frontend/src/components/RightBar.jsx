@@ -29,7 +29,7 @@ const RightBar = () => {
   const colors = { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-400', icon: 'text-blue-600 dark:text-blue-400', hover: 'hover:bg-blue-50 dark:hover:bg-blue-900/20' };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4" data-tour="home-quick-actions">
       <div className="space-y-1">
         {menuItems.map((item, index) => {
           const isDebateRoom = item.label === 'Debate Rooms';
@@ -83,7 +83,7 @@ const RightBar = () => {
       </div>
 
       <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button onClick={() => navigate('/submit-news')} className="w-full flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-md group">
+        <button data-tour="home-submit-news" onClick={() => navigate('/submit-news')} className="w-full flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-md group">
           <Icon path="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           <span className="ml-3">Submit News</span>
         </button>

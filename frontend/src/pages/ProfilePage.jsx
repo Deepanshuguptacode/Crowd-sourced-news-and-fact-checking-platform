@@ -132,7 +132,7 @@ const ProfilePage = () => {
     }
   };
 
-  const renderField = (label, name, type = 'text', placeholder = '', multiline = false) => (
+  const renderField = (label, name, type = 'text', placeholder = '', multiline = false, dataTour = null) => (
     <div className="mb-6">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         {label}
@@ -143,6 +143,7 @@ const ProfilePage = () => {
           value={formData[name] || ''}
           onChange={handleInputChange}
           placeholder={placeholder}
+          data-tour={dataTour}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           rows="4"
           disabled={!editMode}
@@ -154,6 +155,7 @@ const ProfilePage = () => {
           value={formData[name] || ''}
           onChange={handleInputChange}
           placeholder={placeholder}
+          data-tour={dataTour}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           disabled={!editMode}
         />
@@ -178,7 +180,7 @@ const ProfilePage = () => {
         <NavigationHeader title="User Profile" />
 
       {/* Main Content */}
-      <div className="pt-16 pb-16">
+      <div className="pt-16 pb-16" data-tour="profile-container">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Profile Header */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
@@ -188,6 +190,7 @@ const ProfilePage = () => {
               </h1>
               <div className="flex space-x-3">
                 <button
+                  data-tour="profile-password-btn"
                   onClick={() => setShowPasswordModal(true)}
                   className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
@@ -195,6 +198,7 @@ const ProfilePage = () => {
                   <span>Change Password</span>
                 </button>
                 <button
+                  data-tour="profile-edit-btn"
                   onClick={() => setEditMode(!editMode)}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                     editMode
@@ -223,7 +227,7 @@ const ProfilePage = () => {
                   )}
                 </div>
                 {editMode && (
-                  <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
+                  <label data-tour="profile-photo" className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
                     <Camera className="w-4 h-4" />
                     <input
                       type="file"
@@ -254,13 +258,13 @@ const ProfilePage = () => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderField('Full Name', 'name', 'text', 'Your full name')}
+                {renderField('Full Name', 'name', 'text', 'Your full name', false, 'profile-name')}
                 {renderField('Username', 'username', 'text', 'Your username')}
                 {renderField('Email', 'email', 'email', 'Your email address')}
                 {renderField('Location', 'location', 'text', 'Your location')}
               </div>
 
-              {renderField('Bio', 'bio', 'text', 'Tell us about yourself...', true)}
+              {renderField('Bio', 'bio', 'text', 'Tell us about yourself...', true, 'profile-bio')}
               {renderField('Interests', 'interests', 'text', 'Technology, Science, Sports (comma separated)')}
 
               {/* Expert specific fields */}
@@ -299,6 +303,7 @@ const ProfilePage = () => {
                     Cancel
                   </button>
                   <button
+                    data-tour="profile-save-btn"
                     type="submit"
                     className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >

@@ -15,7 +15,7 @@ const ExpertCard = ({ expert }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0D1117] rounded-lg shadow-md border border-gray-200 dark:border-gray-600 p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white dark:bg-[#0D1117] rounded-lg shadow-md border border-gray-200 dark:border-gray-600 p-6 hover:shadow-lg transition-shadow duration-200" data-tour="experts-card">
       {/* Expert Header */}
       <div className="flex items-center space-x-4 mb-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -52,7 +52,7 @@ const ExpertCard = ({ expert }) => {
       {/* Expert Badge */}
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+          <span data-tour="experts-verified" className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
             Verified Expert
           </span>
           <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
@@ -153,7 +153,7 @@ const ExpertsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]" data-tour="experts-container">
       {/* Header */}
       <NavigationHeader title="Expert Network" />
       <div className="pt-16 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-600">
@@ -180,6 +180,7 @@ const ExpertsList = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
+                data-tour="experts-search"
                 type="text"
                 placeholder="Search experts by name, username, or profession..."
                 value={searchTerm}
@@ -192,6 +193,7 @@ const ExpertsList = () => {
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <select
+                data-tour="experts-filter"
                 value={filterByProfession}
                 onChange={(e) => setFilterByProfession(e.target.value)}
                 className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white appearance-none"

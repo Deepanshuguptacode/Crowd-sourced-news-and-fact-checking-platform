@@ -139,7 +139,7 @@ const NewsSubmissionForm = () => {
               </div>
 
               {/* Right Panel - Form */}
-              <div className="p-8 lg:p-12 flex flex-col justify-center">
+              <div className="p-8 lg:p-12 flex flex-col justify-center" data-tour="submit-form-container">
                 <div className="max-w-md mx-auto w-full">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     
@@ -151,6 +151,7 @@ const NewsSubmissionForm = () => {
                       <div className="relative">
                         <FileText className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-5 h-5" />
                         <input
+                          data-tour="submit-title"
                           type="text"
                           id="title"
                           value={formData.title}
@@ -168,6 +169,7 @@ const NewsSubmissionForm = () => {
                         Description *
                       </label>
                       <textarea
+                        data-tour="submit-description"
                         id="description"
                         value={formData.description}
                         onChange={handleInputChange}
@@ -186,6 +188,7 @@ const NewsSubmissionForm = () => {
                       <div className="relative">
                         <LinkIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-400 w-5 h-5" />
                         <input
+                          data-tour="submit-link"
                           type="url"
                           id="link"
                           value={formData.link}
@@ -203,7 +206,7 @@ const NewsSubmissionForm = () => {
                       </label>
                       
                       {/* Image Input Type Selector */}
-                      <div className="flex mb-4 bg-gray-200 dark:bg-slate-700/30 rounded-lg p-1">
+                      <div className="flex mb-4 bg-gray-200 dark:bg-slate-700/30 rounded-lg p-1" data-tour="submit-image-toggle">
                         <button
                           type="button"
                           onClick={() => setImageInputType('upload')}
@@ -232,7 +235,7 @@ const NewsSubmissionForm = () => {
 
                       {/* File Upload Option */}
                       {imageInputType === 'upload' && (
-                        <div className="relative">
+                        <div className="relative" data-tour="submit-image-upload">
                           <div className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 text-center hover:border-blue-500/50 transition-colors duration-200">
                             <Upload className="mx-auto w-8 h-8 text-gray-400 dark:text-slate-400 mb-2" />
                             <p className="text-gray-600 dark:text-slate-400 text-sm mb-2">
@@ -261,7 +264,7 @@ const NewsSubmissionForm = () => {
 
                       {/* Image URL Option */}
                       {imageInputType === 'url' && (
-                        <div className="relative">
+                        <div className="relative" data-tour="submit-image-url">
                           <textarea
                             id="imageUrls"
                             value={formData.imageUrls}
@@ -290,6 +293,7 @@ https://example.com/image2.png"
                     {/* Submit Button */}
                     <div className="stage-4-details">
                       <button
+                        data-tour="submit-button"
                         type="submit"
                         className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center space-x-2"
                       >

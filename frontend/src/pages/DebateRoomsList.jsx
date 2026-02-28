@@ -102,7 +102,7 @@ const DebateRoomsList = () => {
   return (
     <>
       <NavigationHeader title="Debate Rooms List" />
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117] pt-24 pb-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117] pt-24 pb-8" data-tour="debate-rooms-container">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
@@ -117,6 +117,7 @@ const DebateRoomsList = () => {
               </p>
             </div>
             <button
+              data-tour="debate-create-btn"
               onClick={() => setShowCreateForm(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
             >
@@ -132,6 +133,7 @@ const DebateRoomsList = () => {
             <div className="flex-1 relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
+                data-tour="debate-search"
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -157,10 +159,11 @@ const DebateRoomsList = () => {
 
         {/* Debate Rooms Grid */}
         {!loading && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {debateRooms.map((room) => (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-tour="debate-room-list">
+            {debateRooms.map((room, index) => (
               <div
                 key={room._id}
+                data-tour={index === 0 ? "debate-room-card" : undefined}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
               >
                 <div className="p-6">
@@ -229,6 +232,7 @@ const DebateRoomsList = () => {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
+                      data-tour="debate-join-btn"
                       onClick={() => handleJoinRoom(room._id)}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium"
                     >
