@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 /**
  * JourneyTour — Interactive Feature Demo
@@ -184,6 +184,22 @@ const journeySteps = [
     subtitle: 'AI keeps debates focused and on-track',
     icon: '🚫',
     gradient: 'from-gray-500 to-slate-600',
+  },
+  {
+    id: 'debate-relink',
+    phase: 'debate',
+    title: 'Relink & Optimize Groups',
+    subtitle: 'AI re-analyzes all groupings for better organization',
+    icon: '🔄',
+    gradient: 'from-cyan-500 to-blue-600',
+  },
+  {
+    id: 'counter-chat',
+    phase: 'debate',
+    title: 'Counter-Chat View',
+    subtitle: 'Side-by-side matched argument comparison',
+    icon: '💬',
+    gradient: 'from-emerald-500 to-green-600',
   },
   {
     id: 'complete',
@@ -813,6 +829,134 @@ const OffTopicStep = () => {
   );
 };
 
+/** Relink & Optimize Groups */
+const RelinkStep = () => {
+  const [phase, setPhase] = useState(0); // 0=before 1=processing 2=after
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 800);
+    const t2 = setTimeout(() => setPhase(2), 2800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  const beforeGroups = [
+    { title: 'Efficiency & Scale', comments: 1, match: 72 },
+    { title: 'Consistency & Fairness', comments: 2, match: 65 },
+  ];
+  const afterGroups = [
+    { title: 'Efficiency & Processing Speed', comments: 2, match: 94 },
+    { title: 'Bias Reduction & Fairness', comments: 1, match: 88 },
+  ];
+
+  return (
+    <div>
+      {phase === 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3">Current Groups (Before Relink)</p>
+          {beforeGroups.map((g, i) => (
+            <div key={i} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{g.title}</span>
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-yellow-100 text-yellow-700">
+                  🔗 {g.match}% match
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-500">{g.comments} comment(s)</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {phase === 1 && (
+        <div className="text-center py-6">
+          <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center animate-spin-slow shadow-lg">
+            <span className="text-2xl">🔄</span>
+          </div>
+          <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Re-analyzing groupings...</p>
+          <p className="text-xs text-gray-500">AI is optimizing group assignments and counter-link matches</p>
+        </div>
+      )}
+      {phase === 2 && (
+        <div className="space-y-2 animate-fade-in">
+          <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-3">✅ Optimized Groups (After Relink)</p>
+          {afterGroups.map((g, i) => (
+            <div key={i} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{g.title}</span>
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-green-100 text-green-700">
+                  🔗 {g.match}% match
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-500">{g.comments} comment(s)</p>
+            </div>
+          ))}
+          <div className="mt-2 p-2 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-cyan-200 dark:border-cyan-800 text-xs text-cyan-700 dark:text-cyan-300">
+            ✨ Match quality improved from ~68% → ~91% after relinking
+          </div>
+        </div>
+      )}
+      <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+        Relinking re-runs AI grouping to optimize argument clustering and counter-matches
+      </p>
+    </div>
+  );
+};
+
+/** Counter-Chat View — side-by-side comparison */
+const CounterChatStep = () => {
+  const [showPair, setShowPair] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShowPair(true), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-green-50 to-red-50 dark:from-green-900/20 dark:to-red-900/20 p-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h5 className="text-xs font-bold text-gray-700 dark:text-gray-300">Counter-Chat View</h5>
+            <span className="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold">91% Match</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-gray-200 dark:divide-gray-700">
+          {/* FOR side */}
+          <div className="p-3">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full" />
+              <span className="text-[10px] font-bold text-green-600 dark:text-green-400">FOR</span>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2.5">
+              <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">Efficiency & Scale</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400">AI moderation can process millions of posts instantly, catching harmful content human moderators would miss.</p>
+            </div>
+          </div>
+          {/* AGAINST side */}
+          <div className="p-3">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="w-2 h-2 bg-red-500 rounded-full" />
+              <span className="text-[10px] font-bold text-red-600 dark:text-red-400">AGAINST</span>
+            </div>
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2.5">
+              <p className="text-xs font-semibold text-gray-900 dark:text-white mb-1">Context & Nuance</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400">AI cannot understand nuance, sarcasm, or cultural context — leading to wrongful censorship.</p>
+            </div>
+          </div>
+        </div>
+        {showPair && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800 animate-fade-in">
+            <p className="text-[10px] text-blue-700 dark:text-blue-300">
+              <strong>Key tension:</strong> Speed vs Accuracy — AI processes faster but lacks human-level understanding of context.
+            </p>
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+        Counter-Chat view shows matched arguments side-by-side for direct comparison
+      </p>
+    </div>
+  );
+};
+
 /** Complete */
 const CompleteStep = () => (
   <div className="text-center py-4">
@@ -857,6 +1001,8 @@ const STEP_COMPONENTS = {
   'counter-pairs': CounterPairsStep,
   'ideal-counters': IdealCountersStep,
   'off-topic': OffTopicStep,
+  'debate-relink': RelinkStep,
+  'counter-chat': CounterChatStep,
   'complete': CompleteStep,
 };
 
@@ -871,13 +1017,25 @@ const PHASE_LABELS = {
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
-const JourneyTour = ({ isOpen, onClose }) => {
+const JourneyTour = ({ isOpen, onClose, currentPage }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const step = journeySteps[currentIndex];
+
+  // Filter steps based on current page
+  const filteredSteps = useMemo(() => {
+    if (currentPage === '/home') {
+      return journeySteps.filter(s => s.phase === 'intro' || s.phase === 'news' || s.phase === 'end');
+    }
+    if (currentPage?.startsWith('/debate-room/')) {
+      return journeySteps.filter(s => s.phase === 'intro' || s.phase === 'debate' || s.phase === 'end');
+    }
+    return journeySteps;
+  }, [currentPage]);
+
+  const step = filteredSteps[currentIndex];
 
   const goTo = useCallback((index) => {
-    if (isAnimating || index === currentIndex || index < 0 || index >= journeySteps.length) return;
+    if (isAnimating || index === currentIndex || index < 0 || index >= filteredSteps.length) return;
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentIndex(index);
@@ -938,7 +1096,7 @@ const JourneyTour = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Step {currentIndex + 1} of {journeySteps.length}
+                Step {currentIndex + 1} of {filteredSteps.length}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 ${phaseInfo.color}`}>
                 {phaseInfo.label}
@@ -949,7 +1107,7 @@ const JourneyTour = ({ isOpen, onClose }) => {
           <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full bg-gradient-to-r ${step.gradient} rounded-full transition-all duration-500`}
-              style={{ width: `${((currentIndex + 1) / journeySteps.length) * 100}%` }}
+              style={{ width: `${((currentIndex + 1) / filteredSteps.length) * 100}%` }}
             />
           </div>
         </div>
@@ -987,7 +1145,7 @@ const JourneyTour = ({ isOpen, onClose }) => {
 
           {/* Step dots */}
           <div className="flex items-center gap-1">
-            {journeySteps.map((s, i) => (
+            {filteredSteps.map((s, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
@@ -1003,7 +1161,7 @@ const JourneyTour = ({ isOpen, onClose }) => {
             ))}
           </div>
 
-          {currentIndex < journeySteps.length - 1 ? (
+          {currentIndex < filteredSteps.length - 1 ? (
             <button
               onClick={goNext}
               className={`px-5 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r ${step.gradient} hover:opacity-90 transition-opacity shadow-sm`}

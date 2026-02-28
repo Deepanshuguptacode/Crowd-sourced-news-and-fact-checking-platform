@@ -11,6 +11,8 @@ import { debateRoomTour } from "../tours/debateRoomTour";
 import { trendingPageTour } from "../tours/trendingPageTour";
 import FeaturesTour from "./FeaturesTour";
 import JourneyTour from "./JourneyTour";
+import RealExperienceJourney from "./RealExperienceJourney";
+import PitchMode from "./PitchMode";
 
 /**
  * Tour Context for manual control
@@ -39,6 +41,8 @@ const TourProvider = ({ children }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [showFeaturesTour, setShowFeaturesTour] = useState(false);
   const [showJourneyTour, setShowJourneyTour] = useState(false);
+  const [showRealExperience, setShowRealExperience] = useState(false);
+  const [showPitchMode, setShowPitchMode] = useState(false);
 
   /**
    * Get tour steps based on current route
@@ -97,6 +101,8 @@ const TourProvider = ({ children }) => {
   const startFeaturesTour = () => {
     setRun(false); // stop platform tour if running
     setShowJourneyTour(false);
+    setShowRealExperience(false);
+    setShowPitchMode(false);
     setShowFeaturesTour(true);
   };
 
@@ -110,6 +116,8 @@ const TourProvider = ({ children }) => {
   const startJourneyTour = () => {
     setRun(false);
     setShowFeaturesTour(false);
+    setShowRealExperience(false);
+    setShowPitchMode(false);
     setShowJourneyTour(true);
   };
 
@@ -118,12 +126,44 @@ const TourProvider = ({ children }) => {
   };
 
   /**
+   * Real Experience Journey controls
+   */
+  const startRealExperience = () => {
+    setRun(false);
+    setShowFeaturesTour(false);
+    setShowJourneyTour(false);
+    setShowPitchMode(false);
+    setShowRealExperience(true);
+  };
+
+  const closeRealExperience = () => {
+    setShowRealExperience(false);
+  };
+
+  /**
+   * Pitch Mode controls
+   */
+  const startPitchMode = () => {
+    setRun(false);
+    setShowFeaturesTour(false);
+    setShowJourneyTour(false);
+    setShowRealExperience(false);
+    setShowPitchMode(true);
+  };
+
+  const closePitchMode = () => {
+    setShowPitchMode(false);
+  };
+
+  /**
    * Platform Tour controls
    */
   const startPlatformTour = () => {
     if (steps.length > 0) {
-      setShowFeaturesTour(false); // close features tour if open
-      setShowJourneyTour(false); // close journey tour if open
+      setShowFeaturesTour(false);
+      setShowJourneyTour(false);
+      setShowRealExperience(false);
+      setShowPitchMode(false);
       setStepIndex(0);
       // Small delay to let elements render after any state changes
       setTimeout(() => setRun(true), 300);
@@ -186,6 +226,14 @@ const TourProvider = ({ children }) => {
     startJourneyTour,
     closeJourneyTour,
     isJourneyTourOpen: showJourneyTour,
+    // Real Experience Journey
+    startRealExperience,
+    closeRealExperience,
+    isRealExperienceOpen: showRealExperience,
+    // Pitch Mode
+    startPitchMode,
+    closePitchMode,
+    isPitchModeOpen: showPitchMode,
     // Platform Tour
     startPlatformTour,
     stopPlatformTour,
@@ -193,6 +241,8 @@ const TourProvider = ({ children }) => {
     isPlatformTourAvailable: steps.length > 0,
     isPlatformTourCompleted: isTourCompleted(),
     isPlatformTourRunning: run,
+    // Current path for page-aware tours
+    currentPath: location.pathname,
   };
 
   return (
@@ -203,7 +253,13 @@ const TourProvider = ({ children }) => {
       <FeaturesTour isOpen={showFeaturesTour} onClose={closeFeaturesTour} />
 
       {/* Journey Tour Modal */}
-      <JourneyTour isOpen={showJourneyTour} onClose={closeJourneyTour} />
+      <JourneyTour isOpen={showJourneyTour} onClose={closeJourneyTour} currentPage={location.pathname} />
+
+      {/* Real Experience Journey */}
+      <RealExperienceJourney isOpen={showRealExperience} onClose={closeRealExperience} currentPath={location.pathname} />
+
+      {/* Pitch Mode */}
+      <PitchMode isOpen={showPitchMode} onClose={closePitchMode} />
 
       {/* Platform Tour (Joyride) */}
       {steps.length > 0 && (
