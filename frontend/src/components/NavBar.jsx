@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import AnimatedLogo from './AnimatedLogo'; 
+import AnimatedLogo from './AnimatedLogo';
+import TourButton from './TourButton'; 
 
 // Theme Context
 const ThemeContext = createContext();
@@ -159,7 +160,9 @@ export default function NavBar({
             {/* Right - Theme Toggle and Get Started Button */}
             <div className="flex items-center space-x-4">
               <ThemeToggle />
+              <TourButton />
               <button
+                data-tour="landing-login"
                 onClick={() => navigate("/login")}
                 className="bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-8 py-3 rounded-full font-bold hover:shadow-xl hover:shadow-sky-500/25 hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-sky-500/30 relative overflow-hidden group"
               >
@@ -217,7 +220,8 @@ export default function NavBar({
             ))}
             <div className="pt-2 flex space-x-2">
               <ThemeToggle />
-              <button className="flex-1 bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-200" onClick={() => navigate("/login")}>
+              <TourButton />
+              <button data-tour="landing-signup" className="flex-1 bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-200" onClick={() => navigate("/login")}>
                 Get Started
               </button>
             </div>

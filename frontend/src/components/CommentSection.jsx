@@ -181,11 +181,12 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
   };
 
   return (
-    <div className="mt-4 p-4 bg-white rounded shadow">
+    <div data-tour="home-comment-section" className="mt-4 p-4 bg-white rounded shadow">
       <div className="flex justify-between items-center border-b pb-2">
         <h4 className="text-lg font-semibold">Comments</h4>
         <div className="flex gap-2">
           <button
+            data-tour="home-group-comments"
             onClick={handleShowGroupedComments}
             disabled={loadingGrouped}
             className={`px-3 py-1 text-sm rounded ${
@@ -200,6 +201,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
           </button>
           {showGroupedComments && (
             <button
+              data-tour="home-improve-groups"
               onClick={handleRegenerateGroups}
               disabled={regeneratingGroups}
               className={`px-3 py-1 text-sm rounded ${
@@ -220,6 +222,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
           comments.map((item, index) => (
             <div
               key={index}
+              data-tour={index === 0 ? "home-comment-card" : ""}
               className="p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded shadow-sm"
             >
               <div className="flex justify-between items-start mb-2">
@@ -366,7 +369,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
         <div className="flex flex-col space-y-3">
           {/* Stance Selection */}
           {isAuthenticated && (userType === 'community' || userType === 'expert') && (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <div data-tour="home-stance-selector" className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Your stance on this news:
               </label>
@@ -416,6 +419,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
           
           <div className="flex">
             <input
+              data-tour="home-comment-input"
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}

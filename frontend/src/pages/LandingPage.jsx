@@ -377,16 +377,16 @@ function LandingPageContent() {
       <div ref={heroRef}>
         <HeroSection scrollToHow={() => scrollToSection(howRef)} />
       </div>
-      <div ref={aboutRef}>
+      <div ref={aboutRef} data-tour="landing-about">
         <About scrollToAbout={() => scrollToSection(aboutRef)} />
       </div>
-      <div ref={featuresRef}>
+      <div ref={featuresRef} data-tour="landing-features">
         <KeyFeature scrollToFeatures={() => scrollToSection(featuresRef)} />
       </div>
-      <div ref={problemRef}>
+      <div ref={problemRef} data-tour="landing-how-it-works">
         <WhySection scrollToProblem={() => scrollToSection(problemRef)}/>
       </div>
-      <div ref={teamRef}>
+      <div ref={teamRef} data-tour="landing-team">
         <TeamSection scrollToTeam={() => scrollToSection(teamRef)} />
       </div>
       <div>

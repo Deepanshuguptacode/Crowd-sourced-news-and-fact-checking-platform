@@ -130,6 +130,7 @@ export default function HeroSection({ scrollToHow }) {
 
   return (
     <section
+      data-tour="landing-hero"
       className={`py-8 relative overflow-hidden transition-colors duration-300 ${
         isDarkMode ? 'bg-[#0D1117] text-[#C9D1D9]' : 'bg-gray-50 text-gray-900'
       }`}
@@ -177,6 +178,7 @@ export default function HeroSection({ scrollToHow }) {
             How It Works
           </button>
           <button
+            data-tour="landing-get-started"
             className={`px-8 py-4 rounded-lg transition-colors duration-300 font-bold ${
               isDarkMode
                 ? 'bg-gray-700 hover:bg-gray-800 text-[#C9D1D9]'
