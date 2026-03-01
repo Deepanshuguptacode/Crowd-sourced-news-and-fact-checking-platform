@@ -82,7 +82,7 @@ Write-Host ""
 Start-Process powershell -ArgumentList @(
     "-NoExit",
     "-Command",
-    "cd '$PSScriptRoot\Face-authorization-System'; Write-Host 'Face Recognition System Starting...' -ForegroundColor Green; python deferred-app.py"
+    "cd '$PSScriptRoot\Face-authorization-System'; Write-Host 'Face Recognition System Starting...' -ForegroundColor Green; C:\Python312\python.exe deferred-app.py"
 ) -WindowStyle Normal
 
 Start-Sleep -Seconds 3

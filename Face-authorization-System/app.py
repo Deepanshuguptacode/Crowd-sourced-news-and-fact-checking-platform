@@ -8,11 +8,19 @@ from datetime import datetime
 import json
 import io
 import os
+import uuid
+import threading
+import time
 from PIL import Image
 import matplotlib
 matplotlib.use('Agg')  # Set backend before importing pyplot
 from insightface.app import FaceAnalysis
 from dotenv import load_dotenv
+
+# Liveness detection imports
+from liveness.active_liveness import create_detector, ActiveLivenessDetector
+from liveness.config import RuleBasedConfig
+from liveness.state_machine import VerificationState
 
 # Load environment variables
 load_dotenv()
@@ -371,7 +379,243 @@ def get_users():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
+# ============================================================
+# LIVENESS DETECTION ENDPOINTS
+# ============================================================
+
+# In-memory session store: session_id -> { detector, created_at, last_active }
+liveness_sessions = {}
+SESSION_TIMEOUT = 120  # seconds before session auto-expires
+MAX_SESSIONS = 100
+
+def cleanup_expired_sessions():
+    """Remove expired liveness sessions"""
+    now = time.time()
+    expired = [sid for sid, s in liveness_sessions.items() 
+               if now - s['last_active'] > SESSION_TIMEOUT]
+    for sid in expired:
+        try:
+            del liveness_sessions[sid]
+        except KeyError:
+            pass
+
+def decode_base64_to_cv2(image_data):
+    """Convert base64 image data URL to OpenCV BGR numpy array"""
+    try:
+        # Remove data URL prefix if present
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        image_bytes = base64.b64decode(image_data)
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        return img
+    except Exception as e:
+        print(f"Error decoding base64 image: {e}")
+        return None
+
+
+@app.route('/api/liveness/start', methods=['POST', 'OPTIONS'])
+def liveness_start():
+    """Start a new liveness verification session.
+    Returns session_id, challenges list, and first challenge instruction.
+    """
+    if request.method == 'OPTIONS':
+        return '', 204
+    
+    try:
+        # Cleanup old sessions
+        cleanup_expired_sessions()
+        
+        if len(liveness_sessions) >= MAX_SESSIONS:
+            return jsonify({
+                'success': False,
+                'message': 'Too many active sessions. Please try again later.'
+            }), 429
+        
+        # Create new session
+        session_id = str(uuid.uuid4())
+        config = RuleBasedConfig()
+        detector = create_detector(config)
+        
+        # Start verification - this generates challenges
+        first_challenge = detector.start_verification()
+        
+        liveness_sessions[session_id] = {
+            'detector': detector,
+            'created_at': time.time(),
+            'last_active': time.time(),
+        }
+        
+        # Build challenges info for frontend
+        challenges_info = []
+        for c in detector.get_all_challenges():
+            challenges_info.append(c.to_dict())
+        
+        print(f"🔐 [LIVENESS] Session {session_id[:8]}... started with {len(challenges_info)} challenges")
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'challenges': challenges_info,
+            'current_challenge': {
+                'index': 0,
+                'instruction': first_challenge.instruction,
+                'type': first_challenge.challenge_type.value,
+                'timeout': first_challenge.timeout,
+            },
+            'total_timeout': config.total_timeout,
+        })
+        
+    except Exception as e:
+        print(f"💥 [LIVENESS] Start error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error starting liveness: {str(e)}'}), 500
+
+
+@app.route('/api/liveness/frame', methods=['POST', 'OPTIONS'])
+def liveness_frame():
+    """Process a single video frame for liveness detection.
+    Expects: { session_id, image (base64) }
+    Returns: current state, signals, challenge progress, instructions
+    """
+    if request.method == 'OPTIONS':
+        return '', 204
+    
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        image_data = data.get('image')
+        
+        if not session_id or not image_data:
+            return jsonify({'success': False, 'message': 'session_id and image required'}), 400
+        
+        session = liveness_sessions.get(session_id)
+        if not session:
+            return jsonify({'success': False, 'message': 'Session not found or expired', 'expired': True}), 404
+        
+        session['last_active'] = time.time()
+        detector = session['detector']
+        
+        # Decode base64 image to OpenCV format
+        frame = decode_base64_to_cv2(image_data)
+        if frame is None:
+            return jsonify({'success': False, 'message': 'Invalid image data'}), 400
+        
+        h, w = frame.shape[:2]
+        if w < 64 or h < 64:
+            return jsonify({'success': False, 'message': f'Image too small: {w}x{h}'}), 400
+        
+        # Process the frame through liveness detection
+        signals, state = detector.process_frame(frame)
+        
+        # Build response
+        response = {
+            'success': True,
+            'state': state.value,
+            'session_active': detector.is_session_active(),
+        }
+        
+        # Add signals if available
+        if signals:
+            response['signals'] = {
+                'ear': round(signals.ear_avg, 3),
+                'mar': round(signals.mar, 3),
+                'yaw': round(signals.head_yaw, 1),
+                'pitch': round(signals.head_pitch, 1),
+            }
+        else:
+            response['signals'] = None
+            response['face_detected'] = False
+        
+        # Add current challenge info
+        if detector.current_challenge:
+            response['current_challenge'] = {
+                'instruction': detector.current_challenge.instruction,
+                'type': detector.current_challenge.challenge_type.value,
+                'remaining_time': round(detector.get_remaining_time(), 1),
+            }
+        else:
+            response['current_challenge'] = None
+        
+        # Add progress
+        progress = detector.get_progress()
+        response['progress'] = {
+            'completed': progress['successful_challenges'],
+            'total': progress['total_challenges'],
+            'current_index': progress['current_challenge_idx'],
+            'remaining_time': round(progress['remaining_time'], 1),
+        }
+        
+        # Add challenges status
+        challenges_status = []
+        for c in detector.get_all_challenges():
+            challenges_status.append(c.to_dict())
+        response['challenges'] = challenges_status
+        
+        # Check if session just completed
+        if not detector.is_session_active():
+            result = detector.get_result()
+            response['result'] = result.to_dict()
+            
+            # Clean up session
+            if session_id in liveness_sessions:
+                del liveness_sessions[session_id]
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"💥 [LIVENESS] Frame error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error processing frame: {str(e)}'}), 500
+
+
+@app.route('/api/liveness/status/<session_id>', methods=['GET'])
+def liveness_status(session_id):
+    """Get current status of a liveness session"""
+    session = liveness_sessions.get(session_id)
+    if not session:
+        return jsonify({'success': False, 'message': 'Session not found or expired', 'expired': True}), 404
+    
+    detector = session['detector']
+    progress = detector.get_progress()
+    
+    response = {
+        'success': True,
+        'session_active': detector.is_session_active(),
+        'state': detector.get_state().value,
+        'progress': {
+            'completed': progress['successful_challenges'],
+            'total': progress['total_challenges'],
+            'current_index': progress['current_challenge_idx'],
+            'remaining_time': round(progress['remaining_time'], 1),
+        }
+    }
+    
+    if not detector.is_session_active():
+        result = detector.get_result()
+        response['result'] = result.to_dict()
+    
+    return jsonify(response)
+
+
+@app.route('/api/liveness/abort/<session_id>', methods=['POST', 'OPTIONS'])
+def liveness_abort(session_id):
+    """Abort a liveness session"""
+    if request.method == 'OPTIONS':
+        return '', 204
+    
+    session = liveness_sessions.get(session_id)
+    if session:
+        session['detector'].abort_session()
+        del liveness_sessions[session_id]
+    
+    return jsonify({'success': True, 'message': 'Session aborted'})
+
+
 if __name__ == '__main__':
-    print("Starting Face Authorization System...")
+    print("Starting Face Authorization System with Liveness Detection...")
     print("Make sure MongoDB is running on localhost:27017")
+    print("Liveness detection endpoints available at /api/liveness/*")
     app.run(debug=True, host='0.0.0.0', port=5000)

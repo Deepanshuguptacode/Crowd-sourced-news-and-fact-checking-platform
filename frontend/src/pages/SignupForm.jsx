@@ -5,7 +5,7 @@ import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, Briefcase, Camera, Shield, Users, Award, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import FaceCapture from "../components/FaceCapture";
+import LivenessFaceCapture from "../components/LivenessFaceCapture";
 import config from "../config";
 import NavigationHeader from "../components/NavigationHeader";
 
@@ -46,6 +46,7 @@ const SignupForm = () => {
 
   const handleFaceCapture = async (imageDataUrl) => {
     setFaceImage(imageDataUrl);
+    setShowFaceCapture(false);
     if (!skipFaceAuth && imageDataUrl) {
       try {
         const res = await fetch(`${config.FACE_AUTH_URL}/api/check_duplicate_face`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: imageDataUrl }) });
@@ -55,12 +56,15 @@ const SignupForm = () => {
           setFaceImage(null);
           return;
         }
-        toast.success("Face captured successfully!");
-      } catch { toast.warning("Face captured, duplicate check skipped."); }
+        toast.success("Face verified and captured successfully!");
+      } catch { toast.warn("Face captured, duplicate check skipped."); }
     }
   };
 
-  const handleFaceCaptureError = (err) => toast.error("Face capture failed: " + err);
+  const handleFaceCaptureError = (err) => {
+    toast.error("Liveness verification failed: " + err);
+    setFaceImage(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -222,7 +226,7 @@ const SignupForm = () => {
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
                       </label>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Add face recognition for enhanced security</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Add face recognition for enhanced security with liveness detection</p>
                     <AnimatePresence mode="wait">
                       {!skipFaceAuth && (
                         <motion.div 
@@ -232,19 +236,21 @@ const SignupForm = () => {
                           transition={{ duration: 0.4, ease: "easeInOut" }} 
                           className="space-y-3"
                         >
-                          <motion.button 
-                            type="button" 
-                            onClick={() => setShowFaceCapture(!showFaceCapture)} 
-                            className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20" 
-                            whileHover={{ scale: 1.02 }} 
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Camera className="w-5 h-5" />
-                            <span>{faceImage ? 'Update Face' : 'Capture Face'}</span>
-                          </motion.button>
+                          {!faceImage && (
+                            <motion.button 
+                              type="button" 
+                              onClick={() => setShowFaceCapture(!showFaceCapture)} 
+                              className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20" 
+                              whileHover={{ scale: 1.02 }} 
+                              whileTap={{ scale: 0.98 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <Camera className="w-5 h-5" />
+                              <span>Start Liveness + Face Verification</span>
+                            </motion.button>
+                          )}
                           <AnimatePresence mode="wait">
-                            {showFaceCapture && (
+                            {showFaceCapture && !faceImage && (
                               <motion.div 
                                 initial={{ opacity: 0, height: 0 }} 
                                 animate={{ opacity: 1, height: 'auto' }} 
@@ -252,7 +258,7 @@ const SignupForm = () => {
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-gray-200 dark:border-slate-600"
                               >
-                                <FaceCapture onCapture={handleFaceCapture} onError={handleFaceCaptureError} mode="both" captureButtonText="Capture" uploadButtonText="Upload" />
+                                <LivenessFaceCapture onSuccess={handleFaceCapture} onError={handleFaceCaptureError} />
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -261,10 +267,19 @@ const SignupForm = () => {
                               initial={{ opacity: 0, scale: 0.95 }} 
                               animate={{ opacity: 1, scale: 1 }} 
                               transition={{ duration: 0.3, ease: "easeOut" }}
-                              className="p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl flex items-center space-x-2"
+                              className="p-3 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl flex items-center justify-between"
                             >
-                              <Camera className="w-4 h-4 text-blue-700 dark:text-blue-300" />
-                              <span className="text-sm text-blue-700 dark:text-blue-300">Face captured successfully!</span>
+                              <div className="flex items-center space-x-2">
+                                <Camera className="w-4 h-4 text-green-700 dark:text-green-300" />
+                                <span className="text-sm text-green-700 dark:text-green-300 font-medium">✓ Liveness verified & face captured!</span>
+                              </div>
+                              <button 
+                                type="button"
+                                onClick={() => { setFaceImage(null); setShowFaceCapture(true); }}
+                                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                Retake
+                              </button>
                             </motion.div>
                           )}
                         </motion.div>
