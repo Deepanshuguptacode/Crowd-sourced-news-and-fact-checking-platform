@@ -50,9 +50,9 @@ class LivenessStateMachine:
     """State machine for managing liveness verification flow"""
     
     def __init__(self, ear_threshold=0.21, mar_threshold=0.5,
-                 yaw_threshold=20.0, pitch_threshold=15.0,
+                 yaw_threshold=15.0, pitch_threshold=12.0,
                  ear_consec_frames=2, mar_consec_frames=5,
-                 head_consec_frames=10):
+                 head_consec_frames=8):
         self.ear_threshold = ear_threshold
         self.mar_threshold = mar_threshold
         self.yaw_threshold = yaw_threshold
@@ -111,7 +111,8 @@ class LivenessStateMachine:
         
         yaw = signals.head_yaw
         pitch = signals.head_pitch
-        head_moving = abs(yaw) > 10 or abs(pitch) > 10
+        # Relax head movement check - allow more movement during blink
+        head_moving = abs(yaw) > 25 or abs(pitch) > 25
         
         if head_moving:
             self.eye_closed = False
@@ -142,7 +143,8 @@ class LivenessStateMachine:
         
         yaw = signals.head_yaw
         pitch = signals.head_pitch
-        head_moving = abs(yaw) > 12 or abs(pitch) > 12
+        # Relax head movement check - allow more movement during smile
+        head_moving = abs(yaw) > 25 or abs(pitch) > 25
         
         if head_moving:
             return
@@ -187,10 +189,11 @@ class LivenessStateMachine:
         
         direction = None
         
-        is_glitch = (abs(abs(yaw) - 90.0) < 1.0)
-        
-        if not is_glitch and abs(yaw) > self.yaw_threshold:
-            direction = 'left' if yaw < 0 else 'right'
+        # Detect head turn direction based on yaw and pitch
+        # Invert the yaw mapping to match physical movements
+        if abs(yaw) > self.yaw_threshold:
+            direction = 'right' if yaw < 0 else 'left'
+        # Check pitch for up/down turns (pitch threshold: 15 degrees)
         elif abs(pitch) > self.pitch_threshold:
             direction = 'up' if pitch > 0 else 'down'
         
@@ -209,7 +212,8 @@ class LivenessStateMachine:
         if len(recent_turns) >= self.head_consec_frames:
             matching_count = sum(1 for turn in recent_turns if turn == expected_direction)
             
-            if matching_count >= 3:
+            # Require at least 2 matching frames out of 8 for more reliable detection
+            if matching_count >= 2:
                 if expected_direction not in self.action_history.head_turns:
                     self.action_history.head_turns.append(expected_direction)
                     self.action_history.last_action_time = signals.timestamp
