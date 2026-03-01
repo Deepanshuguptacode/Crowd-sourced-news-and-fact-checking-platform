@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, Briefcase, Camera, Shield, Users, Award, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LivenessFaceCapture from "../components/LivenessFaceCapture";
-import config from "../config";
 import NavigationHeader from "../components/NavigationHeader";
 
 const roleContent = {
@@ -35,7 +34,6 @@ const SignupForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [faceImage, setFaceImage] = useState(null);
-  const [skipFaceAuth, setSkipFaceAuth] = useState(false);
   const [showFaceCapture, setShowFaceCapture] = useState(false);
 
   const { login } = useContext(UserContext);
@@ -44,21 +42,10 @@ const SignupForm = () => {
 
   const handleInputChange = (e) => setFormData({ ...formData, [e.target.id]: e.target.value });
 
-  const handleFaceCapture = async (imageDataUrl) => {
+  const handleFaceCapture = (imageDataUrl) => {
     setFaceImage(imageDataUrl);
     setShowFaceCapture(false);
-    if (!skipFaceAuth && imageDataUrl) {
-      try {
-        const res = await fetch(`${config.FACE_AUTH_URL}/api/check_duplicate_face`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: imageDataUrl }) });
-        const result = await res.json();
-        if (result.success && result.isDuplicate) {
-          toast.error(`Face already registered (${(result.similarity * 100).toFixed(1)}%)`);
-          setFaceImage(null);
-          return;
-        }
-        toast.success("Face verified and captured successfully!");
-      } catch { toast.warn("Face captured, duplicate check skipped."); }
-    }
+    toast.success("Liveness verified & face captured successfully!");
   };
 
   const handleFaceCaptureError = (err) => {
@@ -69,8 +56,8 @@ const SignupForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) return toast.error("Passwords don't match");
-    if (!skipFaceAuth && !faceImage) {
-      toast.error("Capture face or disable face authentication");
+    if (!faceImage) {
+      toast.error("Face authentication is required. Please complete face capture.");
       setShowFaceCapture(true);
       return;
     }
@@ -89,9 +76,7 @@ const SignupForm = () => {
         payload.profession = formData.profession;
       }
       
-      if (faceImage && !skipFaceAuth) {
-        payload.faceImage = faceImage;
-      }
+      payload.faceImage = faceImage;
       
       const res = await authAPI.signup(formData.userType, payload);
       if (res.token) {
@@ -215,20 +200,16 @@ const SignupForm = () => {
                     animate={{ opacity: 1, y: 0 }} 
                     transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
                   >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center mb-3">
                       <div className="flex items-center space-x-2">
                         <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Face Authentication</h3>
-                        <span className="text-xs text-gray-500 dark:text-slate-400">(Optional)</span>
+                        <span className="text-xs font-medium text-red-500 dark:text-red-400">(Required)</span>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={!skipFaceAuth} onChange={(e) => setSkipFaceAuth(!e.target.checked)} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-                      </label>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Add face recognition for enhanced security with liveness detection</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Face liveness verification is required to create an account</p>
                     <AnimatePresence mode="wait">
-                      {!skipFaceAuth && (
+                      {(
                         <motion.div 
                           initial={{ opacity: 0, height: 0 }} 
                           animate={{ opacity: 1, height: 'auto' }} 
@@ -286,7 +267,7 @@ const SignupForm = () => {
                       )}
                     </AnimatePresence>
                   </motion.div>
-                  <motion.button 
+                  <motion.button
                     type="submit" 
                     disabled={loading} 
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20" 

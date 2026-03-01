@@ -14,11 +14,24 @@ const faceAuthService = new HttpFaceAuthService();
 // JWT Secret Key
 const JWT_SECRET = "RAM"; // Replace with a secure secret key
 
+// Cosine similarity helper for duplicate face detection
+const cosineSimilarity = (a, b) => {
+  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, v) => sum + v * v, 0));
+  const magB = Math.sqrt(b.reduce((sum, v) => sum + v * v, 0));
+  return dot / (magA * magB);
+};
+
 // Signup Function (Enhanced with Face Authentication)
 const signup = async (req, res, UserModel) => {
   try {
     const { name, username, email, password, profession, faceImage } = req.body;
     
+    // Face authentication is mandatory
+    if (!faceImage) {
+      return res.status(400).json({ message: "Face authentication is required to create an account." });
+    }
+
     // Check if user already exists
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
@@ -28,51 +41,71 @@ const signup = async (req, res, UserModel) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Process face authentication if provided
+    // Process face authentication (mandatory)
     let faceEmbedding = null;
     let hasFaceAuth = false;
     let faceRegisteredAt = null;
 
-    if (faceImage) {
-      try {
-        console.log(`🔍 [SIGNUP] Processing face image for user: ${username}`);
-        
-        // Check if Face-authorization-System is running
-        const isServiceRunning = await faceAuthService.isServiceRunning();
-        if (!isServiceRunning) {
-          console.log(`❌ [SIGNUP] Face-authorization-System not running, attempting to start...`);
-          try {
-            await faceAuthService.startFaceAuthService();
-            // Wait a moment for service to fully start
-            await new Promise(resolve => setTimeout(resolve, 3000));
-          } catch (startError) {
-            return res.status(500).json({ 
-              message: "Face authentication service unavailable. Please try again later." 
+    try {
+      console.log(`🔍 [SIGNUP] Processing face image for user: ${username}`);
+      
+      // Check if Face-authorization-System is running
+      const isServiceRunning = await faceAuthService.isServiceRunning();
+      if (!isServiceRunning) {
+        console.log(`❌ [SIGNUP] Face-authorization-System not running, attempting to start...`);
+        try {
+          await faceAuthService.startFaceAuthService();
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        } catch (startError) {
+          return res.status(500).json({ 
+            message: "Face authentication service unavailable. Please try again later." 
+          });
+        }
+      }
+      
+      // Extract face embedding
+      const faceResult = await faceAuthService.extractFaceEmbedding(faceImage);
+      
+      if (!faceResult.success || !faceResult.embedding) {
+        console.log(`❌ [SIGNUP] Face extraction failed for user: ${username}`, faceResult.message);
+        return res.status(400).json({ 
+          message: "Face registration failed: " + (faceResult.message || "No face detected") 
+        });
+      }
+
+      const newEmbedding = faceResult.embedding;
+      const DUPLICATE_THRESHOLD = 0.3;
+
+      // Check for duplicate face across ALL user collections
+      const allCollections = [NormalUser, CommunityUser, ExpertUser];
+      for (const Collection of allCollections) {
+        const usersWithFace = await Collection.find(
+          { hasFaceAuth: true, faceEmbedding: { $exists: true, $ne: null } },
+          { email: 1, username: 1, faceEmbedding: 1 }
+        );
+        for (const existingFaceUser of usersWithFace) {
+          const similarity = cosineSimilarity(newEmbedding, existingFaceUser.faceEmbedding);
+          if (similarity > DUPLICATE_THRESHOLD) {
+            console.log(`🚫 [SIGNUP] Duplicate face detected! New user "${username}" matches existing user "${existingFaceUser.username}" (${existingFaceUser.email}) with similarity ${similarity.toFixed(4)} > threshold ${DUPLICATE_THRESHOLD}`);
+            return res.status(409).json({ 
+              message: `This face is already registered to an existing account. Please log in instead.`,
+              isDuplicateFace: true,
+              similarity: parseFloat(similarity.toFixed(4))
             });
           }
         }
-        
-        // Extract face embedding using the HTTP service
-        const faceResult = await faceAuthService.extractFaceEmbedding(faceImage);
-        
-        if (faceResult.success && faceResult.embedding) {
-          // Store the actual face embedding array
-          faceEmbedding = faceResult.embedding;
-          hasFaceAuth = true;
-          faceRegisteredAt = new Date();
-          console.log(`✅ [SIGNUP] Face embedding extracted for user: ${username}`);
-        } else {
-          console.log(`❌ [SIGNUP] Face extraction failed for user: ${username}`, faceResult.message);
-          return res.status(400).json({ 
-            message: "Face registration failed: " + (faceResult.message || "No face detected") 
-          });
-        }
-      } catch (error) {
-        console.error(`💥 [SIGNUP] Face processing error for user: ${username}`, error);
-        return res.status(400).json({ 
-          message: "Face registration failed: " + error.message 
-        });
       }
+
+      faceEmbedding = newEmbedding;
+      hasFaceAuth = true;
+      faceRegisteredAt = new Date();
+      console.log(`✅ [SIGNUP] Face embedding extracted and duplicate check passed for user: ${username}`);
+
+    } catch (error) {
+      console.error(`💥 [SIGNUP] Face processing error for user: ${username}`, error);
+      return res.status(400).json({ 
+        message: "Face registration failed: " + error.message 
+      });
     }
 
     // Create a new user
@@ -102,9 +135,7 @@ const signup = async (req, res, UserModel) => {
       maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
     });
 
-    const successMessage = hasFaceAuth 
-      ? "User registered successfully with face authentication!" 
-      : "User registered successfully!";
+    const successMessage = "User registered successfully with face authentication!";
 
     res.status(201).json({ 
       message: successMessage,
