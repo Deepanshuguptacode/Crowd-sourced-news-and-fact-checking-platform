@@ -50,9 +50,9 @@ class LivenessStateMachine:
     """State machine for managing liveness verification flow"""
     
     def __init__(self, ear_threshold=0.21, mar_threshold=0.5,
-                 yaw_threshold=20.0, pitch_threshold=15.0,
+                 yaw_threshold=15.0, pitch_threshold=12.0,
                  ear_consec_frames=2, mar_consec_frames=5,
-                 head_consec_frames=10):
+                 head_consec_frames=8):
         self.ear_threshold = ear_threshold
         self.mar_threshold = mar_threshold
         self.yaw_threshold = yaw_threshold
@@ -114,7 +114,8 @@ class LivenessStateMachine:
         
         yaw = signals.head_yaw
         pitch = signals.head_pitch
-        head_moving = abs(yaw) > 10 or abs(pitch) > 10
+        # Relax head movement check - allow more movement during blink
+        head_moving = abs(yaw) > 25 or abs(pitch) > 25
         
         if head_moving:
             self.eye_closed = False
@@ -145,7 +146,8 @@ class LivenessStateMachine:
         
         yaw = signals.head_yaw
         pitch = signals.head_pitch
-        head_moving = abs(yaw) > 12 or abs(pitch) > 12
+        # Relax head movement check - allow more movement during smile
+        head_moving = abs(yaw) > 25 or abs(pitch) > 25
         
         if head_moving:
             return
