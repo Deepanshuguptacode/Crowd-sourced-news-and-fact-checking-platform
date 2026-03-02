@@ -530,11 +530,18 @@ def liveness_frame():
         
         # Add current challenge info
         if detector.current_challenge:
-            response['current_challenge'] = {
+            c_type = detector.current_challenge.challenge_type.value
+            challenge_info = {
                 'instruction': detector.current_challenge.instruction,
-                'type': detector.current_challenge.challenge_type.value,
+                'type': c_type,
                 'remaining_time': round(detector.get_remaining_time(), 1),
             }
+            # For head-turn challenges include hold progress (0.0 → 1.0)
+            if c_type in ('turn_left', 'turn_right', 'turn_up'):
+                sm = detector.state_machine
+                elapsed = sm.head_hold_elapsed
+                challenge_info['hold_progress'] = round(elapsed / sm.HEAD_HOLD_DURATION, 3)
+            response['current_challenge'] = challenge_info
         else:
             response['current_challenge'] = None
         

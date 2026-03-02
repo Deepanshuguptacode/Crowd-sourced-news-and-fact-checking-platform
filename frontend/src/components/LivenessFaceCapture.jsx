@@ -24,6 +24,77 @@ const CHALLENGE_ICONS = {
 
 const FRAME_SEND_INTERVAL = 250; // ms between frames sent to server (~4 FPS)
 
+// --- Success Sound (Web Audio API — no audio file needed) ---
+const playSuccessSound = () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Play two quick ascending tones for a "ding-ding" effect
+    [0, 0.12].forEach((offset, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = i === 0 ? 880 : 1174.66; // A5 then D6
+      gain.gain.setValueAtTime(0.25, ctx.currentTime + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.18);
+      osc.start(ctx.currentTime + offset);
+      osc.stop(ctx.currentTime + offset + 0.2);
+    });
+    // Close context after sounds finish
+    setTimeout(() => ctx.close().catch(() => {}), 600);
+  } catch { /* AudioContext not available — silent fallback */ }
+};
+
+// --- Live Guidance from Signals ---
+const getLiveGuidance = (signals, challengeType, holdProgress = 0) => {
+  if (!signals || !challengeType) return null;
+
+  const { ear, mar, yaw, pitch } = signals;
+
+  if (challengeType === 'blink') {
+    if (ear > 0.25) return { text: 'Close your eyes briefly — blink firmly', icon: '👁️' };
+    if (ear > 0.20) return { text: 'Almost! Try blinking a bit more firmly', icon: '👁️' };
+    if (ear < 0.15) return { text: 'Good, now open your eyes', icon: '✨' };
+    return { text: 'Blink naturally', icon: '👁️' };
+  }
+
+  if (challengeType === 'smile') {
+    if (Math.abs(yaw) > 12 || Math.abs(pitch) > 12)
+      return { text: 'Face the camera straight, then smile', icon: '😐' };
+    if (mar < 0.30) return { text: 'Smile wider — show some teeth!', icon: '😊' };
+    if (mar < 0.40) return { text: 'A little wider!', icon: '😄' };
+    return { text: 'Hold that smile!', icon: '😁' };
+  }
+
+  // Head turn challenges — show hold countdown when in position
+  const holdPct = Math.round(holdProgress * 100);
+  const holdSec = ((1 - holdProgress) * 1.0).toFixed(1);
+
+  if (challengeType === 'turn_right') {
+    if (yaw < 5)  return { text: 'Turn your head to the right →', icon: '➡️' };
+    if (yaw < 20) return { text: 'A bit more to the right →', icon: '➡️' };
+    if (holdProgress > 0) return { text: `Hold… ${holdSec}s (${holdPct}%)`, icon: '⏳' };
+    return { text: 'Hold it there!', icon: '✅' };
+  }
+
+  if (challengeType === 'turn_left') {
+    if (yaw > -5)  return { text: '← Turn your head to the left', icon: '⬅️' };
+    if (yaw > -20) return { text: '← A bit more to the left', icon: '⬅️' };
+    if (holdProgress > 0) return { text: `Hold… ${holdSec}s (${holdPct}%)`, icon: '⏳' };
+    return { text: 'Hold it there!', icon: '✅' };
+  }
+
+  if (challengeType === 'turn_up') {
+    if (pitch < 5)  return { text: 'Tilt your head up ↑', icon: '⬆️' };
+    if (pitch < 15) return { text: 'A little more up ↑', icon: '⬆️' };
+    if (holdProgress > 0) return { text: `Hold… ${holdSec}s (${holdPct}%)`, icon: '⏳' };
+    return { text: 'Hold it there!', icon: '✅' };
+  }
+
+  return null;
+};
+
 const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
   // Session state
   const [sessionId, setSessionId] = useState(null);
@@ -32,6 +103,8 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
   const [progress, setProgress] = useState(null);
   const [signals, setSignals] = useState(null);
   const [livenessResult, setLivenessResult] = useState(null);
+  const [liveGuidance, setLiveGuidance] = useState(null);
+  const [holdProgress, setHoldProgress] = useState(0); // 0–1 for head-turn hold
 
   // Camera state
   const [stream, setStream] = useState(null);
@@ -49,6 +122,7 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
   const frameIntervalRef = useRef(null);
   const sessionIdRef = useRef(null);
   const cameraReadyRef = useRef(false);  // ref so async closures always read latest value
+  const prevCompletedRef = useRef(0);    // track completed count to detect new challenge pass
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -208,16 +282,32 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
       }
 
       // Update UI state from response
-      if (data.signals) setSignals(data.signals);
+      if (data.signals) {
+        setSignals(data.signals);
+        // Compute live guidance from fresh signals
+        const cType = data.current_challenge?.type || currentChallenge?.type;
+        const hp = data.current_challenge?.hold_progress ?? 0;
+        setHoldProgress(hp);
+        setLiveGuidance(getLiveGuidance(data.signals, cType, hp));
+      }
       if (data.current_challenge) setCurrentChallenge(data.current_challenge);
-      if (data.progress) setProgress(data.progress);
+      if (data.progress) {
+        // Detect newly completed challenge → play success sound
+        if (data.progress.completed > prevCompletedRef.current) {
+          playSuccessSound();
+        }
+        prevCompletedRef.current = data.progress.completed;
+        setProgress(data.progress);
+      }
       if (data.challenges) setChallenges(data.challenges);
 
       // Check for session completion
       if (!data.session_active && data.result) {
         stopFrameSending();
         setLivenessResult(data.result);
+        setLiveGuidance(null);
         if (data.result.success) {
+          playSuccessSound(); // final celebration sound
           setPhase('success');
           setStatusMessage('Liveness verified! Capturing face...');
           // Capture final high-quality frame after short delay
@@ -285,6 +375,9 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
       setCurrentChallenge(null);
       setProgress(null);
       setSignals(null);
+      setLiveGuidance(null);
+      setHoldProgress(0);
+      prevCompletedRef.current = 0;
 
       // Start camera first
       await startCamera();
@@ -342,7 +435,11 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
     setCurrentChallenge(null);
     setProgress(null);
     setSignals(null);
+    setLiveGuidance(null);
+    setHoldProgress(0);
+    prevCompletedRef.current = 0;
   }, [stopFrameSending, stopCamera]);
+
 
   // --- Render Helpers ---
 
@@ -415,6 +512,13 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
             ● LIVE
           </div>
         )}
+        {/* Live guidance overlay */}
+        {liveGuidance && phase === 'verifying' && (
+          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 max-w-[70%] animate-pulse">
+            <span className="text-lg flex-shrink-0">{liveGuidance.icon}</span>
+            <span>{liveGuidance.text}</span>
+          </div>
+        )}
         {/* Signals overlay */}
         {signals && phase === 'verifying' && (
           <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-mono space-x-3">
@@ -442,6 +546,36 @@ const LivenessFaceCapture = ({ onSuccess, onError, ...rest }) => {
               {currentChallenge.remaining_time != null && (
                 <div className="text-sm text-blue-600 dark:text-blue-400">
                   Time remaining: {currentChallenge.remaining_time}s
+                </div>
+              )}
+              {/* Hold-progress ring for head-turn challenges */}
+              {['turn_left', 'turn_right', 'turn_up'].includes(currentChallenge.type) && (
+                <div className="flex flex-col items-center mt-3 space-y-1">
+                  {/* SVG circular ring */}
+                  <svg width="56" height="56" className="rotate-[-90deg]">
+                    {/* Track */}
+                    <circle cx="28" cy="28" r="22"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      className="text-blue-200 dark:text-blue-800"
+                    />
+                    {/* Fill arc */}
+                    <circle cx="28" cy="28" r="22"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 22}`}
+                      strokeDashoffset={`${2 * Math.PI * 22 * (1 - holdProgress)}`}
+                      className={`transition-all duration-200 ${holdProgress > 0 ? 'text-green-500' : 'text-blue-400'}`}
+                    />
+                  </svg>
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                    {holdProgress > 0
+                      ? `Holding… ${Math.round(holdProgress * 100)}%`
+                      : 'Turn & hold 1s'}
+                  </span>
                 </div>
               )}
             </div>

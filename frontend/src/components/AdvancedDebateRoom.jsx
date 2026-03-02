@@ -282,7 +282,7 @@ const AdvancedDebateRoom = () => {
                 </div>
               )}
             </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <p data-tour="debate-room-ideal-counters" className="text-sm text-gray-700 dark:text-gray-300 mb-2">
               {group.description}
             </p>
           </div>
@@ -405,7 +405,7 @@ const AdvancedDebateRoom = () => {
 
   const renderChatView = () => (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div data-tour="debate-room-groups" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Against (Left) */}
         <div>
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 flex items-center gap-2">
@@ -737,7 +737,7 @@ const AdvancedDebateRoom = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Comment Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <div data-tour="debate-room-comment-input" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
           <form onSubmit={handleSubmitComment}>
             <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center gap-2">

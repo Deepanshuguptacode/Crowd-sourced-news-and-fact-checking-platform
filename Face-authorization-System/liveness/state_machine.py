@@ -71,7 +71,10 @@ class LivenessStateMachine:
         self.baseline_mar = 0.20
         self.mar_readings = []
         self.baseline_start_time = None  # time-based baseline instead of frame count
-        self.BASELINE_DURATION = 1.0     # collect baseline for 1 second (any frame rate)
+        self.BASELINE_DURATION = 0.30     # collect baseline for 1 second (any frame rate)
+
+        self.head_hold_start = None       # wall-clock time when correct direction hold began
+        self.HEAD_HOLD_DURATION = 0.056    # seconds to hold the position
 
     def update(self, signals, current_challenge):
         if signals is None:
@@ -103,7 +106,7 @@ class LivenessStateMachine:
                                ChallengeType.TURN_UP]:
             self._process_head_turn_challenge(signals, challenge)
     
-    def _process_blink_challenge(self, signals, challenge):
+    def _process_blink_challenge(self, s, challenge):
         ear = signals.ear_avg
         
         if challenge.challenge_type != ChallengeType.BLINK:
@@ -178,24 +181,28 @@ class LivenessStateMachine:
                     self.state = VerificationState.CHALLENGE_SUCCESS
                     self._reset_detection_state()
     
+    @property
+    def head_hold_elapsed(self):
+        """Seconds the correct direction has been held (0.0 if not holding)"""
+        if self.head_hold_start is None:
+            return 0.0
+        return min(time.time() - self.head_hold_start, self.HEAD_HOLD_DURATION)
+
     def _process_head_turn_challenge(self, signals, challenge):
         yaw = signals.head_yaw
         pitch = signals.head_pitch
-        
+
         if challenge.challenge_type not in [ChallengeType.TURN_LEFT, ChallengeType.TURN_RIGHT, ChallengeType.TURN_UP]:
             return
-        
+
         direction = None
-        
         is_glitch = (abs(abs(yaw) - 90.0) < 1.0)
-        
+
         if not is_glitch and abs(yaw) > self.yaw_threshold:
             direction = 'left' if yaw < 0 else 'right'
         elif abs(pitch) > self.pitch_threshold:
             direction = 'up' if pitch > 0 else 'down'
-        
-        self.action_history.head_turn_buffer.append(direction)
-        
+
         expected_direction = None
         if challenge.challenge_type == ChallengeType.TURN_LEFT:
             expected_direction = 'left'
@@ -203,18 +210,23 @@ class LivenessStateMachine:
             expected_direction = 'right'
         elif challenge.challenge_type == ChallengeType.TURN_UP:
             expected_direction = 'up'
-        
-        recent_turns = list(self.action_history.head_turn_buffer)[-self.head_consec_frames:]
-        
-        if len(recent_turns) >= self.head_consec_frames:
-            matching_count = sum(1 for turn in recent_turns if turn == expected_direction)
-            
-            if matching_count >= 3:
+
+        now = time.time()
+
+        if direction == expected_direction:
+            # Direction is correct — start or continue the hold timer
+            if self.head_hold_start is None:
+                self.head_hold_start = now
+            elif now - self.head_hold_start >= self.HEAD_HOLD_DURATION:
+                # Held for the required duration — challenge passed!
                 if expected_direction not in self.action_history.head_turns:
                     self.action_history.head_turns.append(expected_direction)
                     self.action_history.last_action_time = signals.timestamp
                     self.state = VerificationState.CHALLENGE_SUCCESS
                     self._reset_detection_state()
+        else:
+            # Correct direction lost — reset the hold timer
+            self.head_hold_start = None
     
     def _reset_detection_state(self):
         self.blink_counter = 0
@@ -222,6 +234,7 @@ class LivenessStateMachine:
         self.mar_readings = []
         self.baseline_mar = 0.20
         self.baseline_start_time = None  # reset time-based baseline too
+        self.head_hold_start = None       # reset head hold timer
     
     def reset_for_new_challenge(self):
         self.state = VerificationState.CHALLENGE_ACTIVE
