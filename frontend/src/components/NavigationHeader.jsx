@@ -22,6 +22,7 @@ const NavigationHeader = ({ showBackButton = true }) => {
           {/* Back Button */}
           {showBackButton && (
             <button
+              type="button"
               onClick={() => navigate(-1)}
               className="flex items-center space-x-2 px-4 py-2 bg-gray-100/50 hover:bg-gray-200/50 dark:bg-slate-700/50 dark:hover:bg-slate-600/50 text-gray-700 dark:text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-gray-300/50 dark:border-slate-600/50"
             >

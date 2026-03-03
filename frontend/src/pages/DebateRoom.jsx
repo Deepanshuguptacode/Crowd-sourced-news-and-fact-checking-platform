@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { debateRoomAPI } from '../services/debateRoomAPI';
 import { UserContext } from '../context/userContext';
+import { useTour } from '../components/TourProvider';
 import { toast } from 'react-toastify';
 import CounterChatView from '../components/CounterChatView';
 import NavigationHeader from '../components/NavigationHeader';
@@ -28,6 +29,7 @@ const DebateRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { userType, userInfo } = useContext(UserContext);
+  const { isRealExperienceOpen } = useTour();
   const [debateRoom, setDebateRoom] = useState(null);
   const [groups, setGroups] = useState({ for: [], against: [] });
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ const DebateRoom = () => {
 
   useEffect(() => {
     fetchDebateRoom();
-    fetchComments();
+    fetchComments(true); // Show loader only on initial mount
   }, [roomId]);
 
   const fetchDebateRoom = async () => {
@@ -57,9 +59,11 @@ const DebateRoom = () => {
     }
   };
 
-  const fetchComments = async () => {
+  const fetchComments = async (showFullPageLoader = false) => {
     try {
-      setLoading(true);
+      if (showFullPageLoader) {
+        setLoading(true);
+      }
       const response = await debateRoomAPI.getDebateComments(roomId);
       if (response.success) {
         setGroups(response.data);
@@ -68,13 +72,21 @@ const DebateRoom = () => {
       console.error('Error fetching comments:', error);
       toast.error('Failed to fetch comments');
     } finally {
-      setLoading(false);
+      if (showFullPageLoader) {
+        setLoading(false);
+      }
     }
   };
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
+    
+    // Prevent actual submission during live experience tour
+    if (isRealExperienceOpen) {
+      console.log('[Tour] Form submission prevented during live experience');
+      return;
+    }
 
     setSubmittingComment(true);
     try {
@@ -111,6 +123,7 @@ const DebateRoom = () => {
           <div className="flex items-center justify-between gap-4">
             <span>Comment posted successfully!</span>
             <button
+              type="button"
               onClick={async () => {
                 clearTimeout(undoTimer);
                 toast.dismiss(toastId);
@@ -128,13 +141,12 @@ const DebateRoom = () => {
           }
         );
         
-        fetchComments(); // Refresh comments immediately
+        fetchComments(); // Refresh comments immediately (no loader)
         
         // Delayed refresh to catch background counter-matching results
         // (Counter-matching runs in background after comment creation and may take 2-5 seconds)
         setTimeout(() => {
-          console.log('🔄 Delayed refresh to catch counter-matching results...');
-          fetchComments();
+          fetchComments(); // No loader on background refresh
         }, 6000); // Wait 6 seconds for background tasks to complete
       }
     } catch (error) {
@@ -148,7 +160,7 @@ const DebateRoom = () => {
   const handleLikeComment = async (commentId) => {
     try {
       await debateRoomAPI.likeComment(roomId, commentId);
-      fetchComments(); // Refresh to show updated likes
+      fetchComments(); // Refresh to show updated likes (no loader)
     } catch (error) {
       console.error('Error liking comment:', error);
       toast.error('Failed to like comment');
@@ -158,7 +170,7 @@ const DebateRoom = () => {
   const handleDislikeComment = async (commentId) => {
     try {
       await debateRoomAPI.dislikeComment(roomId, commentId);
-      fetchComments(); // Refresh to show updated dislikes
+      fetchComments(); // Refresh to show updated dislikes (no loader)
     } catch (error) {
       console.error('Error disliking comment:', error);
       toast.error('Failed to dislike comment');
@@ -169,19 +181,21 @@ const DebateRoom = () => {
     try {
       await debateRoomAPI.regenerateGroup(roomId, groupId);
       toast.success('Group content regenerated successfully!');
-      fetchComments();
+      fetchComments(); // No loader
     } catch (error) {
       console.error('Error regenerating group:', error);
       toast.error('Failed to regenerate group content');
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
+  const handleDeleteComment = async (commentId, e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
     try {
       await debateRoomAPI.deleteDebateComment(roomId, commentId);
       toast.success('Comment deleted successfully');
-      fetchComments();
+      fetchComments(); // No loader
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error(error.response?.data?.message || 'Failed to delete comment');
@@ -200,7 +214,7 @@ const DebateRoom = () => {
       });
       
       toast.success('Comment undone successfully');
-      fetchComments();
+      fetchComments(); // No loader
     } catch (error) {
       console.error('Error undoing comment:', error);
       toast.error(error.response?.data?.message || 'Failed to undo comment');
@@ -216,11 +230,13 @@ const DebateRoom = () => {
     return timeDifference < 30000; // 30 seconds
   };
 
-  const handleRelinkGroups = async () => {
+  const handleRelinkGroups = async (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     try {
       await debateRoomAPI.relinkGroups(roomId);
       toast.success('Groups relinked successfully!');
-      fetchComments();
+      fetchComments(); // No loader
     } catch (error) {
       console.error('Error relinking groups:', error);
       toast.error('Failed to relink groups');
@@ -280,6 +296,7 @@ const DebateRoom = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
               <button
+                type="button"
                 onClick={() => navigate('/debate-rooms')}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
@@ -300,6 +317,7 @@ const DebateRoom = () => {
                 <span>{debateRoom?.participantCount || 0} participants</span>
               </div>
               <button
+                type="button"
                 onClick={() => setShowInfo(!showInfo)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
@@ -346,13 +364,19 @@ const DebateRoom = () => {
         {/* Admin Controls */}
         <div className="mb-6 flex gap-2 flex-wrap" data-tour="debate-room-view-toggle">
           <button
-            onClick={handleRelinkGroups}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleRelinkGroups(e);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
           >
             <LinkIcon className="h-4 w-4" />
             Relink Groups
           </button>
           <button
+            type="button"
             onClick={() => setViewMode(viewMode === 'groups' ? 'counter' : 'groups')}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
           >
@@ -450,7 +474,7 @@ const DebateRoom = () => {
                   <DebateGroup
                     key={group._id}
                     group={group}
-                    isFirst={groupIndex === 0}
+                    isFirst={groupIndex === 0 || groupIndex === 1}
                     onLike={handleLikeComment}
                     onDislike={handleDislikeComment}
                     onRegenerate={() => handleRegenerateGroup(group._id)}
@@ -582,12 +606,13 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
             <h3 className="font-medium text-gray-900 dark:text-white mb-1">
               {group.title}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2" data-tour={isFirst && group.commentIds?.length > 1 ? "debate-room-ideal-counters" : undefined}>
               {group.description}
             </p>
           </div>
           <div className="flex items-center gap-2 ml-4">
             <button
+              type="button"
               onClick={onRegenerate}
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
               title="Regenerate group content"
@@ -595,6 +620,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
               <SparklesIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </button>
             <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
               className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
             >
@@ -613,6 +639,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
               {group.counterGroups?.length > 0 ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => onOpenCounterChat(group._id)}
                     className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                     title="View counter discussions"
@@ -645,6 +672,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
               ) : (
                 // Legacy single counter link support
                 <button
+                  type="button"
                   onClick={() => onOpenCounterChat(group._id)}
                   className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                   title="View counter discussion"
@@ -667,10 +695,10 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
           {/* Ideal counter info button */}
           {idealCounters.length > 0 && (
             <button
+              type="button"
               onClick={() => setShowIdealCounters(true)}
               className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
               title="View ideal counter-arguments"
-              data-tour={isFirst ? "debate-room-ideal-counters" : undefined}
             >
               <InformationCircleIcon className="h-3 w-3" />
               <span>Ideal counters</span>
@@ -689,7 +717,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
                   <InformationCircleIcon className="h-5 w-5" />
                   Ideal Counter-Arguments
                 </h3>
-                <button onClick={() => setShowIdealCounters(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <button type="button" onClick={() => setShowIdealCounters(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                   ✕
                 </button>
               </div>
@@ -814,6 +842,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
                   <div className="flex items-center gap-4">
                     {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()) && canUndoComment(comment._id)) && (
                       <button
+                        type="button"
                         onClick={() => onUndoComment(comment._id)}
                         className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
                         title="Undo comment (available for 30 seconds)"
@@ -823,6 +852,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
                       </button>
                     )}
                     <button
+                      type="button"
                       onClick={() => onLike(comment._id)}
                       className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                     >
@@ -830,6 +860,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
                       <span>{comment.likes?.length || 0}</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => onDislike(comment._id)}
                       className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
@@ -838,9 +869,12 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
                     </button>
                     {(userType === 'admin' || (userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()))) && !canUndoComment(comment._id) && (
                       <button
-                        onClick={async () => {
+                        type="button"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setDeletingCommentId(comment._id);
-                          await onDeleteComment(comment._id);
+                          await onDeleteComment(comment._id, e);
                           setDeletingCommentId(null);
                         }}
                         disabled={deletingCommentId === comment._id}
@@ -893,13 +927,16 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
 // Ungrouped/Off-Topic Comment Component
 const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUndo, userInfo, stance }) => {
   const [deleting, setDeleting] = useState(false);
-  const stanceColor = stance === 'for' ? 'green' : 'red';
+  // Use grey for truly off-topic comments, otherwise use stance color
+  const stanceColor = comment.isOffTopic ? 'gray' : (stance === 'for' ? 'green' : 'red');
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
     setDeleting(true);
     try {
-      await onDelete(comment._id);
+      await onDelete(comment._id, e);
     } finally {
       setDeleting(false);
     }
@@ -974,6 +1011,7 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
       <div className="flex items-center gap-4 text-sm">
         {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString()) && canUndo(comment._id)) && (
           <button
+            type="button"
             onClick={() => onUndo(comment._id)}
             className="flex items-center gap-1 text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
             title="Undo comment (available for 30 seconds)"
@@ -983,6 +1021,7 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
           </button>
         )}
         <button
+          type="button"
           onClick={() => onLike(comment._id)}
           className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
         >
@@ -990,6 +1029,7 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
           <span>{comment.likes?.length || 0}</span>
         </button>
         <button
+          type="button"
           onClick={() => onDislike(comment._id)}
           className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
         >
@@ -998,7 +1038,12 @@ const UngroupedComment = ({ comment, onLike, onDislike, onDelete, onUndo, canUnd
         </button>
         {(userInfo && comment.author && (comment.author._id?.toString() === userInfo._id?.toString() || comment.author._id?.toString() === userInfo.id?.toString())) && (
           <button
-            onClick={handleDelete}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDelete(e);
+            }}
             disabled={deleting}
             className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
             title="Delete comment"

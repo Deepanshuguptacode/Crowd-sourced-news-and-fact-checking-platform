@@ -31,12 +31,7 @@ import {
   expandGroup,
   selectStance,
 } from './hideShow';
-import {
-  analyzeDebateRoom,
-  findGroup,
-  findCommentInGroup,
-  findOffTopic,
-} from './debateAnalyzer';
+import { analyzeDebateRoom, findGroup, findCommentInGroup, findOffTopic } from './debateAnalyzer';
 import { analyzeNewsFeed } from './newsAnalyzer';
 import { buildDebateSteps } from './debateSteps';
 import { buildNewsSteps } from './newsSteps';
@@ -65,6 +60,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   const animFrameRef = useRef(null);
   const stepsRef = useRef([]);
   const tourPhaseRef = useRef(''); // 'debate' | 'news-home' | 'news-submit' | 'news-back'
+  const currentStepHiddenRef = useRef(null); // Track what was hidden for current step
 
   const isDebate = currentPath?.startsWith('/debate-room/');
   const isHome = currentPath === '/home';
@@ -78,7 +74,16 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     const timer = setTimeout(async () => {
       if (isDebate) {
         // ASYNC: expands all groups behind loading screen
+        console.log('[Tour] Starting debate room analysis...');
         const analysis = await analyzeDebateRoom();
+        console.log('[Tour] Analysis complete:', {
+          hasMultiComment: !!analysis.multiCommentElement,
+          multiCommentText: analysis.multiCommentText?.slice(0, 40),
+          hasSingleGroup: !!analysis.singleGroupElement,
+          singleGroupText: analysis.singleGroupText?.slice(0, 40),
+          hasCounterGroup: !!analysis.counterGroupElement,
+          hasOffTopic: !!analysis.offTopicElement
+        });
         analysisRef.current = analysis;
         stepsRef.current = buildDebateSteps(analysis);
         tourPhaseRef.current = 'debate';
@@ -165,113 +170,241 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       // DEBATE ACTIONS
       // ═══════════════════════════════════════════════════════════════════
 
-      // DEBATE: Hide elements on welcome (silently)
-      if (currentStep.action === 'hideDebateElements' && analysis) {
-        // Hide a comment inside the multi-comment group
-        if (analysis.multiGroupTitle && analysis.multiGroupCommentTextPrefix) {
-          const grp = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
-          if (grp) {
-            const comment = findCommentInGroup(grp, analysis.multiGroupCommentTextPrefix);
-            if (comment) {
-              hideElement(comment);
-              hiddenElementsRef.current.push(comment);
+      // DEBATE: Hide multi-comment before typing step 1
+      if (currentStep.action === 'hideMultiComment' && analysis) {
+        console.log('[Action] hideMultiComment — hiding the multi-comment');
+        
+        if (analysis.isUngroupedOnly && analysis.multiGroupCommentTextPrefix) {
+          const multiComment = findOffTopic(analysis.multiGroupCommentTextPrefix);
+          if (multiComment) {
+            hideElement(multiComment);
+            hiddenElementsRef.current.push(multiComment);
+            console.log('[Tour] Hidden ungrouped multi-comment');
+          }
+        } else if (analysis.multiGroupTitle && analysis.multiGroupStance) {
+          const multiGroup = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
+          if (multiGroup) {
+            await expandGroup(multiGroup);
+            await wait(100);
+            const multiComment = findCommentInGroup(multiGroup, analysis.multiGroupCommentTextPrefix);
+            if (multiComment) {
+              hideElement(multiComment);
+              hiddenElementsRef.current.push(multiComment);
+              console.log('[Tour] Hidden multi-comment in group');
             }
           }
         }
-        // Hide the entire single-comment group
-        if (analysis.singleGroupTitle) {
-          const grp = findGroup(analysis.singleGroupTitle, analysis.singleGroupStance);
-          if (grp) {
-            hideElement(grp);
-            hiddenElementsRef.current.push(grp);
+      }
+
+      // DEBATE: Hide single-comment before typing step 2
+      if (currentStep.action === 'hideSingleComment' && analysis) {
+        console.log('[Action] hideSingleComment — hiding the single-comment');
+        
+        if (analysis.isUngroupedOnly && analysis.singleGroupTextPrefix) {
+          const singleComment = findOffTopic(analysis.singleGroupTextPrefix);
+          if (singleComment) {
+            hideElement(singleComment);
+            hiddenElementsRef.current.push(singleComment);
+            console.log('[Tour] Hidden ungrouped single-comment');
+          }
+        } else if (analysis.singleGroupTitle && analysis.singleGroupStance) {
+          const singleGroup = findGroup(analysis.singleGroupTitle, analysis.singleGroupStance);
+          if (singleGroup) {
+            hideElement(singleGroup);
+            hiddenElementsRef.current.push(singleGroup);
+            console.log('[Tour] Hidden single-group');
           }
         }
-        // Hide the counter group
-        if (analysis.counterGroupTitle) {
-          const grp = findGroup(analysis.counterGroupTitle, analysis.counterGroupStance);
-          if (grp) {
-            hideElement(grp);
-            hiddenElementsRef.current.push(grp);
+      }
+
+      // DEBATE: Hide counter-comment before typing step 3
+      if (currentStep.action === 'hideCounterComment' && analysis) {
+        console.log('[Action] hideCounterComment — hiding the counter-comment');
+        
+        if (analysis.isUngroupedOnly && analysis.counterGroupTextPrefix) {
+          const counterComment = findOffTopic(analysis.counterGroupTextPrefix);
+          if (counterComment) {
+            hideElement(counterComment);
+            hiddenElementsRef.current.push(counterComment);
+            console.log('[Tour] Hidden ungrouped counter-comment');
+          }
+        } else if (analysis.counterGroupTitle && analysis.counterGroupStance) {
+          const counterGroup = findGroup(analysis.counterGroupTitle, analysis.counterGroupStance);
+          if (counterGroup) {
+            hideElement(counterGroup);
+            hiddenElementsRef.current.push(counterGroup);
+            console.log('[Tour] Hidden counter-group');
           }
         }
-        // Hide off-topic comment
+      }
+
+      // DEBATE: Hide off-topic comment before typing step 4
+      if (currentStep.action === 'hideOffTopicComment' && analysis) {
+        console.log('[Action] hideOffTopicComment — hiding the off-topic comment');
+        
         if (analysis.offTopicTextPrefix) {
-          const el = findOffTopic(analysis.offTopicTextPrefix);
-          if (el) {
-            hideElement(el);
-            hiddenElementsRef.current.push(el);
+          const offTopic = findOffTopic(analysis.offTopicTextPrefix);
+          if (offTopic) {
+            hideElement(offTopic);
+            hiddenElementsRef.current.push(offTopic);
+            console.log('[Tour] Hidden off-topic comment');
           }
         }
       }
 
-      // DEBATE: Show clubbed comment — re-query, expand, reveal, highlight
-      if (currentStep.action === 'showClubbedComment' && analysis?.multiGroupTitle) {
-        const grp = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
-        if (grp) {
-          await expandGroup(grp);
-          await wait(400);
-          if (!cancelled) {
-            const comment = findCommentInGroup(grp, analysis.multiGroupCommentTextPrefix);
-            if (comment) {
-              showWithAnimation(comment);
+      // DEBATE: Show clubbed comment using re-query
+      if (currentStep.action === 'showClubbedComment' && analysis) {
+        console.log('[Action] showClubbedComment — re-querying multi-comment');
+        
+        // Ungrouped mode: find via text prefix
+        if (analysis.isUngroupedOnly && analysis.multiGroupCommentTextPrefix) {
+          const multiComment = findOffTopic(analysis.multiGroupCommentTextPrefix);
+          if (multiComment && !cancelled) {
+            showWithAnimation(multiComment);
+            await wait(600);
+            highlightResult(multiComment);
+            pulseElement(multiComment, 4000);
+            await scrollToTarget(multiComment);
+            console.log('[Tour] Ungrouped multi-comment shown');
+          }
+        // Normal grouped mode
+        } else if (analysis.multiGroupTitle && analysis.multiGroupStance) {
+          const multiGroup = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
+          if (multiGroup) {
+            await expandGroup(multiGroup);
+            await wait(400);
+            
+            const multiComment = findCommentInGroup(multiGroup, analysis.multiGroupCommentTextPrefix);
+            if (multiComment && !cancelled) {
+              showWithAnimation(multiComment);
               await wait(600);
-              highlightResult(comment);
-              pulseElement(comment, 4000);
-              await scrollToTarget(comment);
+              highlightResult(multiComment);
+              pulseElement(multiComment, 4000);
+              await scrollToTarget(multiComment);
+              console.log('[Tour] Multi-comment shown');
             }
           }
         }
       }
 
-      // DEBATE: Show new group — re-query, reveal, highlight
-      if (currentStep.action === 'showNewGroup' && analysis?.singleGroupTitle) {
-        const grp = findGroup(analysis.singleGroupTitle, analysis.singleGroupStance);
-        if (grp) {
-          showWithAnimation(grp);
-          await wait(600);
-          highlightResult(grp);
-          pulseElement(grp, 4000);
-          await scrollToTarget(grp);
+      // DEBATE: Show new group using re-query
+      if (currentStep.action === 'showNewGroup' && analysis) {
+        console.log('[Action] showNewGroup — re-querying single-group');
+        
+        // Ungrouped mode
+        if (analysis.isUngroupedOnly && analysis.singleGroupTextPrefix && !cancelled) {
+          const singleComment = findOffTopic(analysis.singleGroupTextPrefix);
+          if (singleComment) {
+            showWithAnimation(singleComment);
+            await wait(600);
+            highlightResult(singleComment);
+            pulseElement(singleComment, 4000);
+            await scrollToTarget(singleComment);
+            console.log('[Tour] Ungrouped single-comment shown');
+          }
+        // Normal grouped mode
+        } else if (analysis.singleGroupTitle && analysis.singleGroupStance && !cancelled) {
+          const singleGroup = findGroup(analysis.singleGroupTitle, analysis.singleGroupStance);
+          if (singleGroup) {
+            showWithAnimation(singleGroup);
+            await wait(600);
+            highlightResult(singleGroup);
+            pulseElement(singleGroup, 4000);
+            await scrollToTarget(singleGroup);
+            console.log('[Tour] Single-group shown');
+          }
         }
       }
 
-      // DEBATE: Show counter group — re-query, reveal, highlight + badges
-      if (currentStep.action === 'showCounterGroup' && analysis?.counterGroupTitle) {
-        const grp = findGroup(analysis.counterGroupTitle, analysis.counterGroupStance);
-        if (grp) {
-          showWithAnimation(grp);
-          await wait(600);
-          highlightResult(grp);
-          pulseElement(grp, 4000);
-          await scrollToTarget(grp);
-
-          // Highlight counter badges (Linked / View Counter)
-          if (!cancelled) {
-            const innerCard = grp.querySelector('.rounded-lg.p-4.border');
+      // DEBATE: Show counter group using re-query
+      if (currentStep.action === 'showCounterGroup' && analysis) {
+        console.log('[Action] showCounterGroup — re-querying counter-group');
+        
+        // Ungrouped mode
+        if (analysis.isUngroupedOnly && analysis.counterGroupTextPrefix && !cancelled) {
+          const counterComment = findOffTopic(analysis.counterGroupTextPrefix);
+          if (counterComment) {
+            showWithAnimation(counterComment);
+            await wait(600);
+            highlightResult(counterComment);
+            pulseElement(counterComment, 4000);
+            await scrollToTarget(counterComment);
+            console.log('[Tour] Ungrouped counter-comment shown');
+          }
+        // Normal grouped mode
+        } else if (analysis.counterGroupTitle && analysis.counterGroupStance && !cancelled) {
+          const counterGroup = findGroup(analysis.counterGroupTitle, analysis.counterGroupStance);
+          if (counterGroup) {
+            showWithAnimation(counterGroup);
+            await wait(600);
+            highlightResult(counterGroup);
+            pulseElement(counterGroup, 4000);
+            await scrollToTarget(counterGroup);
+            
+            // Highlight counter badges
+            await wait(400);
+            const innerCard = counterGroup.querySelector('.rounded-lg.p-4.border');
             if (innerCard) {
               const allBtns = innerCard.querySelectorAll('button');
               allBtns.forEach((btn) => {
                 const text = btn.textContent?.trim() || '';
-                if (text.includes('Linked') || text.includes('View Counter')) {
+                if (text.includes('Linked') || text.includes('View Counter') || text.includes('counter')) {
                   btn.style.transition = 'all 0.3s ease';
                   btn.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.7), 0 0 16px rgba(249,115,22,0.35)';
                   btn.style.transform = 'scale(1.05)';
                 }
               });
             }
+            
+            console.log('[Tour] Counter-group shown');
           }
         }
       }
 
-      // DEBATE: Show off-topic — re-query, reveal, highlight
-      if (currentStep.action === 'showOffTopic' && analysis?.offTopicTextPrefix) {
-        const el = findOffTopic(analysis.offTopicTextPrefix);
-        if (el) {
-          showWithAnimation(el);
-          await wait(600);
-          highlightResult(el);
-          pulseElement(el, 4000);
-          await scrollToTarget(el);
+      // DEBATE: Show off-topic using re-query
+      if (currentStep.action === 'showOffTopic' && analysis) {
+        console.log('[Action] showOffTopic — re-querying off-topic comment');
+        
+        if (analysis.offTopicTextPrefix && !cancelled) {
+          const offTopic = findOffTopic(analysis.offTopicTextPrefix);
+          if (offTopic) {
+            showWithAnimation(offTopic);
+            await wait(600);
+            highlightResult(offTopic);
+            pulseElement(offTopic, 4000);
+            await scrollToTarget(offTopic);
+            console.log('[Tour] Off-topic shown');
+          }
+        }
+      }
+
+      // DEBATE: Highlight ideal counter divs in comments
+      if (currentStep.action === 'highlightIdealCounters' && !cancelled) {
+        console.log('[Action] highlightIdealCounters — finding and highlighting ideal counter divs');
+        
+        // Find all ungrouped comments (border-l-4)
+        const allComments = document.querySelectorAll('.border-l-4');
+        let foundCounter = false;
+        
+        for (const comment of allComments) {
+          // Look for ideal counter text or styling indicators
+          const idealCounterDiv = comment.querySelector('.mt-2, .text-xs, .bg-purple-50, .bg-purple-900');
+          if (idealCounterDiv) {
+            const text = idealCounterDiv.textContent?.toLowerCase() || '';
+            if (text.includes('ideal') || text.includes('counter') || text.includes('🎯')) {
+              highlightResult(idealCounterDiv);
+              pulseElement(idealCounterDiv, 4000);
+              if (!foundCounter) {
+                await scrollToTarget(idealCounterDiv);
+                foundCounter = true;
+              }
+              console.log('[Tour] Highlighted ideal counter in comment');
+            }
+          }
+        }
+        
+        if (!foundCounter) {
+          console.log('[Tour] No ideal counter divs found in comments');
         }
       }
 
@@ -492,11 +625,23 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   // ── Handle user clicking highlighted element ──
   const handleUserAction = useCallback(() => {
     unhighlightAll();
+    
+    console.log('[Tour] handleUserAction called, waitAction:', waitAction, 'currentStepIndex:', currentStepIndex);
 
     // Clear typed text after send actions
     if (waitAction === 'send' || waitAction === 'post-comment') {
       clearInput('[data-tour="debate-room-comment-input"] textarea');
       clearInput('[data-tour="home-comment-input"]');
+      
+      // Immediately advance to next step - the next step's action will handle showing the element
+      setWaitingForUser(false);
+      setWaitAction(null);
+      setCurrentStepIndex((i) => {
+        const nextIndex = Math.min(i + 1, stepsRef.current.length - 1);
+        console.log('[Tour] Advancing from step', i, 'to', nextIndex);
+        return nextIndex;
+      });
+      return;
     }
 
     // Navigation: go to submit page
@@ -598,7 +743,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     setWaitingForUser(false);
     setWaitAction(null);
     setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
-  }, [waitAction, navigate]);
+  }, [waitAction, currentStepIndex, navigate]);
 
   // ── Navigation ──
   const goNext = useCallback(() => {
@@ -650,6 +795,12 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     // Clear typed inputs
     clearedInputsRef.current.forEach((s) => clearInput(s));
     clearedInputsRef.current = [];
+
+    // Clear tour sessionStorage
+    sessionStorage.removeItem('tour_multiCommentText');
+    sessionStorage.removeItem('tour_singleGroupText');
+    sessionStorage.removeItem('tour_counterGroupText');
+    sessionStorage.removeItem('tour_offTopicText');
 
     // Remove all highlights
     unhighlightAll();

@@ -186,6 +186,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
         <h4 className="text-lg font-semibold">Comments</h4>
         <div className="flex gap-2">
           <button
+            type="button"
             data-tour="home-group-comments"
             onClick={handleShowGroupedComments}
             disabled={loadingGrouped}
@@ -201,6 +202,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
           </button>
           {showGroupedComments && (
             <button
+              type="button"
               data-tour="home-improve-groups"
               onClick={handleRegenerateGroups}
               disabled={regeneratingGroups}
@@ -213,7 +215,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
               {regeneratingGroups ? 'Improving...' : 'Improve Groups'}
             </button>
           )}
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-800">Close</button>
+          <button type="button" onClick={onClose} className="text-gray-600 hover:text-gray-800">Close</button>
         </div>
       </div>
       <div className="mt-3 space-y-3 max-h-64 overflow-y-auto">
@@ -251,6 +253,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
                 {/* Delete button - visible to admin or comment owner */}
                 {item._id && (userType === 'admin' || (item.commenterId && (userInfo?._id || userInfo?.id) && (userInfo?._id?.toString() === item.commenterId?.toString() || userInfo?.id?.toString() === item.commenterId?.toString()))) && (
                   <button
+                    type="button"
                     onClick={() => handleDeleteComment(item._id, item.type)}
                     disabled={deletingCommentId === item._id}
                     className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors disabled:opacity-50"
@@ -335,6 +338,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
                           {/* Delete button — visible to admin or comment owner */}
                           {isAuthenticated && canDeleteGroupedComment(comment) && (
                             <button
+                              type="button"
                               onClick={() => handleDeleteGroupedComment(comment)}
                               disabled={deletingCommentId === deleteId}
                               className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
@@ -427,6 +431,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
               placeholder="Add a comment..."
             />
             <button
+              type="button"
               onClick={handleAddComment}
               disabled={loading || !isAuthenticated}
               className={`px-4 py-2 rounded-r text-white ${
@@ -473,6 +478,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
       </div>
       <div className="mt-4">
         <button
+          type="button"
           onClick={handleShowGroupedComments}
           disabled={loadingGrouped}
           className={`w-full px-4 py-2 rounded text-white ${

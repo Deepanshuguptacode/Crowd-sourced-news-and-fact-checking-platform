@@ -8,6 +8,9 @@ import { wait } from './domHelpers';
 
 export const hideElement = (el) => {
   if (!el) return;
+  // Store original display value before hiding
+  const computedDisplay = window.getComputedStyle(el).display;
+  el.dataset.tourOriginalDisplay = computedDisplay !== 'none' ? computedDisplay : 'block';
   el.dataset.tourHidden = 'true';
   el.style.display = 'none';
 };
@@ -15,13 +18,17 @@ export const hideElement = (el) => {
 export const showElement = (el, displayVal = '') => {
   if (!el) return;
   delete el.dataset.tourHidden;
-  el.style.display = displayVal;
+  // Restore original display value or use provided value
+  el.style.display = displayVal || el.dataset.tourOriginalDisplay || 'block';
+  delete el.dataset.tourOriginalDisplay;
 };
 
 export const showWithAnimation = (el, displayVal = '') => {
   if (!el) return;
   delete el.dataset.tourHidden;
-  el.style.display = displayVal;
+  // Restore original display value or use provided value
+  el.style.display = displayVal || el.dataset.tourOriginalDisplay || 'block';
+  delete el.dataset.tourOriginalDisplay;
   el.style.transition = 'all 0.6s cubic-bezier(0.34,1.56,0.64,1)';
   el.style.opacity = '0';
   el.style.transform = 'translateY(-12px) scale(0.95)';

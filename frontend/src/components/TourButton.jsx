@@ -46,6 +46,7 @@ const TourButton = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setShowDropdown(!showDropdown)}
         className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-all duration-200 text-blue-600 dark:text-blue-400 hover:text-sky-400"
         title="Start a Tour"
@@ -65,6 +66,7 @@ const TourButton = () => {
 
           {/* Discover Features */}
           <button
+            type="button"
             onClick={() => {
               setShowDropdown(false);
               startFeaturesTour();
@@ -91,6 +93,7 @@ const TourButton = () => {
           {/* Explore Platform */}
           {isPlatformTourAvailable && (
             <button
+              type="button"
               onClick={() => {
                 setShowDropdown(false);
                 startPlatformTour();
@@ -117,6 +120,7 @@ const TourButton = () => {
 
           {/* Journey Tour */}
           <button
+            type="button"
             onClick={() => {
               setShowDropdown(false);
               startJourneyTour();
@@ -150,6 +154,7 @@ const TourButton = () => {
 
           {/* Real Experience */}
           <button
+            type="button"
             onClick={() => {
               setShowDropdown(false);
               startRealExperience();
@@ -176,6 +181,7 @@ const TourButton = () => {
 
           {/* Pitch Showcase */}
           <button
+            type="button"
             onClick={() => {
               setShowDropdown(false);
               startPitchMode();

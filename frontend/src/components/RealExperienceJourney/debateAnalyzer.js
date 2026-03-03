@@ -42,17 +42,46 @@ export const findGroup = (title, stance) => {
  * Find a comment element inside an expanded group by matching text prefix.
  */
 export const findCommentInGroup = (groupCard, textPrefix) => {
-  if (!groupCard || !textPrefix) return null;
-  const innerCard = groupCard.querySelector('.rounded-lg.p-4.border');
-  if (!innerCard) return null;
-  const commentsDiv = innerCard.querySelector('.mt-3.space-y-2');
-  if (!commentsDiv) return null;
-  const comments = Array.from(commentsDiv.children);
-  for (const c of comments) {
-    const p = c.querySelector('p');
-    const t = p?.textContent?.trim() || '';
-    if (t.startsWith(textPrefix)) return c;
+  if (!groupCard || !textPrefix) {
+    console.warn('[findCommentInGroup] Missing params:', { groupCard: !!groupCard, textPrefix: !!textPrefix });
+    return null;
   }
+  
+  console.log('[findCommentInGroup] Searching for:', textPrefix.slice(0, 40));
+  
+  // Look for expanded comments section - try both AdvancedDebateRoom and DebateRoom structures
+  let commentsDiv = groupCard.querySelector('.mt-3.space-y-2'); // AdvancedDebateRoom structure
+  if (!commentsDiv) {
+    // DebateRoom structure: div.block > div.divide-y > div.p-4 (comments)
+    const blockDiv = groupCard.querySelector('div.block, div:not(.hidden)');
+    if (blockDiv) {
+      commentsDiv = blockDiv.querySelector('.divide-y');
+    }
+  }
+  
+  if (!commentsDiv) {
+    console.warn('[findCommentInGroup] Comments container not found');
+    return null;
+  }
+  
+  const comments = Array.from(commentsDiv.children);
+  console.log('[findCommentInGroup] Found', comments.length, 'comments to check');
+  
+  for (let i = 0; i < comments.length; i++) {
+    const c = comments[i];
+    // Target the SPECIFIC p tag that holds comment text
+    // It has className: "text-gray-700 dark:text-gray-300 text-sm mb-3"
+    const commentTextP = c.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+    if (commentTextP) {
+      const t = commentTextP?.textContent?.trim() || '';
+      if (t && t.startsWith(textPrefix) && t.length > 20) {
+        console.log('[findCommentInGroup] Found matching comment at index', i, ':', t.slice(0, 50));
+        return c;
+      }
+    }
+  }
+  
+  console.warn('[findCommentInGroup] No matching comment found');
   return null;
 };
 
@@ -60,13 +89,30 @@ export const findCommentInGroup = (groupCard, textPrefix) => {
  * Find an off-topic / ungrouped comment by text prefix (global search).
  */
 export const findOffTopic = (textPrefix) => {
-  if (!textPrefix) return null;
-  const allBorderL4 = document.querySelectorAll('.border-l-4');
-  for (const el of allBorderL4) {
-    const p = el.querySelector('p.text-sm') || el.querySelector('p');
-    const t = p?.textContent?.trim() || '';
-    if (t.startsWith(textPrefix)) return el;
+  if (!textPrefix) {
+    console.warn('[findOffTopic] No text prefix provided');
+    return null;
   }
+  
+  console.log('[findOffTopic] Searching for:', textPrefix.slice(0, 40));
+  
+  const allBorderL4 = document.querySelectorAll('.border-l-4');
+  console.log('[findOffTopic] Found', allBorderL4.length, 'potential off-topic elements');
+  
+  for (let i = 0; i < allBorderL4.length; i++) {
+    const el = allBorderL4[i];
+    // Target the SPECIFIC p tag that holds comment text
+    const commentTextP = el.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+    if (commentTextP) {
+      const t = commentTextP?.textContent?.trim() || '';
+      if (t && t.startsWith(textPrefix) && t.length > 20) {
+        console.log('[findOffTopic] Found matching off-topic at index', i, ':', t.slice(0, 50));
+        return el;
+      }
+    }
+  }
+  
+  console.warn('[findOffTopic] No matching off-topic element found');
   return null;
 };
 
@@ -101,10 +147,171 @@ export const analyzeDebateRoom = async () => {
   const groupsContainer = document.querySelector(
     '[data-tour="debate-room-groups"]',
   );
-  if (!groupsContainer) return result;
+  if (!groupsContainer) {
+    console.warn('[Analyzer] No groups container found!');
+    return result;
+  }
 
   // Step 1: Collect all group cards
   const allGroupCards = Array.from(groupsContainer.querySelectorAll('.mb-6'));
+  console.log('[Analyzer] Found', allGroupCards.length, 'group cards');
+
+  // SPECIAL CASE: No groups exist, only ungrouped comments
+  if (allGroupCards.length === 0) {
+    console.warn('[Analyzer] No groups found, extracting from ungrouped comments instead');
+    const offTopicCards = document.querySelectorAll('.border-l-4');
+    console.log('[Analyzer] Found', offTopicCards.length, 'ungrouped comments');
+    
+    // Mark as ungrouped-only mode
+    result.isUngroupedOnly = true;
+    
+    // Separate by stance: need 2 "for", 1 "against", 1 off-topic/neutral
+    const forComments = [];
+    const againstComments = [];
+    const otherComments = [];
+    
+    offTopicCards.forEach((card) => {
+      const isFor = card.classList.contains('border-green-500');
+      const isAgainst = card.classList.contains('border-red-500');
+      const isGray = card.classList.contains('border-gray-500');
+      
+      if (isFor) {
+        forComments.push(card);
+      } else if (isAgainst) {
+        againstComments.push(card);
+      } else if (isGray) {
+        otherComments.push(card);
+      } else {
+        // Fallback: if no color detected, categorize as other
+        otherComments.push(card);
+      }
+    });
+    
+    console.log('[Analyzer] Stance breakdown - For:', forComments.length, 'Against:', againstComments.length, 'Other:', otherComments.length);
+    
+    // Combine all available comments for flexible extraction
+    const allAvailable = [...forComments, ...againstComments, ...otherComments];
+    
+    // Extract comments intelligently based on availability
+    // Priority: Use "for" comments first, then "against", then "other"
+    let extracted = 0;
+    
+    // 1. Multi-comment: Try to use first "for" comment
+    if (forComments.length >= 1 && extracted < allAvailable.length) {
+      const card = forComments[0];
+      const textP = card.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+      const text = textP?.textContent?.trim() || '';
+      if (text && text.length >= 30) {
+        result.multiGroupCommentText = text;
+        result.multiGroupCommentTextPrefix = text.slice(0, 60);
+        sessionStorage.setItem('tour_multiCommentText', text);
+        console.log('[Analyzer] Using FOR comment for multi-comment:', text.slice(0, 80));
+        extracted++;
+      }
+    }
+    
+    // 2. Single-group: Try second "for", otherwise use first "against" or "other"
+    if (extracted < allAvailable.length) {
+      let card = null;
+      let label = '';
+      
+      if (forComments.length >= 2) {
+        card = forComments[1];
+        label = 'FOR';
+      } else if (againstComments.length >= 1) {
+        card = againstComments[0];
+        label = 'AGAINST';
+      } else if (otherComments.length >= 1) {
+        card = otherComments[0];
+        label = 'OTHER';
+      }
+      
+      if (card) {
+        const textP = card.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+        const text = textP?.textContent?.trim() || '';
+        if (text && text.length >= 30) {
+          result.singleGroupCommentText = text;
+          result.singleGroupTextPrefix = text.slice(0, 60);
+          sessionStorage.setItem('tour_singleGroupText', text);
+          console.log(`[Analyzer] Using ${label} comment for single-group:`, text.slice(0, 80));
+          extracted++;
+        }
+      }
+    }
+    
+    // 3. Counter-argument: Must use "against" comment if available
+    if (againstComments.length >= 1) {
+      // Use first "against" if not already used, otherwise second
+      const idx = (result.singleGroupCommentText && againstComments.length >= 2 && 
+                   result.singleGroupTextPrefix === againstComments[0].querySelector('p')?.textContent?.slice(0, 60)) ? 1 : 0;
+      
+      if (againstComments[idx]) {
+        const card = againstComments[idx];
+        const textP = card.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+        const text = textP?.textContent?.trim() || '';
+        if (text && text.length >= 30) {
+          result.counterGroupCommentText = text;
+          result.counterGroupTextPrefix = text.slice(0, 60);
+          sessionStorage.setItem('tour_counterGroupText', text);
+          console.log('[Analyzer] Using AGAINST comment for counter:', text.slice(0, 80));
+          extracted++;
+        }
+      }
+    }
+    
+    // 4. Off-topic: Use any "other" comment not already used
+    if (otherComments.length >= 1) {
+      const card = otherComments[0];
+      console.log('[Analyzer] Off-topic card found:', card);
+      console.log('[Analyzer] Card HTML:', card.innerHTML?.slice(0, 200));
+      
+      // Try multiple strategies to find the text
+      let textP = card.querySelector('p.text-sm.mb-3');
+      if (!textP) textP = card.querySelector('p.text-sm');
+      if (!textP) textP = card.querySelector('p[class*="text-gray"]');
+      if (!textP) {
+        const allPs = card.querySelectorAll('p');
+        // Find the longest paragraph (likely the comment text, not metadata)
+        textP = Array.from(allPs).reduce((longest, p) => {
+          const text = p.textContent?.trim() || '';
+          const currentLongest = longest?.textContent?.trim() || '';
+          return text.length > currentLongest.length ? p : longest;
+        }, null);
+      }
+      
+      console.log('[Analyzer] Off-topic paragraph element:', textP);
+      const text = textP?.textContent?.trim() || '';
+      console.log('[Analyzer] Off-topic text extracted:', text?.slice(0, 100), 'Length:', text?.length);
+      if (text) {
+        result.offTopicCommentText = text;
+        result.offTopicTextPrefix = text.slice(0, 60);
+        sessionStorage.setItem('tour_offTopicText', text);
+        console.log('[Analyzer] ✓ Using OTHER comment for off-topic:', text.slice(0, 80));
+        extracted++;
+      } else {
+        console.warn('[Analyzer] ✗ Off-topic text empty, falling back to mock');
+      }
+    }
+    
+    console.log('[Analyzer] Extracted', extracted, 'comments from', allAvailable.length, 'available');
+    
+    // Fallback to mock for any missing texts
+    if (!result.multiGroupCommentText) {
+      sessionStorage.setItem('tour_multiCommentText', DEBATE_MOCK.similar);
+    }
+    if (!result.singleGroupCommentText) {
+      sessionStorage.setItem('tour_singleGroupText', DEBATE_MOCK.newGroup);
+    }
+    if (!result.counterGroupCommentText) {
+      sessionStorage.setItem('tour_counterGroupText', DEBATE_MOCK.counter);
+    }
+    if (!result.offTopicCommentText) {
+      sessionStorage.setItem('tour_offTopicText', DEBATE_MOCK.offTopic);
+    }
+    
+    console.log('[Analyzer] Ungrouped-only mode results:', result);
+    return result;
+  }
 
   // Step 2: Expand ALL collapsed groups
   for (const card of allGroupCards) {
@@ -126,7 +333,16 @@ export const analyzeDebateRoom = async () => {
     if (!innerCard) continue;
 
     const title = innerCard.querySelector('h3')?.textContent?.trim() || '';
-    const expandedComments = innerCard.querySelector('.mt-3.space-y-2');
+    
+    // Try both structures for expanded comments
+    let expandedComments = innerCard.querySelector('.mt-3.space-y-2'); // AdvancedDebateRoom
+    if (!expandedComments) {
+      // DebateRoom structure: look for sibling of innerCard
+      const blockDiv = card.querySelector('div.block, div:not(.hidden)');
+      if (blockDiv) {
+        expandedComments = blockDiv.querySelector('.divide-y');
+      }
+    }
     const commentEls = expandedComments
       ? Array.from(expandedComments.children)
       : [];
@@ -157,6 +373,10 @@ export const analyzeDebateRoom = async () => {
   const singleCommentGroups = allGroups.filter((g) => g.commentCount <= 1);
   const multiCommentGroups = allGroups.filter((g) => g.commentCount > 1);
 
+  console.log('[Analyzer] forGroups:', forGroups.length, 'againstGroups:', againstGroups.length);
+  console.log('[Analyzer] singleCommentGroups:', singleCommentGroups.length, 'multiCommentGroups:', multiCommentGroups.length);
+  console.log('[Analyzer] All groups:', allGroups.map(g => ({ title: g.title, count: g.commentCount, stance: g.stance })));
+
   // Step 4: Pick a multi-comment group + one comment to hide
   if (multiCommentGroups.length > 0) {
     const picked = multiCommentGroups[0];
@@ -167,12 +387,48 @@ export const analyzeDebateRoom = async () => {
     const idx = Math.min(1, picked.comments.length - 1);
     const commentEl = picked.comments[idx] || picked.comments[0];
     if (commentEl) {
-      const p = commentEl.querySelector('p');
-      const fullText = p?.textContent?.trim() || '';
+      // Target the SPECIFIC p tag with comment text
+      const commentTextP = commentEl.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+      const fullText = commentTextP?.textContent?.trim() || '';
+      
+      if (!fullText || fullText.length < 30) {
+        console.warn('[Analyzer] No valid text found in multi-comment, using mock');
+      } else {
+        console.log('[Analyzer] Found multi-comment text:', fullText.slice(0, 80));
+      }
       result.multiGroupCommentText = fullText || DEBATE_MOCK.similar;
+      // Store in sessionStorage for autoType
+      sessionStorage.setItem('tour_multiCommentText', result.multiGroupCommentText);
       // Store prefix for re-querying (first 60 chars)
       result.multiGroupCommentTextPrefix = fullText.slice(0, 60);
     }
+  } else if (allGroups.length > 0) {
+    // FALLBACK: Use any available group for multi-comment
+    console.warn('[Analyzer] No multi-comment groups found, using first available group as fallback');
+    const picked = allGroups[0];
+    result.multiGroupTitle = picked.title;
+    result.multiGroupStance = picked.stance;
+    
+    const commentEl = picked.comments[0];
+    if (commentEl) {
+      const commentTextP = commentEl.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+      const fullText = commentTextP?.textContent?.trim() || '';
+      
+      if (fullText && fullText.length >= 30) {
+        console.log('[Analyzer] Fallback multi-comment text:', fullText.slice(0, 80));
+        result.multiGroupCommentText = fullText;
+        sessionStorage.setItem('tour_multiCommentText', result.multiGroupCommentText);
+        result.multiGroupCommentTextPrefix = fullText.slice(0, 60);
+      } else {
+        console.warn('[Analyzer] Fallback text too short, using mock');
+        result.multiGroupCommentText = DEBATE_MOCK.similar;
+        sessionStorage.setItem('tour_multiCommentText', result.multiGroupCommentText);
+      }
+    }
+  } else {
+    // NO GROUPS AT ALL - use mock
+    console.warn('[Analyzer] No groups found, using DEBATE_MOCK');
+    sessionStorage.setItem('tour_multiCommentText', DEBATE_MOCK.similar);
   }
 
   // Step 5: Pick a single-comment group to hide entirely
@@ -181,12 +437,39 @@ export const analyzeDebateRoom = async () => {
     result.singleGroupTitle = picked.title;
     result.singleGroupStance = picked.stance;
     if (picked.comments[0]) {
-      const p = picked.comments[0].querySelector('p');
-      result.singleGroupCommentText =
-        p?.textContent?.trim() || DEBATE_MOCK.newGroup;
+      // Target the SPECIFIC p tag with comment text
+      const commentTextP = picked.comments[0].querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+      const fullText = commentTextP?.textContent?.trim() || '';
+      
+      if (!fullText || fullText.length < 30) {
+        console.warn('[Analyzer] No valid text found in single-group, using mock');
+        result.singleGroupCommentText = DEBATE_MOCK.newGroup;
+      } else {
+        console.log('[Analyzer] Found single-group text:', fullText.slice(0, 80));
+        result.singleGroupCommentText = fullText;
+      }
+      sessionStorage.setItem('tour_singleGroupText', result.singleGroupCommentText);
+    } else {
+      result.singleGroupCommentText = DEBATE_MOCK.newGroup;
+      sessionStorage.setItem('tour_singleGroupText', result.singleGroupCommentText);
+    }
+  } else if (allGroups.length > 1) {
+    // FALLBACK: Use second available group
+    console.warn('[Analyzer] No single-comment groups found, using second group as fallback');
+    const picked = allGroups[1];
+    result.singleGroupTitle = picked.title;
+    result.singleGroupStance = picked.stance;
+    if (picked.comments[0]) {
+      const commentTextP = picked.comments[0].querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+      const fullText = commentTextP?.textContent?.trim() || '';
+      result.singleGroupCommentText = (fullText && fullText.length >= 30) ? fullText : DEBATE_MOCK.newGroup;
     } else {
       result.singleGroupCommentText = DEBATE_MOCK.newGroup;
     }
+    sessionStorage.setItem('tour_singleGroupText', result.singleGroupCommentText);
+  } else {
+    console.warn('[Analyzer] Not enough groups for single-group, using mock');
+    sessionStorage.setItem('tour_singleGroupText', DEBATE_MOCK.newGroup);
   }
 
   // Step 6: Off-topic / ungrouped comments (global search)
@@ -196,10 +479,22 @@ export const analyzeDebateRoom = async () => {
     result.offTopicStance = picked.classList.contains('border-l-green-500')
       ? 'for'
       : 'against';
-    const textEl = picked.querySelector('p.text-sm') || picked.querySelector('p');
-    const fullText = textEl?.textContent?.trim() || '';
-    result.offTopicCommentText = fullText || DEBATE_MOCK.offTopic;
+    // Target the SPECIFIC p tag with comment text
+    const commentTextP = picked.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+    const fullText = commentTextP?.textContent?.trim() || '';
+    
+    if (!fullText || fullText.length < 30) {
+      console.warn('[Analyzer] No valid text found in off-topic, using mock');
+      result.offTopicCommentText = DEBATE_MOCK.offTopic;
+    } else {
+      console.log('[Analyzer] Found off-topic text:', fullText.slice(0, 80));
+      result.offTopicCommentText = fullText;
+    }
+    sessionStorage.setItem('tour_offTopicText', result.offTopicCommentText);
     result.offTopicTextPrefix = fullText.slice(0, 60);
+  } else {
+    console.warn('[Analyzer] No off-topic comments found, using mock');
+    sessionStorage.setItem('tour_offTopicText', DEBATE_MOCK.offTopic);
   }
 
   // Step 7: Counter group — opposite stance to singleGroup
@@ -215,10 +510,30 @@ export const analyzeDebateRoom = async () => {
       const picked = pool.find((g) => g.hasCounter) || pool[0];
       result.counterGroupTitle = picked.title;
       result.counterGroupStance = picked.stance;
-      result.counterGroupCommentText =
-        picked.comments[0]?.querySelector('p')?.textContent?.trim() ||
-        DEBATE_MOCK.counter;
+      // Extract counter comment text properly
+      if (picked.comments[0]) {
+        const commentTextP = picked.comments[0].querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+        const fullText = commentTextP?.textContent?.trim() || '';
+        
+        if (!fullText || fullText.length < 30) {
+          console.warn('[Analyzer] No valid text found in counter-group, using mock');
+          result.counterGroupCommentText = DEBATE_MOCK.counter;
+        } else {
+          console.log('[Analyzer] Found counter-group text:', fullText.slice(0, 80));
+          result.counterGroupCommentText = fullText;
+        }
+        sessionStorage.setItem('tour_counterGroupText', result.counterGroupCommentText);
+      } else {
+        result.counterGroupCommentText = DEBATE_MOCK.counter;
+        sessionStorage.setItem('tour_counterGroupText', result.counterGroupCommentText);
+      }
+    } else {
+      console.warn('[Analyzer] No counter-group pool, using mock');
+      sessionStorage.setItem('tour_counterGroupText', DEBATE_MOCK.counter);
     }
+  } else {
+    console.warn('[Analyzer] No single-group to find counter for, using mock');
+    sessionStorage.setItem('tour_counterGroupText', DEBATE_MOCK.counter);
   }
 
   return result;
