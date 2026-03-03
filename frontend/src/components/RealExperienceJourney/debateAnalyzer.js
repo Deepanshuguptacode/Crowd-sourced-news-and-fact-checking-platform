@@ -94,21 +94,28 @@ export const findOffTopic = (textPrefix) => {
     return null;
   }
   
-  console.log('[findOffTopic] Searching for:', textPrefix.slice(0, 40));
+  const normalizedPrefix = textPrefix.slice(0, 50).trim();
+  console.log('[findOffTopic] Searching for:', normalizedPrefix.slice(0, 40));
   
   const allBorderL4 = document.querySelectorAll('.border-l-4');
   console.log('[findOffTopic] Found', allBorderL4.length, 'potential off-topic elements');
   
   for (let i = 0; i < allBorderL4.length; i++) {
     const el = allBorderL4[i];
-    // Target the SPECIFIC p tag that holds comment text
-    const commentTextP = el.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
+    // Pass 1: Try specific p selector (most accurate)
+    const commentTextP = el.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3, p.text-sm');
     if (commentTextP) {
-      const t = commentTextP?.textContent?.trim() || '';
-      if (t && t.startsWith(textPrefix) && t.length > 20) {
-        console.log('[findOffTopic] Found matching off-topic at index', i, ':', t.slice(0, 50));
+      const t = commentTextP.textContent?.trim() || '';
+      if (t && t.startsWith(normalizedPrefix)) {
+        console.log('[findOffTopic] Found (specific p) at index', i, ':', t.slice(0, 50));
         return el;
       }
+    }
+    // Pass 2: Full card text search as fallback
+    const fullText = el.textContent?.trim() || '';
+    if (fullText && fullText.includes(normalizedPrefix)) {
+      console.log('[findOffTopic] Found (full-text fallback) at index', i);
+      return el;
     }
   }
   

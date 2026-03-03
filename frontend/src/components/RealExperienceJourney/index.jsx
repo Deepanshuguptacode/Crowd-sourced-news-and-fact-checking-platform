@@ -27,6 +27,7 @@ import {
   pulseElement,
   highlightResult,
   highlightAction,
+  popHighlight,
   unhighlightAll,
   expandGroup,
   selectStance,
@@ -262,8 +263,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (multiComment && !cancelled) {
             showWithAnimation(multiComment);
             await wait(600);
-            highlightResult(multiComment);
-            pulseElement(multiComment, 4000);
+            popHighlight(multiComment);
             await scrollToTarget(multiComment);
             console.log('[Tour] Ungrouped multi-comment shown');
           }
@@ -277,11 +277,17 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
             const multiComment = findCommentInGroup(multiGroup, analysis.multiGroupCommentTextPrefix);
             if (multiComment && !cancelled) {
               showWithAnimation(multiComment);
-              await wait(600);
-              highlightResult(multiComment);
-              pulseElement(multiComment, 4000);
+              await wait(400);
+              popHighlight(multiComment);
               await scrollToTarget(multiComment);
-              console.log('[Tour] Multi-comment shown');
+              // Also highlight the group container so both the group and comment pop
+              await wait(200);
+              const groupCard = multiGroup.closest('[data-group-id]') || multiGroup;
+              highlightResult(groupCard);
+              // Highlight all visible comments in this group
+              const allComments = multiGroup.querySelectorAll('.divide-y > *, .space-y-2 > *, .mt-3 > *');
+              allComments.forEach((c) => pulseElement(c, 3000));
+              console.log('[Tour] Multi-comment shown with group highlight');
             }
           }
         }
@@ -297,8 +303,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (singleComment) {
             showWithAnimation(singleComment);
             await wait(600);
-            highlightResult(singleComment);
-            pulseElement(singleComment, 4000);
+            popHighlight(singleComment);
             await scrollToTarget(singleComment);
             console.log('[Tour] Ungrouped single-comment shown');
           }
@@ -308,8 +313,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (singleGroup) {
             showWithAnimation(singleGroup);
             await wait(600);
-            highlightResult(singleGroup);
-            pulseElement(singleGroup, 4000);
+            popHighlight(singleGroup);
             await scrollToTarget(singleGroup);
             console.log('[Tour] Single-group shown');
           }
@@ -326,8 +330,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (counterComment) {
             showWithAnimation(counterComment);
             await wait(600);
-            highlightResult(counterComment);
-            pulseElement(counterComment, 4000);
+            popHighlight(counterComment);
             await scrollToTarget(counterComment);
             console.log('[Tour] Ungrouped counter-comment shown');
           }
@@ -337,24 +340,17 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (counterGroup) {
             showWithAnimation(counterGroup);
             await wait(600);
-            highlightResult(counterGroup);
-            pulseElement(counterGroup, 4000);
+            popHighlight(counterGroup);
             await scrollToTarget(counterGroup);
             
-            // Highlight counter badges
-            await wait(400);
-            const innerCard = counterGroup.querySelector('.rounded-lg.p-4.border');
-            if (innerCard) {
-              const allBtns = innerCard.querySelectorAll('button');
-              allBtns.forEach((btn) => {
-                const text = btn.textContent?.trim() || '';
-                if (text.includes('Linked') || text.includes('View Counter') || text.includes('counter')) {
-                  btn.style.transition = 'all 0.3s ease';
-                  btn.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.7), 0 0 16px rgba(249,115,22,0.35)';
-                  btn.style.transform = 'scale(1.05)';
-                }
-              });
-            }
+            // Highlight counter-link badges after pop
+            await wait(500);
+            const counterLinkBtns = counterGroup.querySelectorAll('[data-tour="debate-room-counter-links"] button, button[title*="counter"]');
+            counterLinkBtns.forEach((btn) => {
+              btn.style.transition = 'all 0.3s ease';
+              btn.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.8), 0 0 18px rgba(249,115,22,0.45)';
+              btn.style.transform = 'scale(1.08)';
+            });
             
             console.log('[Tour] Counter-group shown');
           }
@@ -370,11 +366,58 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (offTopic) {
             showWithAnimation(offTopic);
             await wait(600);
-            highlightResult(offTopic);
-            pulseElement(offTopic, 4000);
+            popHighlight(offTopic);
             await scrollToTarget(offTopic);
+            // Also scroll to and highlight the ungrouped section header
+            const ungroupedSection = document.querySelector('[data-tour="debate-room-ungrouped"]');
+            if (ungroupedSection) {
+              await scrollToTarget(ungroupedSection);
+              highlightResult(ungroupedSection);
+            }
             console.log('[Tour] Off-topic shown');
           }
+        }
+      }
+
+      // DEBATE: Highlight ideal counter button and wait for user click
+      if (currentStep.action === 'highlightIdealCounterBtn' && !cancelled) {
+        console.log('[Action] highlightIdealCounterBtn — finding ideal counter buttons');
+        // Find all ideal counter buttons in group cards
+        const idealBtns = document.querySelectorAll('[data-tour="debate-ideal-counter-btn"]');
+        if (idealBtns.length > 0) {
+          const firstBtn = idealBtns[0];
+          await scrollToTarget(firstBtn);
+          await wait(300);
+          highlightAction(firstBtn);
+          // Also pulse all ideal counter buttons
+          idealBtns.forEach((btn) => {
+            btn.style.transition = 'all 0.3s ease';
+            btn.style.boxShadow = '0 0 0 3px rgba(147,51,234,0.8), 0 0 20px rgba(147,51,234,0.45)';
+            btn.style.transform = 'scale(1.12)';
+            btn.style.borderRadius = '6px';
+            btn.style.padding = '2px 6px';
+          });
+          console.log('[Tour] Ideal counter buttons highlighted, waiting for click');
+        } else {
+          console.log('[Tour] No ideal counter buttons found');
+        }
+      }
+
+      // DEBATE: Highlight Counter Chat View button and wait for user click  
+      if (currentStep.action === 'highlightCounterChatBtn' && !cancelled) {
+        console.log('[Action] highlightCounterChatBtn — highlighting Counter Chat View button');
+        const counterChatBtn = document.querySelector('[data-tour="debate-counter-chat-btn"]');
+        if (counterChatBtn) {
+          await scrollToTarget(counterChatBtn);
+          await wait(300);
+          counterChatBtn.style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+          counterChatBtn.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.85), 0 0 28px rgba(59,130,246,0.5)';
+          counterChatBtn.style.transform = 'scale(1.1)';
+          // Scroll to top so user can see the button
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          console.log('[Tour] Counter Chat View button highlighted');
+        } else {
+          console.log('[Tour] Counter Chat View button not found');
         }
       }
 
@@ -729,13 +772,31 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       return;
     }
 
-    // Ideal counter: just advance (click was acknowledged)
-    if (waitAction === 'ideal-counter') {
-      const counterSection = document.querySelector('[data-tour="debate-room-ideal-counters"]');
-      if (counterSection) counterSection.click();
+    // Ideal counter: click the first ideal counter button then advance
+    if (waitAction === 'ideal-counter' || waitAction === 'idealCounterBtn') {
+      const idealBtn = document.querySelector('[data-tour="debate-ideal-counter-btn"]');
+      if (idealBtn) idealBtn.click();
       setWaitingForUser(false);
       setWaitAction(null);
       setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+      return;
+    }
+
+    // Counter chat view: click the Counter Chat View button then advance
+    if (waitAction === 'counterChatBtn') {
+      const counterChatBtn = document.querySelector('[data-tour="debate-counter-chat-btn"]');
+      if (counterChatBtn) {
+        counterChatBtn.click();
+        setTimeout(() => {
+          setWaitingForUser(false);
+          setWaitAction(null);
+          setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+        }, 600);
+      } else {
+        setWaitingForUser(false);
+        setWaitAction(null);
+        setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+      }
       return;
     }
 

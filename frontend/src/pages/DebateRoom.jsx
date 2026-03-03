@@ -377,6 +377,7 @@ const DebateRoom = () => {
           </button>
           <button
             type="button"
+            data-tour="debate-counter-chat-btn"
             onClick={() => setViewMode(viewMode === 'groups' ? 'counter' : 'groups')}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
           >
@@ -401,8 +402,8 @@ const DebateRoom = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Your stance on this topic:
               </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
+              <div className="flex gap-4" data-tour="debate-stance-radios">
+                <label className="flex items-center" data-tour="debate-stance-for">
                   <input
                     type="radio"
                     value="for"
@@ -412,7 +413,7 @@ const DebateRoom = () => {
                   />
                   <span className="text-green-600 dark:text-green-400 font-medium">For</span>
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center" data-tour="debate-stance-against">
                   <input
                     type="radio"
                     value="against"
@@ -696,6 +697,7 @@ const DebateGroup = ({ group, isFirst, onLike, onDislike, onRegenerate, onOpenCo
           {idealCounters.length > 0 && (
             <button
               type="button"
+              data-tour="debate-ideal-counter-btn"
               onClick={() => setShowIdealCounters(true)}
               className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
               title="View ideal counter-arguments"

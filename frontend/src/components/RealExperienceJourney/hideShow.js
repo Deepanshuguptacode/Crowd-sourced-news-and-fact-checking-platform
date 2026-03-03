@@ -93,6 +93,26 @@ export const unhighlightAll = () => {
   });
 };
 
+// ─── Pop-highlight: bright "just revealed" treatment ────────────────────────
+
+export const popHighlight = (el) => {
+  if (!el) return;
+  el.style.transition = 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+  el.style.boxShadow =
+    '0 0 0 4px rgba(34,197,94,0.85), 0 16px 48px rgba(34,197,94,0.45), 0 4px 20px rgba(0,0,0,0.18)';
+  el.style.transform = 'scale(1.04) translateY(-6px)';
+  el.style.position = 'relative';
+  el.style.zIndex = '99997';
+  el.style.outline = '2px solid rgba(34,197,94,0.7)';
+  el.style.outlineOffset = '3px';
+  // Settle back to scale(1) after pop but keep glow
+  setTimeout(() => {
+    if (el) {
+      el.style.transform = 'scale(1)';
+    }
+  }, 800);
+};
+
 // ─── Expand a group (click chevron if collapsed) ────────────────────────────
 
 export const expandGroup = async (groupCard) => {
@@ -115,20 +135,29 @@ export const expandGroup = async (groupCard) => {
   }
 };
 
-// ─── Select stance (click For/Against button in comment form) ───────────────
+// ─── Select stance (click For/Against radio in comment form) ────────────────
 
 export const selectStance = async (stance) => {
   const form = document.querySelector('[data-tour="debate-room-comment-input"]');
   if (!form) return;
-  const stanceButtons = form.querySelectorAll('button[type="button"]');
-  const target = Array.from(stanceButtons).find((btn) => {
-    const text = btn.textContent?.toLowerCase() || '';
-    if (stance === 'for') return text.includes('for');
-    if (stance === 'against') return text.includes('against');
-    return false;
-  });
-  if (target) {
-    target.click();
+  // Use the radio input directly
+  const radio = form.querySelector(`input[type="radio"][value="${stance}"]`);
+  if (radio) {
+    radio.click();
     await wait(300);
+    // Also visually highlight the label
+    const label = radio.closest('label') || radio.parentElement;
+    if (label) {
+      label.style.transition = 'all 0.3s ease';
+      label.style.boxShadow =
+        stance === 'for'
+          ? '0 0 0 3px rgba(34,197,94,0.7), 0 0 16px rgba(34,197,94,0.35)'
+          : '0 0 0 3px rgba(239,68,68,0.7), 0 0 16px rgba(239,68,68,0.35)';
+      label.style.borderRadius = '6px';
+      label.style.padding = '4px 8px';
+      setTimeout(() => {
+        if (label) label.style.boxShadow = '';
+      }, 2000);
+    }
   }
 };

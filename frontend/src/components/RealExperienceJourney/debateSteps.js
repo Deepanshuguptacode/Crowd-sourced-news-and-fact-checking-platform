@@ -80,12 +80,13 @@ export const buildDebateSteps = (analysis) => [
     id: 'debate-click-ideal-counter',
     icon: '🧠',
     title: 'Ideal Counter-Arguments',
-    subtitle: 'AI-generated descriptions',
+    subtitle: 'Click the purple button!',
     description:
-      'Every group has an AI-generated description that includes the "ideal counter-argument" — a guide for what the best opposing response should address. This helps debaters craft stronger, more focused rebuttals!',
+      'Each group has an “Ideal counters” button that shows AI-generated guidance on what the best opposing response should address. Click the highlighted “Ideal counters” button on any group card to see it!',
     gradient: 'from-violet-500 to-purple-600',
     target: null,
-    action: 'highlightIdealCounters',
+    action: 'highlightIdealCounterBtn',
+    waitForClick: 'idealCounterBtn',
   },
   {
     id: 'debate-type-counter',
@@ -111,9 +112,21 @@ export const buildDebateSteps = (analysis) => [
     title: 'Counter-Link Established!',
     subtitle: 'AI matched opposing views',
     description:
-      'The AI paired this opposing argument with its strongest matching group! The "Linked" badge and match % appear on both sides. Click "View Counter" to see the side-by-side Counter Chat View.',
+      'The AI paired this opposing argument with its strongest matching group! The counter-link badge and match % appear on the card. The “View counter-chat” button is now highlighted — click it next to explore the side-by-side Counter Chat View!',
     gradient: 'from-pink-500 to-rose-600',
     action: 'showCounterGroup',
+  },
+  {
+    id: 'debate-counter-chat',
+    icon: '💬',
+    title: 'Counter Chat View',
+    subtitle: 'See opposing sides side-by-side',
+    description:
+      'The Counter Chat View shows for and against arguments paired together, making it easy to compare both sides. Click the highlighted “Counter Chat View” button at the top to switch to this layout!',
+    gradient: 'from-blue-500 to-cyan-600',
+    target: '[data-tour="debate-room-view-toggle"]',
+    action: 'highlightCounterChatBtn',
+    waitForClick: 'counterChatBtn',
   },
   {
     id: 'debate-type-offtopic',
@@ -149,7 +162,7 @@ export const buildDebateSteps = (analysis) => [
     title: 'Debate Tour Complete!',
     subtitle: 'All AI features demonstrated',
     description:
-      'You\'ve experienced the full AI-powered debate system:\n\n✅ Similar comments auto-grouped\n✅ New groups created for unique arguments\n✅ Ideal counter-argument descriptions\n✅ Counter-argument linking with match %\n✅ Off-topic detection & moderation\n\nAll powered by Agentic AI with semantic analysis!',
+      'You\'ve experienced the full AI-powered debate system:\n\n✅ Similar comments auto-grouped\n✅ New groups created for unique arguments\n✅ Ideal counter-argument guidance\n✅ Counter-argument linking with match %\n✅ Counter Chat View for side-by-side comparison\n✅ Off-topic detection & moderation\n\nAll powered by Agentic AI with semantic analysis!',
     gradient: 'from-amber-500 to-yellow-500',
   },
 ];
