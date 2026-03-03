@@ -84,7 +84,9 @@ export const buildDebateSteps = (analysis) => [
     description:
       'Each group has an “Ideal counters” button that shows AI-generated guidance on what the best opposing response should address. Click the highlighted “Ideal counters” button on any group card to see it!',
     gradient: 'from-violet-500 to-purple-600',
-    target: null,
+    // target MUST point at the button so the spotlight passthrough div renders,
+    // allowing handleUserAction to fire when the user clicks it.
+    target: '[data-tour="debate-ideal-counter-btn"]',
     action: 'highlightIdealCounterBtn',
     waitForClick: 'idealCounterBtn',
   },

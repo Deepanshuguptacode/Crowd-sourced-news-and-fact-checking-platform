@@ -255,40 +255,202 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
       // DEBATE: Show clubbed comment using re-query
       if (currentStep.action === 'showClubbedComment' && analysis) {
-        console.log('[Action] showClubbedComment — re-querying multi-comment');
-        
-        // Ungrouped mode: find via text prefix
+        console.log('[DBG showClubbedComment] ── START ──');
+        console.log('[DBG showClubbedComment] analysis flags:', {
+          isUngroupedOnly: analysis.isUngroupedOnly,
+          multiGroupTitle: analysis.multiGroupTitle,
+          multiGroupStance: analysis.multiGroupStance,
+          multiGroupCommentTextPrefix: analysis.multiGroupCommentTextPrefix?.slice(0, 50),
+        });
+
+        // ── isUngroupedOnly mode ──
+        // At analysis time there were no groups. After posting a similar comment the AI
+        // may have CREATED a new group. We must handle both outcomes:
+        //   A) A group now exists → expand it, highlight the comment inside it.
+        //   B) No group was created → the comment is still a standalone ungrouped card.
         if (analysis.isUngroupedOnly && analysis.multiGroupCommentTextPrefix) {
-          const multiComment = findOffTopic(analysis.multiGroupCommentTextPrefix);
-          if (multiComment && !cancelled) {
-            showWithAnimation(multiComment);
-            await wait(600);
-            popHighlight(multiComment);
-            await scrollToTarget(multiComment);
-            console.log('[Tour] Ungrouped multi-comment shown');
+          // Phase 1 – wait for the API + React re-render to settle
+          console.log('[DBG showClubbedComment] isUngroupedOnly mode — waiting 1400ms for re-render…');
+          await wait(1400);
+          if (cancelled) return;
+
+          const prefix = analysis.multiGroupCommentTextPrefix;
+
+          // Phase 2 – check if a group was created that contains our comment
+          const groupsContainer = document.querySelector('[data-tour="debate-room-groups"]');
+          const allGroupCards = groupsContainer ? Array.from(groupsContainer.querySelectorAll('.mb-6')) : [];
+          console.log('[DBG showClubbedComment] groups found after re-render:', allGroupCards.length);
+
+          let foundInGroup = false;
+
+          for (const groupCard of allGroupCards) {
+            if (cancelled) break;
+
+            // Expand the group so we can read its comments
+            const innerCard = groupCard.querySelector('.rounded-lg.p-4.border');
+            const alreadyOpen = innerCard && (
+              innerCard.querySelector('.mt-3.space-y-2') ||
+              innerCard.querySelector('.divide-y') ||
+              innerCard.querySelector('[class*="space-y"]')
+            );
+            console.log('[DBG showClubbedComment] checking group, alreadyOpen:', alreadyOpen,
+              '| title:', innerCard?.querySelector('h3')?.textContent?.trim()?.slice(0, 50));
+
+            if (!alreadyOpen) {
+              console.log('[DBG showClubbedComment] expanding group…');
+              const allBtns = innerCard ? Array.from(innerCard.querySelectorAll('button')) : [];
+              console.log('[DBG showClubbedComment] buttons:', allBtns.map(b => b.textContent?.trim().slice(0, 30)));
+              await expandGroup(groupCard);
+              await wait(500);
+            }
+
+            // Now look for our comment inside
+            const container = innerCard && (
+              innerCard.querySelector('.mt-3.space-y-2') ||
+              innerCard.querySelector('.divide-y') ||
+              innerCard.querySelector('[class*="space-y"]')
+            );
+            console.log('[DBG showClubbedComment] container after expand:', !!container,
+              '| children:', container?.children?.length);
+
+            if (!container) continue;
+
+            let targetComment = null;
+            for (const child of Array.from(container.children)) {
+              const t = child.textContent?.trim() || '';
+              console.log('[DBG showClubbedComment]   child[:60]:', t.slice(0, 60));
+              if (t.startsWith(prefix.slice(0, 40))) {
+                targetComment = child;
+                console.log('[DBG showClubbedComment] ✓ found comment in group');
+                break;
+              }
+            }
+
+            if (targetComment && !cancelled) {
+              foundInGroup = true;
+              // Restore visibility if it was hidden by tour
+              if (targetComment.style.display === 'none') {
+                showWithAnimation(targetComment);
+                await wait(400);
+              }
+              popHighlight(targetComment);
+              await scrollToTarget(targetComment);
+              await wait(200);
+              highlightResult(innerCard || groupCard);
+              Array.from(container.children).forEach((c) => pulseElement(c, 3000));
+              console.log('[DBG showClubbedComment] isUngroupedOnly → group expand + highlight done ✓');
+              break;
+            }
+          }
+
+          // Phase 3 – fallback: no group was created, comment is still a standalone card
+          if (!foundInGroup && !cancelled) {
+            console.log('[DBG showClubbedComment] no group found — falling back to ungrouped show');
+            const multiComment = findOffTopic(prefix);
+            console.log('[DBG showClubbedComment] ungrouped fallback found:', !!multiComment);
+            if (multiComment) {
+              showWithAnimation(multiComment);
+              await wait(600);
+              popHighlight(multiComment);
+              await scrollToTarget(multiComment);
+              console.log('[DBG showClubbedComment] ungrouped multi-comment shown ✓');
+            }
           }
         // Normal grouped mode
         } else if (analysis.multiGroupTitle && analysis.multiGroupStance) {
-          const multiGroup = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
-          if (multiGroup) {
-            await expandGroup(multiGroup);
-            await wait(400);
-            
-            const multiComment = findCommentInGroup(multiGroup, analysis.multiGroupCommentTextPrefix);
-            if (multiComment && !cancelled) {
-              showWithAnimation(multiComment);
-              await wait(400);
-              popHighlight(multiComment);
-              await scrollToTarget(multiComment);
-              // Also highlight the group container so both the group and comment pop
-              await wait(200);
-              const groupCard = multiGroup.closest('[data-group-id]') || multiGroup;
-              highlightResult(groupCard);
-              // Highlight all visible comments in this group
-              const allComments = multiGroup.querySelectorAll('.divide-y > *, .space-y-2 > *, .mt-3 > *');
-              allComments.forEach((c) => pulseElement(c, 3000));
-              console.log('[Tour] Multi-comment shown with group highlight');
+          // ── Phase 1: wait for React to finish re-rendering after post ──
+          // The API processes the comment, React re-renders groups.
+          // We wait BEFORE touching the DOM so we operate on fresh nodes.
+          console.log('[DBG showClubbedComment] grouped mode — waiting 1200ms for React re-render…');
+          await wait(1200);
+          if (cancelled) return;
+
+          // ── Phase 2: Find the group fresh ──
+          const freshGroup = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
+          console.log('[DBG showClubbedComment] freshGroup found after wait:', !!freshGroup, freshGroup?.className?.slice(0, 60));
+          if (!freshGroup) {
+            console.warn('[DBG showClubbedComment] ⚠ group not found after re-render — aborting');
+            return;
+          }
+
+          // ── Phase 3: Check accordion state ──
+          const innerCard = freshGroup.querySelector('.rounded-lg.p-4.border');
+          console.log('[DBG showClubbedComment] innerCard found:', !!innerCard);
+          // Possible expanded containers (AdvancedDebateRoom uses .mt-3.space-y-2, DebateRoom uses .divide-y)
+          const commentContainer = innerCard && (
+            innerCard.querySelector('.mt-3.space-y-2') ||
+            innerCard.querySelector('.divide-y') ||
+            innerCard.querySelector('[class*="space-y"]')
+          );
+          const alreadyExpanded = !!commentContainer;
+          console.log('[DBG showClubbedComment] alreadyExpanded:', alreadyExpanded, '| commentContainer class:', commentContainer?.className?.slice(0, 60));
+
+          if (!alreadyExpanded) {
+            console.log('[DBG showClubbedComment] accordion closed — calling expandGroup…');
+            // Try clicking the chevron/expand button inside the group header
+            // Walk ALL buttons and log them to help diagnose
+            const allBtns = innerCard ? Array.from(innerCard.querySelectorAll('button')) : [];
+            console.log('[DBG showClubbedComment] buttons inside innerCard:', allBtns.map(b => b.textContent?.trim().slice(0, 30) + ' | classes: ' + b.className?.slice(0, 50)));
+            await expandGroup(freshGroup);
+            await wait(500);
+          }
+
+          // ── Phase 4: Re-check container after potential expansion ──
+          const expandedContainer = innerCard && (
+            innerCard.querySelector('.mt-3.space-y-2') ||
+            innerCard.querySelector('.divide-y') ||
+            innerCard.querySelector('[class*="space-y"]')
+          );
+          console.log('[DBG showClubbedComment] expandedContainer after expand attempt:', !!expandedContainer,
+            '| children:', expandedContainer?.children?.length);
+
+          // ── Phase 5: Find the target comment ──
+          let freshComment = findCommentInGroup(freshGroup, analysis.multiGroupCommentTextPrefix);
+          console.log('[DBG showClubbedComment] freshComment found:', !!freshComment);
+
+          // Fallback: if still not found, look through ALL comments in the expanded container
+          if (!freshComment && expandedContainer) {
+            const prefix = analysis.multiGroupCommentTextPrefix?.slice(0, 40) || '';
+            const allEls = Array.from(expandedContainer.children);
+            console.log('[DBG showClubbedComment] fallback search across', allEls.length, 'children with prefix:', prefix);
+            for (const el of allEls) {
+              const t = el.textContent?.trim() || '';
+              console.log('[DBG showClubbedComment]   child text[:60]:', t.slice(0, 60));
+              if (prefix && t.startsWith(prefix)) {
+                freshComment = el;
+                console.log('[DBG showClubbedComment] fallback found comment ✓');
+                break;
+              }
             }
+          }
+
+          if (freshComment && !cancelled) {
+            // If the element is still hidden (style.display:none from hideElement), restore it
+            if (freshComment.style.display === 'none') {
+              console.log('[DBG showClubbedComment] comment was still hidden — showing with animation');
+              showWithAnimation(freshComment);
+              await wait(400);
+            } else {
+              console.log('[DBG showClubbedComment] comment already visible (React re-rendered it)');
+            }
+            popHighlight(freshComment);
+            await scrollToTarget(freshComment);
+            // Highlight the group container as well
+            await wait(200);
+            const groupCard = freshGroup.closest('[data-group-id]') || freshGroup;
+            highlightResult(groupCard);
+            const allGroupComments = expandedContainer
+              ? Array.from(expandedContainer.children)
+              : [];
+            console.log('[DBG showClubbedComment] pulsing', allGroupComments.length, 'group comments');
+            allGroupComments.forEach((c) => pulseElement(c, 3000));
+            console.log('[DBG showClubbedComment] ✓ done');
+          } else {
+            console.warn('[DBG showClubbedComment] ⚠ comment NOT found — highlighting the group card only');
+            // At minimum highlight the group so user sees the count went up
+            popHighlight(freshGroup);
+            await scrollToTarget(freshGroup);
+            highlightResult(freshGroup);
           }
         }
       }
@@ -381,25 +543,34 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
       // DEBATE: Highlight ideal counter button and wait for user click
       if (currentStep.action === 'highlightIdealCounterBtn' && !cancelled) {
-        console.log('[Action] highlightIdealCounterBtn — finding ideal counter buttons');
-        // Find all ideal counter buttons in group cards
+        console.log('[DBG highlightIdealCounterBtn] ── START ──');
         const idealBtns = document.querySelectorAll('[data-tour="debate-ideal-counter-btn"]');
+        console.log('[DBG highlightIdealCounterBtn] found', idealBtns.length, 'ideal counter buttons');
+        console.log('[DBG highlightIdealCounterBtn] step.target:', currentStep.target);
+        console.log('[DBG highlightIdealCounterBtn] spotlightRect at action start:', spotlightRect);
+
         if (idealBtns.length > 0) {
+          // Only highlight the FIRST button — the step target also points to the first one,
+          // so the spotlight passthrough div will be rendered over it.
           const firstBtn = idealBtns[0];
+          console.log('[DBG highlightIdealCounterBtn] firstBtn:', firstBtn.textContent?.trim(), '| rect:', firstBtn.getBoundingClientRect());
           await scrollToTarget(firstBtn);
           await wait(300);
           highlightAction(firstBtn);
-          // Also pulse all ideal counter buttons
-          idealBtns.forEach((btn) => {
-            btn.style.transition = 'all 0.3s ease';
-            btn.style.boxShadow = '0 0 0 3px rgba(147,51,234,0.8), 0 0 20px rgba(147,51,234,0.45)';
-            btn.style.transform = 'scale(1.12)';
-            btn.style.borderRadius = '6px';
-            btn.style.padding = '2px 6px';
-          });
-          console.log('[Tour] Ideal counter buttons highlighted, waiting for click');
+          firstBtn.style.boxShadow = '0 0 0 3px rgba(147,51,234,0.8), 0 0 20px rgba(147,51,234,0.45)';
+          firstBtn.style.transform = 'scale(1.12)';
+          firstBtn.style.borderRadius = '6px';
+          firstBtn.style.padding = '2px 6px';
+          // NOTE: After this action completes, setWaitingForUser(true) fires.
+          // Because step.target = '[data-tour="debate-ideal-counter-btn"]', spotlightRect
+          // will be set to the firstBtn rect, and the passthrough div WILL render,
+          // so clicking the spotlight area calls handleUserAction correctly.
+          console.log('[DBG highlightIdealCounterBtn] ✓ done — waitForClick will be set to:', currentStep.waitForClick);
         } else {
-          console.log('[Tour] No ideal counter buttons found');
+          console.warn('[DBG highlightIdealCounterBtn] ⚠ No ideal counter buttons found in DOM');
+          // Log all data-tour attributes present to help diagnose
+          const tourEls = document.querySelectorAll('[data-tour]');
+          console.log('[DBG highlightIdealCounterBtn] All [data-tour] elements:', Array.from(tourEls).map(e => e.dataset.tour).join(', '));
         }
       }
 
@@ -651,7 +822,12 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       // COMMON: SET WAITING FOR USER
       // ═══════════════════════════════════════════════════════════════════
 
+      if (!cancelled) {
+        console.log('[DBG exec end] step:', currentStep.action, '| waitForClick:', currentStep.waitForClick, '| cancelled:', cancelled);
+      }
+
       if (currentStep.waitForClick && !cancelled) {
+        console.log('[DBG exec] setWaitingForUser(true) for waitForClick:', currentStep.waitForClick);
         setWaitingForUser(true);
         setWaitAction(currentStep.waitForClick);
       }
@@ -774,7 +950,9 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
     // Ideal counter: click the first ideal counter button then advance
     if (waitAction === 'ideal-counter' || waitAction === 'idealCounterBtn') {
+      console.log('[DBG handleUserAction] idealCounterBtn — programmatically clicking first button');
       const idealBtn = document.querySelector('[data-tour="debate-ideal-counter-btn"]');
+      console.log('[DBG handleUserAction] idealBtn found:', !!idealBtn, idealBtn?.textContent?.trim());
       if (idealBtn) idealBtn.click();
       setWaitingForUser(false);
       setWaitAction(null);
@@ -992,7 +1170,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           height="100%"
           fill="rgba(0,0,0,0.55)"
           mask="url(#real-exp-mask)"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: waitingForUser && !spotlightRect ? 'none' : 'auto' }}
         />
       </svg>
 

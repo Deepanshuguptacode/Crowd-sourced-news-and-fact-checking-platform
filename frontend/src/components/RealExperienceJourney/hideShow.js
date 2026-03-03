@@ -115,13 +115,20 @@ export const popHighlight = (el) => {
 
 // ─── Expand a group (click chevron if collapsed) ────────────────────────────
 
-export const expandGroup = async (groupCard) => {
+/**
+ * Expand a group accordion.
+ * @param {Element} groupCard  - the group root element
+ * @param {boolean} force      - if true, click the chevron even if already expanded
+ */
+export const expandGroup = async (groupCard, force = false) => {
   if (!groupCard) return;
   const innerCard = groupCard.querySelector('.rounded-lg.p-4.border');
   if (!innerCard) return;
-  // Already expanded?
-  const commentsDiv = innerCard.querySelector('.mt-3.space-y-2');
-  if (commentsDiv) return;
+  // Already expanded? (skip this guard when force=true)
+  if (!force) {
+    const commentsDiv = innerCard.querySelector('.mt-3.space-y-2');
+    if (commentsDiv) return;
+  }
   // Find the chevron button
   const buttons = innerCard.querySelectorAll('button');
   const chevronBtn = Array.from(buttons).find(
