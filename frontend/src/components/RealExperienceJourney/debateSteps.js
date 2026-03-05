@@ -43,13 +43,12 @@ export const buildDebateSteps = (analysis) => [
     id: 'debate-show-clubbed',
     icon: '📂',
     title: 'Comment Clubbed Into Group!',
-    subtitle: 'Expand the group to see it',
+    subtitle: 'AI grouped similar arguments',
     description:
-      'The AI grouped your comment with similar ones!\n\n👆 The ▼ expand button is highlighted on the matching group. Click it to open the group and see your comment highlighted inside.\n\nYou can also click Skip → if the button is hard to find.',
+      'The AI grouped your comment with similar ones! The matching group is now open so you can see all comments highlighted inside. The AI auto-generated the group title and description!',
     gradient: 'from-green-500 to-emerald-600',
     target: null,
     action: 'showClubbedComment',
-    waitForClick: 'expandClubbedGroup',
   },
   {
     id: 'debate-type-new',
@@ -84,7 +83,7 @@ export const buildDebateSteps = (analysis) => [
     title: 'Ideal Counter-Arguments',
     subtitle: 'Click the purple button!',
     description:
-      'Each group has an “Ideal counters” button that shows AI-generated guidance on what the best opposing response should address. Click the highlighted “Ideal counters” button on any group card to see it!',
+      'Each group has an "Ideal counters" button that shows AI-generated guidance on what the best opposing response should address. Click the highlighted button to open the panel, read through the counters, then close it to continue!',
     gradient: 'from-violet-500 to-purple-600',
     // target MUST point at the button so the spotlight passthrough div renders,
     // allowing handleUserAction to fire when the user clicks it.
@@ -141,6 +140,18 @@ export const buildDebateSteps = (analysis) => [
       'Here is the counter-argument thread your comment created! The left side (FOR) and right side (AGAINST) are now paired by the AI. Both groups are highlighted — this is the live counter-argument link.',
     gradient: 'from-pink-500 to-rose-600',
     action: 'highlightCounterPairInChat',
+  },
+  {
+    id: 'debate-back-to-groups',
+    icon: '👥',
+    title: 'Back to Group View',
+    subtitle: 'Switch back for the next feature',
+    description:
+      "Let's go back to the group layout to see one more AI feature. Click the highlighted \"Groups View\" button at the top!",
+    gradient: 'from-blue-500 to-cyan-600',
+    target: '[data-tour="debate-room-view-toggle"]',
+    action: 'highlightGroupViewBtn',
+    waitForClick: 'groupViewBtn',
   },
   {
     id: 'debate-type-offtopic',

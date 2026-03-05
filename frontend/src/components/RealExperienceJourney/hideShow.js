@@ -40,10 +40,43 @@ export const showWithAnimation = (el, displayVal = '') => {
   );
 };
 
+// ─── Tour-styled marking ────────────────────────────────────────────────────
+// Every visual effect marks its target so we can sweep-clean between steps.
+
+const markTourStyled = (el) => {
+  if (el) el.dataset.tourStyled = 'true';
+};
+
+/**
+ * Strip ALL tour visual styles from every marked element.
+ * Call this at the START of each step to reset the previous step's effects.
+ * Does NOT touch display/data-tour-hidden (structural state managed by hide/show).
+ */
+export const cleanupAllTourStyles = () => {
+  document.querySelectorAll('[data-tour-styled="true"]').forEach((el) => {
+    el.style.boxShadow = '';
+    el.style.transform = '';
+    el.style.zIndex = '';
+    el.style.position = '';
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+    el.style.borderRadius = '';
+    el.style.background = '';
+    el.style.transition = '';
+    el.style.padding = '';
+    el.style.color = '';
+    el.style.opacity = '';
+    delete el.dataset.tourStyled;
+  });
+  // Also remove dynamically created badges
+  document.querySelectorAll('.tour-expert-badge').forEach((b) => b.remove());
+};
+
 // ─── Pulse / Highlight ──────────────────────────────────────────────────────
 
 export const pulseElement = (el, duration = 3000) => {
   if (!el) return;
+  markTourStyled(el);
   el.style.transition = 'box-shadow 0.3s ease';
   el.style.boxShadow =
     '0 0 0 4px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.35)';
@@ -55,6 +88,7 @@ export const pulseElement = (el, duration = 3000) => {
 
 export const highlightResult = (el) => {
   if (!el) return;
+  markTourStyled(el);
   el.style.transition = 'all 0.4s ease';
   el.style.boxShadow =
     '0 0 0 3px rgba(34,197,94,0.7), 0 0 24px rgba(34,197,94,0.35)';
@@ -65,6 +99,7 @@ export const highlightResult = (el) => {
 
 export const highlightAction = (el) => {
   if (!el) return;
+  markTourStyled(el);
   el.style.transition = 'all 0.3s ease';
   el.style.boxShadow =
     '0 0 0 3px rgba(234,179,8,0.7), 0 0 24px rgba(234,179,8,0.35)';
@@ -97,6 +132,7 @@ export const unhighlightAll = () => {
 
 export const popHighlight = (el) => {
   if (!el) return;
+  markTourStyled(el);
   el.style.transition = 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)';
   el.style.boxShadow =
     '0 0 0 4px rgba(34,197,94,0.85), 0 16px 48px rgba(34,197,94,0.45), 0 4px 20px rgba(0,0,0,0.18)';
@@ -154,6 +190,7 @@ export const selectStance = async (stance) => {
     // Also visually highlight the label
     const label = radio.closest('label') || radio.parentElement;
     if (label) {
+      markTourStyled(label);
       label.style.transition = 'all 0.3s ease';
       label.style.boxShadow =
         stance === 'for'

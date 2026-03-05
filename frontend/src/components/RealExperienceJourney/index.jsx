@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RealExperienceJourney — Interactive Hide/Show Tour (v3)
  *
  * Modular architecture — see sibling files for helpers, analyzers, and steps.
@@ -28,10 +28,14 @@ import {
   highlightResult,
   highlightAction,
   popHighlight,
-  unhighlightAll,
+  unhighlightAll, // kept for potential direct use
+  cleanupAllTourStyles,
   expandGroup,
   selectStance,
 } from './hideShow';
+
+// Mark an element so cleanupAllTourStyles() can find & reset it between steps
+const markTourStyled = (el) => { if (el) el.dataset.tourStyled = 'true'; };
 import { analyzeDebateRoom, findGroup, findCommentInGroup, findOffTopic } from './debateAnalyzer';
 import { analyzeNewsFeed } from './newsAnalyzer';
 import { buildDebateSteps } from './debateSteps';
@@ -55,6 +59,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   const [waitingForUser, setWaitingForUser] = useState(false);
   const [waitAction, setWaitAction] = useState(null);
   const [stepsReady, setStepsReady] = useState(false);
+  const [overlayHidden, setOverlayHidden] = useState(false);
 
   const hiddenElementsRef = useRef([]);
   const clearedInputsRef = useRef([]);
@@ -160,7 +165,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       setActionRunning(true);
       setWaitingForUser(false);
       setWaitAction(null);
-      unhighlightAll();
+      cleanupAllTourStyles();
 
       const analysis = analysisRef.current;
 
@@ -327,6 +332,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (targetExpandBtn) {
             await scrollToTarget(targetExpandBtn);
             await wait(200);
+            markTourStyled(targetExpandBtn);
             targetExpandBtn.style.transition = 'all 0.3s ease';
             targetExpandBtn.style.boxShadow = '0 0 0 5px rgba(34,197,94,0.9), 0 0 22px rgba(34,197,94,0.6)';
             targetExpandBtn.style.transform = 'scale(1.6)';
@@ -430,6 +436,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
             await wait(500);
             const counterLinkBtns = counterGroup.querySelectorAll('[data-tour="debate-room-counter-links"] button, button[title*="counter"]');
             counterLinkBtns.forEach((btn) => {
+              markTourStyled(btn);
               btn.style.transition = 'all 0.3s ease';
               btn.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.8), 0 0 18px rgba(249,115,22,0.45)';
               btn.style.transform = 'scale(1.08)';
@@ -489,6 +496,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           await scrollToTarget(matchedThread);
           await wait(300);
           // Highlight the whole thread
+          markTourStyled(matchedThread);
           matchedThread.style.transition = 'all 0.4s ease';
           matchedThread.style.boxShadow = '0 0 0 3px rgba(236,72,153,0.7), 0 0 32px rgba(236,72,153,0.35)';
           matchedThread.style.borderRadius = '16px';
@@ -553,6 +561,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           await scrollToTarget(firstBtn);
           await wait(300);
           highlightAction(firstBtn);
+          markTourStyled(firstBtn);
           firstBtn.style.boxShadow = '0 0 0 3px rgba(147,51,234,0.8), 0 0 20px rgba(147,51,234,0.45)';
           firstBtn.style.transform = 'scale(1.12)';
           firstBtn.style.borderRadius = '6px';
@@ -577,6 +586,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         if (counterChatBtn) {
           await scrollToTarget(counterChatBtn);
           await wait(300);
+          markTourStyled(counterChatBtn);
           counterChatBtn.style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
           counterChatBtn.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.85), 0 0 28px rgba(59,130,246,0.5)';
           counterChatBtn.style.transform = 'scale(1.1)';
@@ -585,6 +595,24 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           console.log('[Tour] Counter Chat View button highlighted');
         } else {
           console.log('[Tour] Counter Chat View button not found');
+        }
+      }
+
+      // DEBATE: Highlight Groups View button (same toggle button, now showing "Groups View")
+      if (currentStep.action === 'highlightGroupViewBtn' && !cancelled) {
+        console.log('[Action] highlightGroupViewBtn — highlighting Groups View button');
+        const groupViewBtn = document.querySelector('[data-tour="debate-counter-chat-btn"]');
+        if (groupViewBtn) {
+          await scrollToTarget(groupViewBtn);
+          await wait(300);
+          markTourStyled(groupViewBtn);
+          groupViewBtn.style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+          groupViewBtn.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.85), 0 0 28px rgba(59,130,246,0.5)';
+          groupViewBtn.style.transform = 'scale(1.1)';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          console.log('[Tour] Groups View button highlighted');
+        } else {
+          console.log('[Tour] Groups View button not found');
         }
       }
 
@@ -855,6 +883,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
               'box-shadow:0 4px 15px rgba(245,158,11,0.4);z-index:99999;white-space:nowrap;' +
               'animation:pulse-ring 1.5s infinite;';
             badge.textContent = '🔍 Expert is analysing this comment...';
+            markTourStyled(expertSection);
             expertSection.style.position = 'relative';
             expertSection.appendChild(badge);
             pulseElement(expertSection, 5000);
@@ -871,6 +900,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
             if (upCountEls.length > 0) {
               const upEl = upCountEls[0];
               const original = parseInt(upEl.textContent) || 0;
+              markTourStyled(upEl);
               upEl.style.transition = 'all 0.4s ease';
               upEl.style.color = '#16a34a';
               upEl.style.transform = 'scale(1.5)';
@@ -950,10 +980,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         // Remove injected styles
         document.querySelectorAll('[data-tour-style]').forEach((s) => s.remove());
 
-        // Remove any tour-expert-badge leftovers
-        document.querySelectorAll('.tour-expert-badge').forEach((b) => b.remove());
-
-        unhighlightAll();
+        // Remove any tour-expert-badge leftovers + all visual styles
+        cleanupAllTourStyles();
 
         // Re-animate the card fully visible
         if (card) {
@@ -1036,7 +1064,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
   // ── Handle user clicking highlighted element ──
   const handleUserAction = useCallback(() => {
-    unhighlightAll();
+    cleanupAllTourStyles();
     
     console.log('[Tour] handleUserAction called, waitAction:', waitAction, 'currentStepIndex:', currentStepIndex);
 
@@ -1193,15 +1221,37 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       return;
     }
 
-    // Ideal counter: click the first ideal counter button then advance
+    // Ideal counter: click the button to open the modal, then wait for user to close it
     if (waitAction === 'ideal-counter' || waitAction === 'idealCounterBtn') {
       console.log('[DBG handleUserAction] idealCounterBtn — programmatically clicking first button');
       const idealBtn = document.querySelector('[data-tour="debate-ideal-counter-btn"]');
       console.log('[DBG handleUserAction] idealBtn found:', !!idealBtn, idealBtn?.textContent?.trim());
       if (idealBtn) idealBtn.click();
-      setWaitingForUser(false);
-      setWaitAction(null);
-      setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+
+      // Hide the tour overlay so the z-50 modal is visible and interactive
+      setOverlayHidden(true);
+
+      // Poll for the modal to disappear (user closed it)
+      const pollForClose = () => {
+        const pollInterval = setInterval(() => {
+          const modal = document.querySelector('.fixed.inset-0.bg-black');
+          if (!modal) {
+            clearInterval(pollInterval);
+            console.log('[DBG handleUserAction] idealCounter modal closed — advancing');
+            setOverlayHidden(false);
+            setWaitingForUser(false);
+            setWaitAction(null);
+            setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+          }
+        }, 300);
+        // Safety timeout: auto-advance after 30s if modal detection fails
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          setOverlayHidden(false);
+        }, 30000);
+      };
+      // Small delay to let the modal mount before we start polling
+      setTimeout(pollForClose, 600);
       return;
     }
 
@@ -1210,6 +1260,24 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       const counterChatBtn = document.querySelector('[data-tour="debate-counter-chat-btn"]');
       if (counterChatBtn) {
         counterChatBtn.click();
+        setTimeout(() => {
+          setWaitingForUser(false);
+          setWaitAction(null);
+          setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+        }, 600);
+      } else {
+        setWaitingForUser(false);
+        setWaitAction(null);
+        setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+      }
+      return;
+    }
+
+    // Groups view: click the toggle button (same button, now showing "Groups View") then advance
+    if (waitAction === 'groupViewBtn') {
+      const groupViewBtn = document.querySelector('[data-tour="debate-counter-chat-btn"]');
+      if (groupViewBtn) {
+        groupViewBtn.click();
         setTimeout(() => {
           setWaitingForUser(false);
           setWaitAction(null);
@@ -1286,8 +1354,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     sessionStorage.removeItem('tour_counterGroupText');
     sessionStorage.removeItem('tour_offTopicText');
 
-    // Remove all highlights
-    unhighlightAll();
+    // Remove all highlights and tour visual styles
+    cleanupAllTourStyles();
 
     // Disconnect any pending MutationObserver
     if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
@@ -1330,6 +1398,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     setSpotlightRect(null);
     setWaitingForUser(false);
     setWaitAction(null);
+    setOverlayHidden(false);
     setStepsReady(false);
     analysisRef.current = null;
     stepsRef.current = [];
@@ -1417,7 +1486,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   return (
     <div className="fixed inset-0 z-[99998]" style={{ pointerEvents: 'none' }}>
       {/* ── Spotlight Overlay ── */}
-      <svg className="fixed inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+      <svg className="fixed inset-0 w-full h-full" style={{ pointerEvents: 'none', visibility: overlayHidden ? 'hidden' : 'visible' }}>
         <defs>
           <mask id="real-exp-mask">
             <rect width="100%" height="100%" fill="white" />
@@ -1443,7 +1512,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       </svg>
 
       {/* ── Pulsing ring ── */}
-      {spotlightRect && (
+      {spotlightRect && !overlayHidden && (
         <div
           className="fixed rounded-xl pointer-events-none"
           style={{
@@ -1458,7 +1527,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       )}
 
       {/* ── Clickable passthrough ── */}
-      {spotlightRect && waitingForUser && (
+      {spotlightRect && waitingForUser && !overlayHidden && (
         <div
           className="fixed cursor-pointer z-[99999]"
           style={{
