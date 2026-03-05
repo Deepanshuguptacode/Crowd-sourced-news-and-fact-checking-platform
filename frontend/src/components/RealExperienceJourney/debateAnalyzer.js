@@ -66,22 +66,29 @@ export const findCommentInGroup = (groupCard, textPrefix) => {
   
   const comments = Array.from(commentsDiv.children);
   console.log('[findCommentInGroup] Found', comments.length, 'comments to check');
-  
+
+  const normalizedPrefix = textPrefix.slice(0, 40).trim();
+
   for (let i = 0; i < comments.length; i++) {
     const c = comments[i];
-    // Target the SPECIFIC p tag that holds comment text
-    // It has className: "text-gray-700 dark:text-gray-300 text-sm mb-3"
-    const commentTextP = c.querySelector('p.text-gray-700.text-sm.mb-3, p.text-sm.mb-3');
-    if (commentTextP) {
-      const t = commentTextP?.textContent?.trim() || '';
-      if (t && t.startsWith(textPrefix) && t.length > 20) {
-        console.log('[findCommentInGroup] Found matching comment at index', i, ':', t.slice(0, 50));
+    // Strategy 1: look for any <p> whose text starts with our prefix
+    const allPs = c.querySelectorAll('p');
+    for (const p of allPs) {
+      const t = p.textContent?.trim() || '';
+      if (t && t.startsWith(normalizedPrefix) && t.length > 20) {
+        console.log('[findCommentInGroup] Found via <p> at index', i, ':', t.slice(0, 50));
         return c;
       }
     }
+    // Strategy 2: full card text contains prefix
+    const fullText = c.textContent?.trim() || '';
+    if (fullText && fullText.includes(normalizedPrefix) && normalizedPrefix.length >= 20) {
+      console.log('[findCommentInGroup] Found via fullText at index', i, ':', fullText.slice(0, 50));
+      return c;
+    }
   }
-  
-  console.warn('[findCommentInGroup] No matching comment found');
+
+  console.warn('[findCommentInGroup] No matching comment found. Prefix was:', normalizedPrefix);
   return null;
 };
 

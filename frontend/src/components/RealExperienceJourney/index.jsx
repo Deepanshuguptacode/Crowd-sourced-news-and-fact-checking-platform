@@ -37,6 +37,7 @@ import { analyzeNewsFeed } from './newsAnalyzer';
 import { buildDebateSteps } from './debateSteps';
 import { buildNewsSteps } from './newsSteps';
 import { calcPanelPosition } from './panelPosition';
+import { NEWS_MOCK } from './constants';
 import VerdictRulesPanel from './VerdictRulesPanel';
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -62,6 +63,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   const stepsRef = useRef([]);
   const tourPhaseRef = useRef(''); // 'debate' | 'news-home' | 'news-submit' | 'news-back'
   const currentStepHiddenRef = useRef(null); // Track what was hidden for current step
+  const observerRef = useRef(null);           // MutationObserver for expand detection
+  const clubbedGroupDataRef = useRef(null);   // { groupCard, innerCard, searchPrefix }
 
   const isDebate = currentPath?.startsWith('/debate-room/');
   const isHome = currentPath === '/home';
@@ -253,204 +256,122 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         }
       }
 
-      // DEBATE: Show clubbed comment using re-query
+      // DEBATE: Show clubbed comment — finds the group that has the comment,
+      // styles its expand button with a green glow, then sets up a MutationObserver
+      // so that when the USER clicks the button, the tour auto-advances and
+      // highlights the newly visible comment.
       if (currentStep.action === 'showClubbedComment' && analysis) {
         console.log('[DBG showClubbedComment] ── START ──');
-        console.log('[DBG showClubbedComment] analysis flags:', {
-          isUngroupedOnly: analysis.isUngroupedOnly,
-          multiGroupTitle: analysis.multiGroupTitle,
-          multiGroupStance: analysis.multiGroupStance,
-          multiGroupCommentTextPrefix: analysis.multiGroupCommentTextPrefix?.slice(0, 50),
-        });
+        console.log('[DBG showClubbedComment] prefix:', analysis.multiGroupCommentTextPrefix?.slice(0, 50));
 
-        // ── isUngroupedOnly mode ──
-        // At analysis time there were no groups. After posting a similar comment the AI
-        // may have CREATED a new group. We must handle both outcomes:
-        //   A) A group now exists → expand it, highlight the comment inside it.
-        //   B) No group was created → the comment is still a standalone ungrouped card.
-        if (analysis.isUngroupedOnly && analysis.multiGroupCommentTextPrefix) {
-          // Phase 1 – wait for the API + React re-render to settle
-          console.log('[DBG showClubbedComment] isUngroupedOnly mode — waiting 1400ms for re-render…');
-          await wait(1400);
-          if (cancelled) return;
+        // Disconnect any previous observer
+        if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
 
-          const prefix = analysis.multiGroupCommentTextPrefix;
+        // Step 1: wait for the API + React re-render after the post
+        await wait(1500);
+        if (cancelled) return;
 
-          // Phase 2 – check if a group was created that contains our comment
-          const groupsContainer = document.querySelector('[data-tour="debate-room-groups"]');
-          const allGroupCards = groupsContainer ? Array.from(groupsContainer.querySelectorAll('.mb-6')) : [];
-          console.log('[DBG showClubbedComment] groups found after re-render:', allGroupCards.length);
+        const searchPrefix = (analysis.multiGroupCommentTextPrefix || '').slice(0, 40).trim();
 
-          let foundInGroup = false;
-
-          for (const groupCard of allGroupCards) {
-            if (cancelled) break;
-
-            // Expand the group so we can read its comments
-            const innerCard = groupCard.querySelector('.rounded-lg.p-4.border');
-            const alreadyOpen = innerCard && (
-              innerCard.querySelector('.mt-3.space-y-2') ||
-              innerCard.querySelector('.divide-y') ||
-              innerCard.querySelector('[class*="space-y"]')
-            );
-            console.log('[DBG showClubbedComment] checking group, alreadyOpen:', alreadyOpen,
-              '| title:', innerCard?.querySelector('h3')?.textContent?.trim()?.slice(0, 50));
-
-            if (!alreadyOpen) {
-              console.log('[DBG showClubbedComment] expanding group…');
-              const allBtns = innerCard ? Array.from(innerCard.querySelectorAll('button')) : [];
-              console.log('[DBG showClubbedComment] buttons:', allBtns.map(b => b.textContent?.trim().slice(0, 30)));
-              await expandGroup(groupCard);
-              await wait(500);
+        // Helper: find a comment card in a container by checking all its <p> texts
+        const findInContainer = (container) => {
+          for (const child of Array.from(container.children)) {
+            for (const p of child.querySelectorAll('p')) {
+              const t = p.textContent?.trim() || '';
+              if (t.startsWith(searchPrefix) && t.length > 20) return child;
             }
-
-            // Now look for our comment inside
-            const container = innerCard && (
-              innerCard.querySelector('.mt-3.space-y-2') ||
-              innerCard.querySelector('.divide-y') ||
-              innerCard.querySelector('[class*="space-y"]')
-            );
-            console.log('[DBG showClubbedComment] container after expand:', !!container,
-              '| children:', container?.children?.length);
-
-            if (!container) continue;
-
-            let targetComment = null;
-            for (const child of Array.from(container.children)) {
-              const t = child.textContent?.trim() || '';
-              console.log('[DBG showClubbedComment]   child[:60]:', t.slice(0, 60));
-              if (t.startsWith(prefix.slice(0, 40))) {
-                targetComment = child;
-                console.log('[DBG showClubbedComment] ✓ found comment in group');
-                break;
-              }
-            }
-
-            if (targetComment && !cancelled) {
-              foundInGroup = true;
-              // Restore visibility if it was hidden by tour
-              if (targetComment.style.display === 'none') {
-                showWithAnimation(targetComment);
-                await wait(400);
-              }
-              popHighlight(targetComment);
-              await scrollToTarget(targetComment);
-              await wait(200);
-              highlightResult(innerCard || groupCard);
-              Array.from(container.children).forEach((c) => pulseElement(c, 3000));
-              console.log('[DBG showClubbedComment] isUngroupedOnly → group expand + highlight done ✓');
-              break;
-            }
+            if (searchPrefix.length >= 20 && child.textContent?.trim().includes(searchPrefix)) return child;
           }
+          return null;
+        };
 
-          // Phase 3 – fallback: no group was created, comment is still a standalone card
-          if (!foundInGroup && !cancelled) {
-            console.log('[DBG showClubbedComment] no group found — falling back to ungrouped show');
-            const multiComment = findOffTopic(prefix);
-            console.log('[DBG showClubbedComment] ungrouped fallback found:', !!multiComment);
-            if (multiComment) {
-              showWithAnimation(multiComment);
-              await wait(600);
-              popHighlight(multiComment);
-              await scrollToTarget(multiComment);
-              console.log('[DBG showClubbedComment] ungrouped multi-comment shown ✓');
-            }
-          }
-        // Normal grouped mode
-        } else if (analysis.multiGroupTitle && analysis.multiGroupStance) {
-          // ── Phase 1: wait for React to finish re-rendering after post ──
-          // The API processes the comment, React re-renders groups.
-          // We wait BEFORE touching the DOM so we operate on fresh nodes.
-          console.log('[DBG showClubbedComment] grouped mode — waiting 1200ms for React re-render…');
-          await wait(1200);
-          if (cancelled) return;
+        // Step 2: scan every group — expand temporarily to find the right one
+        const groupsContainer = document.querySelector('[data-tour="debate-room-groups"]');
+        const allGroupCards = groupsContainer ? Array.from(groupsContainer.querySelectorAll('.mb-6')) : [];
+        console.log('[DBG showClubbedComment] groups found:', allGroupCards.length);
 
-          // ── Phase 2: Find the group fresh ──
-          const freshGroup = findGroup(analysis.multiGroupTitle, analysis.multiGroupStance);
-          console.log('[DBG showClubbedComment] freshGroup found after wait:', !!freshGroup, freshGroup?.className?.slice(0, 60));
-          if (!freshGroup) {
-            console.warn('[DBG showClubbedComment] ⚠ group not found after re-render — aborting');
-            return;
-          }
+        let targetInnerCard = null;
+        let targetExpandBtn = null;
 
-          // ── Phase 3: Check accordion state ──
-          const innerCard = freshGroup.querySelector('.rounded-lg.p-4.border');
-          console.log('[DBG showClubbedComment] innerCard found:', !!innerCard);
-          // Possible expanded containers (AdvancedDebateRoom uses .mt-3.space-y-2, DebateRoom uses .divide-y)
-          const commentContainer = innerCard && (
-            innerCard.querySelector('.mt-3.space-y-2') ||
-            innerCard.querySelector('.divide-y') ||
-            innerCard.querySelector('[class*="space-y"]')
-          );
-          const alreadyExpanded = !!commentContainer;
-          console.log('[DBG showClubbedComment] alreadyExpanded:', alreadyExpanded, '| commentContainer class:', commentContainer?.className?.slice(0, 60));
+        for (const groupCard of allGroupCards) {
+          if (cancelled) break;
+          const innerCard = groupCard.querySelector('.rounded-lg.p-4.border');
+          const title = innerCard?.querySelector('h3')?.textContent?.trim()?.slice(0, 50);
+          const wasOpen = !!innerCard?.querySelector('.mt-3.space-y-2');
+          console.log('[DBG showClubbedComment] checking group:', title, '| open:', wasOpen);
 
-          if (!alreadyExpanded) {
-            console.log('[DBG showClubbedComment] accordion closed — calling expandGroup…');
-            // Try clicking the chevron/expand button inside the group header
-            // Walk ALL buttons and log them to help diagnose
-            const allBtns = innerCard ? Array.from(innerCard.querySelectorAll('button')) : [];
-            console.log('[DBG showClubbedComment] buttons inside innerCard:', allBtns.map(b => b.textContent?.trim().slice(0, 30) + ' | classes: ' + b.className?.slice(0, 50)));
-            await expandGroup(freshGroup);
-            await wait(500);
-          }
+          if (!wasOpen) { await expandGroup(groupCard); await wait(400); }
 
-          // ── Phase 4: Re-check container after potential expansion ──
-          const expandedContainer = innerCard && (
-            innerCard.querySelector('.mt-3.space-y-2') ||
-            innerCard.querySelector('.divide-y') ||
-            innerCard.querySelector('[class*="space-y"]')
-          );
-          console.log('[DBG showClubbedComment] expandedContainer after expand attempt:', !!expandedContainer,
-            '| children:', expandedContainer?.children?.length);
+          const container = innerCard?.querySelector('.mt-3.space-y-2');
+          console.log('[DBG showClubbedComment] children:', container?.children?.length ?? 0);
 
-          // ── Phase 5: Find the target comment ──
-          let freshComment = findCommentInGroup(freshGroup, analysis.multiGroupCommentTextPrefix);
-          console.log('[DBG showClubbedComment] freshComment found:', !!freshComment);
-
-          // Fallback: if still not found, look through ALL comments in the expanded container
-          if (!freshComment && expandedContainer) {
-            const prefix = analysis.multiGroupCommentTextPrefix?.slice(0, 40) || '';
-            const allEls = Array.from(expandedContainer.children);
-            console.log('[DBG showClubbedComment] fallback search across', allEls.length, 'children with prefix:', prefix);
-            for (const el of allEls) {
-              const t = el.textContent?.trim() || '';
-              console.log('[DBG showClubbedComment]   child text[:60]:', t.slice(0, 60));
-              if (prefix && t.startsWith(prefix)) {
-                freshComment = el;
-                console.log('[DBG showClubbedComment] fallback found comment ✓');
-                break;
-              }
-            }
-          }
-
-          if (freshComment && !cancelled) {
-            // If the element is still hidden (style.display:none from hideElement), restore it
-            if (freshComment.style.display === 'none') {
-              console.log('[DBG showClubbedComment] comment was still hidden — showing with animation');
-              showWithAnimation(freshComment);
-              await wait(400);
-            } else {
-              console.log('[DBG showClubbedComment] comment already visible (React re-rendered it)');
-            }
-            popHighlight(freshComment);
-            await scrollToTarget(freshComment);
-            // Highlight the group container as well
-            await wait(200);
-            const groupCard = freshGroup.closest('[data-group-id]') || freshGroup;
-            highlightResult(groupCard);
-            const allGroupComments = expandedContainer
-              ? Array.from(expandedContainer.children)
-              : [];
-            console.log('[DBG showClubbedComment] pulsing', allGroupComments.length, 'group comments');
-            allGroupComments.forEach((c) => pulseElement(c, 3000));
-            console.log('[DBG showClubbedComment] ✓ done');
+          if (container && findInContainer(container)) {
+            console.log('[DBG showClubbedComment] ✓ comment is in group:', title);
+            targetInnerCard = innerCard;
+            // Save for skip-fallback
+            clubbedGroupDataRef.current = { groupCard, innerCard, searchPrefix };
+            // Collapse back so the USER clicks to open
+            await expandGroup(groupCard, true);
+            await wait(350);
+            // Re-query expand button AFTER the collapse re-render
+            targetExpandBtn = innerCard.querySelector('[data-tour="group-expand-btn"]');
+            break;
           } else {
-            console.warn('[DBG showClubbedComment] ⚠ comment NOT found — highlighting the group card only');
-            // At minimum highlight the group so user sees the count went up
-            popHighlight(freshGroup);
-            await scrollToTarget(freshGroup);
-            highlightResult(freshGroup);
+            if (!wasOpen) { await expandGroup(groupCard, true); await wait(200); }
+          }
+        }
+
+        if (targetInnerCard && !cancelled) {
+          // Step 3: style the expand button with a green halo
+          // Inline styles survive React re-renders (React doesn’t overwrite styles it didn’t set)
+          if (targetExpandBtn) {
+            await scrollToTarget(targetExpandBtn);
+            await wait(200);
+            targetExpandBtn.style.transition = 'all 0.3s ease';
+            targetExpandBtn.style.boxShadow = '0 0 0 5px rgba(34,197,94,0.9), 0 0 22px rgba(34,197,94,0.6)';
+            targetExpandBtn.style.transform = 'scale(1.6)';
+            targetExpandBtn.style.borderRadius = '50%';
+            targetExpandBtn.style.background = 'rgba(34,197,94,0.15)';
+            console.log('[DBG showClubbedComment] expand button styled with green halo');
+          }
+
+          // Step 4: watch for the comments container to appear (user clicked expand)
+          observerRef.current = new MutationObserver(() => {
+            const commentsContainer = targetInnerCard.querySelector('.mt-3.space-y-2');
+            if (!commentsContainer) return;
+            // Disconnect at once so it doesn’t fire again
+            observerRef.current?.disconnect();
+            observerRef.current = null;
+            console.log('[DBG showClubbedComment] MutationObserver fired — group expanded by user');
+            // Small delay for React to finish rendering all comments
+            setTimeout(() => {
+              const foundComment = findInContainer(commentsContainer);
+              console.log('[DBG showClubbedComment] comment found after user expand:', !!foundComment);
+              if (foundComment) {
+                if (foundComment.style.display === 'none') showWithAnimation(foundComment);
+                popHighlight(foundComment);
+                scrollToTarget(foundComment);
+                Array.from(commentsContainer.children).forEach((c) => pulseElement(c, 3000));
+                highlightResult(targetInnerCard);
+              } else {
+                // Still highlight the group even if we can’t pinpoint the exact card
+                highlightResult(targetInnerCard);
+              }
+              // Advance the tour
+              setWaitingForUser(false);
+              setWaitAction(null);
+              setCurrentStepIndex((prev) => Math.min(prev + 1, stepsRef.current.length - 1));
+            }, 400);
+          });
+          observerRef.current.observe(targetInnerCard, { childList: true, subtree: true });
+          console.log('[DBG showClubbedComment] MutationObserver armed on innerCard ✓');
+        } else if (!cancelled) {
+          // No group found — ungrouped fallback
+          console.log('[DBG showClubbedComment] no group found — ungrouped fallback');
+          const multiComment = findOffTopic(analysis.multiGroupCommentTextPrefix);
+          if (multiComment) {
+            showWithAnimation(multiComment); await wait(600);
+            popHighlight(multiComment); await scrollToTarget(multiComment);
           }
         }
       }
@@ -515,6 +436,81 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
             });
             
             console.log('[Tour] Counter-group shown');
+          }
+        }
+      }
+
+      // DEBATE: Highlight counter pair in Counter Chat View
+      if (currentStep.action === 'highlightCounterPairInChat' && analysis && !cancelled) {
+        console.log('[DBG highlightCounterPairInChat] ── START ──');
+        // Wait for CounterChatView to render after user clicked the toggle
+        await wait(1200);
+        if (cancelled) return;
+
+        const counterPrefix = (analysis.counterGroupTextPrefix || '').slice(0, 40).trim();
+        const counterTitle  = (analysis.counterGroupTitle || '').trim();
+        console.log('[DBG highlightCounterPairInChat] looking for counterPrefix:', counterPrefix, '| counterTitle:', counterTitle);
+
+        const threads = document.querySelectorAll('[data-tour="counter-chat-thread"]');
+        console.log('[DBG highlightCounterPairInChat] threads found:', threads.length);
+
+        let matchedThread = null;
+
+        for (const thread of threads) {
+          // Check every group card ([data-group-id]) in this thread
+          const groupCards = thread.querySelectorAll('[data-group-id]');
+          for (const card of groupCards) {
+            const titleEl = card.querySelector('h3');
+            const titleText = titleEl?.textContent?.trim() || '';
+            // Match by title
+            if (counterTitle && titleText === counterTitle) {
+              matchedThread = thread;
+              console.log('[DBG highlightCounterPairInChat] ✓ matched by title:', titleText);
+              break;
+            }
+            // Match by comment text prefix (expand each card's comments section to check)
+            const commentsSection = card.querySelector('.comments-section');
+            if (commentsSection) {
+              for (const p of commentsSection.querySelectorAll('p')) {
+                const t = p.textContent?.trim() || '';
+                if (counterPrefix && t.startsWith(counterPrefix) && t.length > 20) {
+                  matchedThread = thread;
+                  console.log('[DBG highlightCounterPairInChat] ✓ matched by comment text:', t.slice(0, 60));
+                  break;
+                }
+              }
+            }
+            if (matchedThread) break;
+          }
+          if (matchedThread) break;
+        }
+
+        if (matchedThread && !cancelled) {
+          await scrollToTarget(matchedThread);
+          await wait(300);
+          // Highlight the whole thread
+          matchedThread.style.transition = 'all 0.4s ease';
+          matchedThread.style.boxShadow = '0 0 0 3px rgba(236,72,153,0.7), 0 0 32px rgba(236,72,153,0.35)';
+          matchedThread.style.borderRadius = '16px';
+          matchedThread.style.padding = '12px';
+          // Also highlight and expand both sides
+          const proCon = matchedThread.querySelectorAll('[data-group-id]');
+          proCon.forEach(async (card) => {
+            popHighlight(card);
+            // Expand the comments: click the "Show N comments" button
+            const showBtn = card.querySelector('button.w-full.text-left');
+            if (showBtn && showBtn.textContent?.includes('Show')) {
+              showBtn.click();
+            }
+          });
+          console.log('[DBG highlightCounterPairInChat] ✓ thread highlighted with', proCon.length, 'cards');
+        } else {
+          console.warn('[DBG highlightCounterPairInChat] ⚠ no matching thread found');
+          // Scroll to top of counter chat so user can at least see the view
+          const firstThread = document.querySelector('[data-tour="counter-chat-thread"]');
+          if (firstThread) {
+            await scrollToTarget(firstThread);
+            highlightResult(firstThread);
           }
         }
       }
@@ -640,9 +636,9 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         document.head.appendChild(style);
       }
 
-      // NEWS: Show card WITHOUT engagement (voting, comments btn, AI verdict hidden)
-      if (currentStep.action === 'showNewsCardWithoutEngagement') {
-        // Remove injected CSS
+      // NEWS: Show card as a clean slate — hide voting, comments, AI verdict
+      //       AND override vote counts + comment count to 0
+      if (currentStep.action === 'showNewsCardClean') {
         document.querySelectorAll('[data-tour-style]').forEach((s) => s.remove());
 
         const card = document.querySelector('[data-tour="home-first-news-card"]');
@@ -652,20 +648,18 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           const commentsBtn = card.querySelector('[data-tour="home-comments-btn"]');
           const aiVerdict = card.querySelector('[data-tour="home-ai-verdict"]');
 
-          if (votingBtns) {
-            hideElement(votingBtns);
-            hiddenElementsRef.current.push(votingBtns);
-          }
-          if (commentsBtn) {
-            hideElement(commentsBtn);
-            hiddenElementsRef.current.push(commentsBtn);
-          }
-          if (aiVerdict) {
-            hideElement(aiVerdict);
-            hiddenElementsRef.current.push(aiVerdict);
-          }
+          if (votingBtns) { hideElement(votingBtns); hiddenElementsRef.current.push(votingBtns); }
+          if (commentsBtn) { hideElement(commentsBtn); hiddenElementsRef.current.push(commentsBtn); }
+          if (aiVerdict) { hideElement(aiVerdict); hiddenElementsRef.current.push(aiVerdict); }
 
-          // Now show the card
+          // Override vote & comment counts to 0
+          const upSpan = card.querySelector('[data-tour="home-upvote-count"]');
+          const downSpan = card.querySelector('[data-tour="home-downvote-count"]');
+          const commentsCountSpan = card.querySelector('[data-tour="home-comments-count"]');
+          if (upSpan) { upSpan.dataset.tourOriginalText = upSpan.textContent; upSpan.textContent = '0'; }
+          if (downSpan) { downSpan.dataset.tourOriginalText = downSpan.textContent; downSpan.textContent = '0'; }
+          if (commentsCountSpan) { commentsCountSpan.dataset.tourOriginalText = commentsCountSpan.textContent; commentsCountSpan.textContent = '0 Comments'; }
+
           showWithAnimation(card);
           await wait(600);
           highlightResult(card);
@@ -674,19 +668,24 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         }
       }
 
-      // NEWS: Reveal voting buttons
-      if (currentStep.action === 'revealVoting') {
+      // NEWS: Reveal voting buttons (counts still 0) and wait for user to vote
+      if (currentStep.action === 'revealVotingZero') {
         const card = document.querySelector('[data-tour="home-first-news-card"]');
         if (card) {
           const votingBtns = card.querySelector('[data-tour="home-voting-buttons"]');
           if (votingBtns) {
             showWithAnimation(votingBtns);
-            await wait(400);
+            await wait(300);
+            // Re-override counts to 0 in case React re-rendered
+            const upSpan = card.querySelector('[data-tour="home-upvote-count"]');
+            const downSpan = card.querySelector('[data-tour="home-downvote-count"]');
+            if (upSpan) upSpan.textContent = '0';
+            if (downSpan) downSpan.textContent = '0';
           }
         }
       }
 
-      // NEWS: Reveal comments button
+      // NEWS: Reveal comments button (unchanged)
       if (currentStep.action === 'revealCommentsBtn') {
         const card = document.querySelector('[data-tour="home-first-news-card"]');
         if (card) {
@@ -698,15 +697,45 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         }
       }
 
+      // NEWS: Hide existing comments, pick one text, fill into input field
+      if (currentStep.action === 'hideCommentsAndFillInput' && !cancelled) {
+        await wait(600);
+        const section = document.querySelector('[data-tour="home-comment-section"]');
+        if (section) {
+          // Collect all visible comment cards
+          const commentCards = section.querySelectorAll(
+            '.p-3.bg-gray-50, .p-3.bg-gray-700, [data-tour="home-comment-card"]',
+          );
+          let pickedText = '';
+          commentCards.forEach((c, idx) => {
+            // Grab text from the first card with actual content
+            if (!pickedText && idx === 0) {
+              const textEl = c.querySelector('p.text-gray-800');
+              pickedText = textEl?.textContent?.trim() || '';
+            }
+            // Hide every comment card
+            hideElement(c);
+            hiddenElementsRef.current.push(c);
+          });
+          // Fallback text if no comment found
+          if (!pickedText) pickedText = analysis?.newsDescription?.slice(0, 120) || NEWS_MOCK.comment;
+          // Fill the input
+          const input = document.querySelector('[data-tour="home-comment-input"]');
+          if (input && !cancelled) {
+            await scrollToTarget(input);
+            await wait(200);
+            await typeIntoInput(input, pickedText, 8);
+            clearedInputsRef.current.push('[data-tour="home-comment-input"]');
+          }
+        }
+      }
+
       // NEWS: Reveal AI verdict section
       if (currentStep.action === 'revealAiVerdict') {
         const card = document.querySelector('[data-tour="home-first-news-card"]');
         if (card) {
           const aiVerdict = card.querySelector('[data-tour="home-ai-verdict"]');
-          if (aiVerdict) {
-            showWithAnimation(aiVerdict);
-            await wait(400);
-          }
+          if (aiVerdict) { showWithAnimation(aiVerdict); await wait(400); }
         }
       }
 
@@ -739,19 +768,28 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         }
       }
 
-      // NEWS: Stream comments animation
+      // NEWS: Stream comments animation — restore hidden cards one by one
       if (currentStep.action === 'streamComments' && !cancelled) {
         const section = document.querySelector('[data-tour="home-comment-section"]');
         if (section) {
           const cards = section.querySelectorAll(
             '.p-3.bg-gray-50, .p-3.bg-gray-700, [data-tour="home-comment-card"]',
           );
+          // First make sure they're all hidden (they were hidden in hideCommentsAndFillInput)
           cards.forEach((c) => {
-            c.style.opacity = '0';
-            c.style.transform = 'translateX(-20px)';
+            if (c.style.display === 'none') {
+              // Already hidden — good
+            } else {
+              c.style.opacity = '0';
+              c.style.transform = 'translateX(-20px)';
+            }
           });
           await wait(400);
           for (let i = 0; i < cards.length && !cancelled; i++) {
+            // Restore from tour-hidden state if needed
+            if (cards[i].dataset.tourHidden === 'true') {
+              showElement(cards[i]);
+            }
             cards[i].style.transition = 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)';
             cards[i].style.opacity = '1';
             cards[i].style.transform = 'translateX(0)';
@@ -760,13 +798,168 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
         }
       }
 
-      // NEWS: Highlight expert voting on first comment
-      if (currentStep.action === 'highlightExpertVoting' && !cancelled) {
+      // NEWS: Highlight evidence link feature
+      if (currentStep.action === 'highlightEvidenceLink' && !cancelled) {
+        const section = document.querySelector('[data-tour="home-comment-section"]');
+        if (section) {
+          // Find the "Add Evidence Links" button by text
+          const allButtons = section.querySelectorAll('button');
+          let evidenceBtn = null;
+          for (const btn of allButtons) {
+            if (btn.textContent?.includes('Evidence Link')) {
+              evidenceBtn = btn;
+              break;
+            }
+          }
+          if (evidenceBtn) {
+            await scrollToTarget(evidenceBtn);
+            await wait(300);
+            highlightAction(evidenceBtn);
+            pulseElement(evidenceBtn, 4000);
+            // Temporarily click it open to show the section
+            evidenceBtn.click();
+            await wait(600);
+            // Highlight the evidence links section
+            const evidenceSection = section.querySelector('.space-y-3:last-child') ||
+              evidenceBtn.closest('.flex.flex-col')?.querySelector('.space-y-3');
+            if (evidenceSection) highlightResult(evidenceSection);
+          } else {
+            // Fallback: highlight the comment input area
+            const input = document.querySelector('[data-tour="home-comment-input"]');
+            if (input) {
+              await scrollToTarget(input);
+              highlightAction(input.parentElement);
+            }
+          }
+        }
+      }
+
+      // NEWS: Animate expert voting on first comment
+      if (currentStep.action === 'animateExpertVote' && !cancelled) {
         const firstComment = document.querySelector('[data-tour="home-comment-card"]');
         if (firstComment) {
-          highlightResult(firstComment);
-          pulseElement(firstComment, 3000);
           await scrollToTarget(firstComment);
+          await wait(300);
+          highlightResult(firstComment);
+
+          // Find the ExpertVotingSection border-t area
+          const expertSection = firstComment.querySelector('.border-t.border-gray-200');
+          if (expertSection) {
+            // Create overlay badge — "Expert analysing..."
+            const badge = document.createElement('div');
+            badge.className = 'tour-expert-badge';
+            badge.style.cssText =
+              'position:absolute;top:-36px;left:50%;transform:translateX(-50%);' +
+              'background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;' +
+              'padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;' +
+              'box-shadow:0 4px 15px rgba(245,158,11,0.4);z-index:99999;white-space:nowrap;' +
+              'animation:pulse-ring 1.5s infinite;';
+            badge.textContent = '🔍 Expert is analysing this comment...';
+            expertSection.style.position = 'relative';
+            expertSection.appendChild(badge);
+            pulseElement(expertSection, 5000);
+
+            await wait(2000);
+            if (cancelled) { badge.remove(); return; }
+
+            // Change badge to "Expert Upvoted!"
+            badge.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+            badge.textContent = '👍 Expert Upvoted! Credibility score +1';
+
+            // Animate: find the upvote count in expert section and bump it
+            const upCountEls = expertSection.querySelectorAll('span.font-medium');
+            if (upCountEls.length > 0) {
+              const upEl = upCountEls[0];
+              const original = parseInt(upEl.textContent) || 0;
+              upEl.style.transition = 'all 0.4s ease';
+              upEl.style.color = '#16a34a';
+              upEl.style.transform = 'scale(1.5)';
+              upEl.textContent = String(original + 1);
+              await wait(800);
+              upEl.style.transform = 'scale(1)';
+            }
+
+            await wait(2000);
+            if (cancelled) { badge.remove(); return; }
+            // Remove badge
+            badge.style.transition = 'opacity 0.5s ease';
+            badge.style.opacity = '0';
+            setTimeout(() => badge.remove(), 500);
+          }
+        }
+      }
+
+      // NEWS: Highlight grouped comments view (after user clicked Group by Topic)
+      if (currentStep.action === 'highlightGroupedView' && !cancelled) {
+        await wait(800); // Wait for group API + render
+        const section = document.querySelector('[data-tour="home-comment-section"]');
+        if (section) {
+          // Find grouped view elements (group frames)
+          const groupFrames = section.querySelectorAll('.mb-4 .bg-blue-50, .mb-4');
+          if (groupFrames.length > 0) {
+            await scrollToTarget(section);
+            await wait(300);
+            // Highlight the entire comment section
+            highlightResult(section);
+            // Pulse each group frame
+            groupFrames.forEach((frame, i) => {
+              setTimeout(() => {
+                pulseElement(frame, 3000);
+              }, i * 400);
+            });
+          } else {
+            // Fallback: just highlight the section area
+            highlightResult(section);
+            await scrollToTarget(section);
+          }
+        }
+      }
+
+      // NEWS: Unhide all data — restore original news card to full state
+      if (currentStep.action === 'unhideAllNewsData') {
+        // Restore everything that was hidden
+        document.querySelectorAll('[data-tour-hidden="true"]').forEach((el) => {
+          showElement(el);
+          el.style.opacity = '';
+          el.style.transform = '';
+          el.style.transition = '';
+          el.style.boxShadow = '';
+        });
+        hiddenElementsRef.current.forEach((el) => {
+          if (el) {
+            showElement(el);
+            el.style.opacity = '';
+            el.style.transform = '';
+            el.style.transition = '';
+            el.style.boxShadow = '';
+          }
+        });
+        hiddenElementsRef.current = [];
+
+        // Restore original vote & comment counts
+        const card = document.querySelector('[data-tour="home-first-news-card"]');
+        if (card) {
+          const upSpan = card.querySelector('[data-tour="home-upvote-count"]');
+          const downSpan = card.querySelector('[data-tour="home-downvote-count"]');
+          const commentsCountSpan = card.querySelector('[data-tour="home-comments-count"]');
+          if (upSpan?.dataset.tourOriginalText) { upSpan.textContent = upSpan.dataset.tourOriginalText; delete upSpan.dataset.tourOriginalText; }
+          if (downSpan?.dataset.tourOriginalText) { downSpan.textContent = downSpan.dataset.tourOriginalText; delete downSpan.dataset.tourOriginalText; }
+          if (commentsCountSpan?.dataset.tourOriginalText) { commentsCountSpan.textContent = commentsCountSpan.dataset.tourOriginalText; delete commentsCountSpan.dataset.tourOriginalText; }
+        }
+
+        // Remove injected styles
+        document.querySelectorAll('[data-tour-style]').forEach((s) => s.remove());
+
+        // Remove any tour-expert-badge leftovers
+        document.querySelectorAll('.tour-expert-badge').forEach((b) => b.remove());
+
+        unhighlightAll();
+
+        // Re-animate the card fully visible
+        if (card) {
+          await scrollToTarget(card);
+          await wait(300);
+          pulseElement(card, 4000);
         }
       }
 
@@ -897,12 +1090,15 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       return;
     }
 
-    // Vote: programmatically click upvote button
+    // Vote: programmatically click upvote button, show count as 1 briefly
     if (waitAction === 'vote') {
       const votingDiv = document.querySelector('[data-tour="home-voting-buttons"]');
       if (votingDiv) {
         const upBtn = votingDiv.querySelector('button');
         if (upBtn) upBtn.click();
+        // Set count to "1" immediately for the tour's clean-slate narrative
+        const upSpan = document.querySelector('[data-tour="home-upvote-count"]');
+        if (upSpan) upSpan.textContent = '1';
       }
       setWaitingForUser(false);
       setWaitAction(null);
@@ -945,6 +1141,55 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       setWaitingForUser(false);
       setWaitAction(null);
       setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+      return;
+    }
+
+    // Expand clubbed group (Skip fallback): disconnect observer, programmatically
+    // expand the group, then find + highlight the comment.
+    if (waitAction === 'expandClubbedGroup') {
+      // Disconnect the MutationObserver so it doesn’t double-advance
+      if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
+      const data = clubbedGroupDataRef.current;
+      console.log('[DBG expandClubbedGroup] skip/fallback triggered, data:', !!data);
+      if (data?.groupCard) {
+        const { innerCard, searchPrefix: sp } = data;
+        // Expand if not already open
+        const isOpen = !!innerCard.querySelector('.mt-3.space-y-2');
+        if (!isOpen) {
+          const expandBtn = innerCard.querySelector('[data-tour="group-expand-btn"]');
+          if (expandBtn) expandBtn.click();
+        }
+        setTimeout(() => {
+          const container = innerCard.querySelector('.mt-3.space-y-2');
+          let foundComment = null;
+          if (container) {
+            for (const child of Array.from(container.children)) {
+              for (const p of child.querySelectorAll('p')) {
+                const t = p.textContent?.trim() || '';
+                if (sp && t.startsWith(sp) && t.length > 20) { foundComment = child; break; }
+              }
+              if (foundComment) break;
+              if (sp?.length >= 20 && child.textContent?.trim().includes(sp)) { foundComment = child; break; }
+            }
+          }
+          if (foundComment) {
+            if (foundComment.style.display === 'none') showWithAnimation(foundComment);
+            popHighlight(foundComment);
+            scrollToTarget(foundComment);
+            if (container) Array.from(container.children).forEach((c) => pulseElement(c, 3000));
+            highlightResult(innerCard);
+          } else if (innerCard) {
+            highlightResult(innerCard);
+          }
+          setWaitingForUser(false);
+          setWaitAction(null);
+          setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+        }, 700);
+      } else {
+        setWaitingForUser(false);
+        setWaitAction(null);
+        setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
+      }
       return;
     }
 
@@ -1044,8 +1289,29 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     // Remove all highlights
     unhighlightAll();
 
+    // Disconnect any pending MutationObserver
+    if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
+    clubbedGroupDataRef.current = null;
+
     // Remove injected <style> tags
     document.querySelectorAll('[data-tour-style]').forEach((s) => s.remove());
+
+    // Restore original vote & comment count text overrides
+    document.querySelectorAll('[data-tour-original-text]').forEach((el) => {
+      el.textContent = el.dataset.tourOriginalText;
+      delete el.dataset.tourOriginalText;
+    });
+    // Also check specific data-tour spans
+    const card = document.querySelector('[data-tour="home-first-news-card"]');
+    if (card) {
+      ['home-upvote-count', 'home-downvote-count', 'home-comments-count'].forEach((attr) => {
+        const span = card.querySelector(`[data-tour="${attr}"]`);
+        if (span?.dataset.tourOriginalText) { span.textContent = span.dataset.tourOriginalText; delete span.dataset.tourOriginalText; }
+      });
+    }
+
+    // Remove any tour expert badges
+    document.querySelectorAll('.tour-expert-badge').forEach((b) => b.remove());
 
     // Reset comment animation styles
     document.querySelectorAll('[data-tour="home-comment-section"] .p-3').forEach((c) => {
@@ -1079,6 +1345,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       setStepsReady(false);
       hiddenElementsRef.current = [];
       clearedInputsRef.current = [];
+      if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
+      clubbedGroupDataRef.current = null;
     }
   }, [isOpen]);
 
@@ -1294,7 +1562,13 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
               {waitingForUser && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-[10px] font-bold text-amber-600 dark:text-amber-400 animate-bounce">
-                  👆 Click the highlighted element!
+                  {waitAction === 'expandClubbedGroup'
+                    ? '👆 Click the ▼ button on the group!'
+                    : waitAction === 'vote'
+                    ? '👆 Click 👍 or 👎 to vote!'
+                    : waitAction === 'post-comment'
+                    ? '👆 Click the Post button!'
+                    : '👆 Click the highlighted element!'}
                 </span>
               )}
 
@@ -1333,10 +1607,10 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
               {currentStepIndex < steps.length - 1 ? (
                 waitingForUser ? (
                   <button
-                    disabled
-                    className="px-4 py-1.5 text-xs font-semibold text-gray-400 rounded-lg bg-gray-200 dark:bg-gray-700 cursor-not-allowed"
+                    onClick={handleUserAction}
+                    className={`px-4 py-1.5 text-xs font-semibold text-white rounded-lg bg-gradient-to-r from-gray-400 to-gray-500 hover:opacity-90 transition-opacity shadow-sm`}
                   >
-                    Waiting...
+                    Skip →
                   </button>
                 ) : (
                   <button

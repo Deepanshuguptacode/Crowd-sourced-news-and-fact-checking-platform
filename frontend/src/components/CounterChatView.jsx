@@ -98,6 +98,7 @@ const CounterChatView = ({ groups, onRegenerateGroup, onLikeComment, onDislikeCo
                 <ArrowPathIcon className="h-4 w-4" />
               </button>
               <button
+                data-tour="group-expand-btn"
                 onClick={() => toggleGroupExpansion(group._id)}
                 className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
@@ -137,7 +138,7 @@ const CounterChatView = ({ groups, onRegenerateGroup, onLikeComment, onDislikeCo
   };
 
   const renderCounterThread = (thread, index) => (
-    <div key={index} className="counter-thread flex items-start gap-8 mb-12 min-h-[300px] relative">
+    <div key={index} data-tour="counter-chat-thread" className="counter-thread flex items-start gap-8 mb-12 min-h-[300px] relative">
       {/* Pro side */}
       <div className="pro-side flex-1 max-w-[45%]">
         {thread.pro ? (

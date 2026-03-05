@@ -129,16 +129,15 @@ export const expandGroup = async (groupCard, force = false) => {
     const commentsDiv = innerCard.querySelector('.mt-3.space-y-2');
     if (commentsDiv) return;
   }
-  // Find the chevron button
-  const buttons = innerCard.querySelectorAll('button');
-  const chevronBtn = Array.from(buttons).find(
-    (b) =>
-      b.querySelector('svg.h-4.w-4') ||
-      b.querySelector('[class*="ChevronDown"]'),
-  );
+  // Find the chevron toggle button by its data-tour tag (most reliable)
+  // Falls back to the last p-1 button without a title (regenerate has title="Regenerate group content")
+  let chevronBtn =
+    innerCard.querySelector('[data-tour="group-expand-btn"]') ??
+    Array.from(innerCard.querySelectorAll('button.p-1')).find((b) => !b.title) ??
+    Array.from(innerCard.querySelectorAll('button')).at(-1);
   if (chevronBtn) {
     chevronBtn.click();
-    await wait(400);
+    await wait(500);
   }
 };
 

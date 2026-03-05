@@ -43,11 +43,13 @@ export const buildDebateSteps = (analysis) => [
     id: 'debate-show-clubbed',
     icon: '📂',
     title: 'Comment Clubbed Into Group!',
-    subtitle: 'AI found a matching cluster',
+    subtitle: 'Expand the group to see it',
     description:
-      'The AI detected this comment shares the same theme and automatically clubbed it into the existing group! Notice the comment count increased. The comment is highlighted in green below.',
+      'The AI grouped your comment with similar ones!\n\n👆 The ▼ expand button is highlighted on the matching group. Click it to open the group and see your comment highlighted inside.\n\nYou can also click Skip → if the button is hard to find.',
     gradient: 'from-green-500 to-emerald-600',
+    target: null,
     action: 'showClubbedComment',
+    waitForClick: 'expandClubbedGroup',
   },
   {
     id: 'debate-type-new',
@@ -129,6 +131,16 @@ export const buildDebateSteps = (analysis) => [
     target: '[data-tour="debate-room-view-toggle"]',
     action: 'highlightCounterChatBtn',
     waitForClick: 'counterChatBtn',
+  },
+  {
+    id: 'debate-counter-pair',
+    icon: '🔗',
+    title: 'Your Counter Pair',
+    subtitle: 'AI matched opposing views',
+    description:
+      'Here is the counter-argument thread your comment created! The left side (FOR) and right side (AGAINST) are now paired by the AI. Both groups are highlighted — this is the live counter-argument link.',
+    gradient: 'from-pink-500 to-rose-600',
+    action: 'highlightCounterPairInChat',
   },
   {
     id: 'debate-type-offtopic',
