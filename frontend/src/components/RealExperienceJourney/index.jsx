@@ -19,7 +19,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { wait, scrollToTarget, typeIntoInput, clearInput } from './domHelpers';
+import { wait, scrollToTarget, typeIntoInput, clearInput, waitForElement } from './domHelpers';
 import {
   hideElement,
   showElement,
@@ -70,6 +70,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
   const currentStepHiddenRef = useRef(null); // Track what was hidden for current step
   const observerRef = useRef(null);           // MutationObserver for expand detection
   const clubbedGroupDataRef = useRef(null);   // { groupCard, innerCard, searchPrefix }
+  const zeroCountObserverRef = useRef(null);  // MutationObserver that forces vote/comment counts to 0
 
   const isDebate = currentPath?.startsWith('/debate-room/');
   const isHome = currentPath === '/home';
@@ -130,11 +131,26 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
     const el = document.querySelector(currentStep.target);
     if (el) {
       const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // Find navbar/footer so the spotlight cutout never overlaps them
+      const nav = document.querySelector('nav.sticky, nav.fixed, header.sticky, header.fixed');
+      const navBottom = nav ? nav.getBoundingClientRect().bottom : 0;
+      const footer = document.querySelector('footer');
+      const footerTop = footer ? footer.getBoundingClientRect().top : vh;
+
+      let srTop = rect.top - 8;
+      let srBottom = rect.bottom + 8;
+      // Clamp so the spotlight doesn't extend above navbar or below footer
+      if (srTop < navBottom) srTop = navBottom;
+      if (srBottom > footerTop) srBottom = footerTop;
+      // Safety: height must be positive
+      const srHeight = Math.max(0, srBottom - srTop);
+
       const sr = {
         left: rect.left - 8,
-        top: rect.top - 8,
+        top: srTop,
         width: rect.width + 16,
-        height: rect.height + 16,
+        height: srHeight,
       };
       setSpotlightRect(sr);
       setPanelPos(calcPanelPosition(rect));
@@ -669,7 +685,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
       if (currentStep.action === 'showNewsCardClean') {
         document.querySelectorAll('[data-tour-style]').forEach((s) => s.remove());
 
-        const card = document.querySelector('[data-tour="home-first-news-card"]');
+        // Poll for the card — it may not exist yet after navigation back to /home
+        const card = await waitForElement('[data-tour="home-first-news-card"]', 12000);
         if (card) {
           // Hide engagement elements BEFORE showing the card
           const votingBtns = card.querySelector('[data-tour="home-voting-buttons"]');
@@ -680,23 +697,53 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (commentsBtn) { hideElement(commentsBtn); hiddenElementsRef.current.push(commentsBtn); }
           if (aiVerdict) { hideElement(aiVerdict); hiddenElementsRef.current.push(aiVerdict); }
 
-          // Override vote & comment counts to 0
+          // Persist AI verdict hidden + zero counts + card z-index via CSS
+          const tourCSS = document.createElement('style');
+          tourCSS.setAttribute('data-tour-style', 'hide-ai-verdict');
+          tourCSS.textContent = [
+            '[data-tour="home-ai-verdict"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }',
+            // CSS-only zero counts — immune to React re-renders
+            '[data-tour="home-upvote-count"], [data-tour="home-downvote-count"] { font-size: 0 !important; line-height: 0 !important; }',
+            '[data-tour="home-upvote-count"]::after, [data-tour="home-downvote-count"]::after { content: "0" !important; font-size: 0.875rem !important; line-height: normal !important; }',
+            '[data-tour="home-comments-count"] { font-size: 0 !important; line-height: 0 !important; }',
+            '[data-tour="home-comments-count"]::after { content: "0 Comments" !important; font-size: 0.875rem !important; line-height: normal !important; }',
+            // Keep card below the sticky navbar (z-50 = z-index 50)
+            '[data-tour="home-first-news-card"] { position: relative !important; z-index: 1 !important; }',
+          ].join('\n');
+          document.head.appendChild(tourCSS);
+
+          // Store original counts for restoration later
           const upSpan = card.querySelector('[data-tour="home-upvote-count"]');
           const downSpan = card.querySelector('[data-tour="home-downvote-count"]');
           const commentsCountSpan = card.querySelector('[data-tour="home-comments-count"]');
-          if (upSpan) { upSpan.dataset.tourOriginalText = upSpan.textContent; upSpan.textContent = '0'; }
-          if (downSpan) { downSpan.dataset.tourOriginalText = downSpan.textContent; downSpan.textContent = '0'; }
-          if (commentsCountSpan) { commentsCountSpan.dataset.tourOriginalText = commentsCountSpan.textContent; commentsCountSpan.textContent = '0 Comments'; }
+          if (upSpan) upSpan.dataset.tourOriginalText = upSpan.textContent;
+          if (downSpan) downSpan.dataset.tourOriginalText = downSpan.textContent;
+          if (commentsCountSpan) commentsCountSpan.dataset.tourOriginalText = commentsCountSpan.textContent;
+
+          // Also force textContent as backup
+          if (upSpan) upSpan.textContent = '0';
+          if (downSpan) downSpan.textContent = '0';
+          if (commentsCountSpan) commentsCountSpan.textContent = '0 Comments';
+
+          // Cleanup ref (no-op for CSS approach, but keeps interface consistent)
+          if (zeroCountObserverRef.current) zeroCountObserverRef.current.disconnect();
+          zeroCountObserverRef.current = { disconnect: () => {} };
 
           showWithAnimation(card);
           await wait(600);
-          highlightResult(card);
+          // Highlight WITHOUT z-index so the card doesn't render over navbar/footer
+          markTourStyled(card);
+          card.style.transition = 'all 0.4s ease';
+          card.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.7), 0 0 24px rgba(34,197,94,0.35)';
+          card.style.borderRadius = card.style.borderRadius || '12px';
           pulseElement(card, 4000);
-          await scrollToTarget(card);
+          // Scroll to top of the page so the card is visible below navbar
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          await wait(600);
         }
       }
 
-      // NEWS: Reveal voting buttons (counts still 0) and wait for user to vote
+      // NEWS: Reveal voting buttons (counts still 0 via CSS) and wait for user to vote
       if (currentStep.action === 'revealVotingZero') {
         const card = document.querySelector('[data-tour="home-first-news-card"]');
         if (card) {
@@ -704,11 +751,9 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           if (votingBtns) {
             showWithAnimation(votingBtns);
             await wait(300);
-            // Re-override counts to 0 in case React re-rendered
-            const upSpan = card.querySelector('[data-tour="home-upvote-count"]');
-            const downSpan = card.querySelector('[data-tour="home-downvote-count"]');
-            if (upSpan) upSpan.textContent = '0';
-            if (downSpan) downSpan.textContent = '0';
+            // Scroll so the voting area is visible
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            await wait(400);
           }
         }
       }
@@ -747,11 +792,13 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           });
           // Fallback text if no comment found
           if (!pickedText) pickedText = analysis?.newsDescription?.slice(0, 120) || NEWS_MOCK.comment;
-          // Fill the input
+          // Fill the input + highlight both input and post button
           const input = document.querySelector('[data-tour="home-comment-input"]');
           if (input && !cancelled) {
             await scrollToTarget(input);
             await wait(200);
+            // Highlight the input area while typing
+            highlightAction(input);
             await typeIntoInput(input, pickedText, 8);
             clearedInputsRef.current.push('[data-tour="home-comment-input"]');
           }
@@ -760,6 +807,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
       // NEWS: Reveal AI verdict section
       if (currentStep.action === 'revealAiVerdict') {
+        // Remove the persistent CSS hide rule so the verdict can appear
+        document.querySelectorAll('[data-tour-style="hide-ai-verdict"]').forEach((s) => s.remove());
         const card = document.querySelector('[data-tour="home-first-news-card"]');
         if (card) {
           const aiVerdict = card.querySelector('[data-tour="home-ai-verdict"]');
@@ -823,6 +872,11 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
             cards[i].style.transform = 'translateX(0)';
             await wait(280);
           }
+        }
+        // Auto-advance after streaming completes so user isn't stuck
+        if (!cancelled) {
+          await wait(800);
+          setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
         }
       }
 
@@ -947,6 +1001,8 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
       // NEWS: Unhide all data — restore original news card to full state
       if (currentStep.action === 'unhideAllNewsData') {
+        // Disconnect zero-count observer so real counts can render
+        if (zeroCountObserverRef.current) { zeroCountObserverRef.current.disconnect(); zeroCountObserverRef.current = null; }
         // Restore everything that was hidden
         document.querySelectorAll('[data-tour-hidden="true"]').forEach((el) => {
           showElement(el);
@@ -1022,12 +1078,9 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
           '[data-tour="debate-room-comment-input"] button[type="submit"]',
         );
         if (debateSend) highlightAction(debateSend);
-        // News comment post button — sibling of the input
-        const newsInput = document.querySelector('[data-tour="home-comment-input"]');
-        if (newsInput) {
-          const sib = newsInput.nextElementSibling;
-          if (sib?.tagName === 'BUTTON') highlightAction(sib);
-        }
+        // News comment post button
+        const newsPostBtn = document.querySelector('[data-tour="home-comment-post-btn"]');
+        if (newsPostBtn) highlightAction(newsPostBtn);
       }
 
       // ═══════════════════════════════════════════════════════════════════
@@ -1120,14 +1173,37 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
     // Vote: programmatically click upvote button, show count as 1 briefly
     if (waitAction === 'vote') {
+      // Stop any previous zero-count observer
+      if (zeroCountObserverRef.current) { zeroCountObserverRef.current.disconnect(); zeroCountObserverRef.current = null; }
+      // Replace CSS zero-count rules with vote-count rules (1 upvote, 0 downvotes)
+      document.querySelectorAll('[data-tour-style="hide-ai-verdict"]').forEach((s) => {
+        // Rewrite: keep AI verdict hidden but update counts to show 1/0
+        s.textContent = [
+          '[data-tour="home-ai-verdict"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }',
+          '[data-tour="home-upvote-count"], [data-tour="home-downvote-count"] { font-size: 0 !important; line-height: 0 !important; }',
+          '[data-tour="home-upvote-count"]::after { content: "1" !important; font-size: 0.875rem !important; line-height: normal !important; }',
+          '[data-tour="home-downvote-count"]::after { content: "0" !important; font-size: 0.875rem !important; line-height: normal !important; }',
+          '[data-tour="home-comments-count"] { font-size: 0 !important; line-height: 0 !important; }',
+          '[data-tour="home-comments-count"]::after { content: "0 Comments" !important; font-size: 0.875rem !important; line-height: normal !important; }',
+          '[data-tour="home-first-news-card"] { position: relative !important; z-index: 1 !important; }',
+        ].join('\n');
+      });
       const votingDiv = document.querySelector('[data-tour="home-voting-buttons"]');
       if (votingDiv) {
+        // Always click the FIRST button (upvote — green bg-green-100)
         const upBtn = votingDiv.querySelector('button');
         if (upBtn) upBtn.click();
-        // Set count to "1" immediately for the tour's clean-slate narrative
-        const upSpan = document.querySelector('[data-tour="home-upvote-count"]');
-        if (upSpan) upSpan.textContent = '1';
       }
+      // Also force textContent as backup
+      const forceVoteCounts = () => {
+        const up = document.querySelector('[data-tour="home-upvote-count"]');
+        const down = document.querySelector('[data-tour="home-downvote-count"]');
+        if (up && up.textContent !== '1') up.textContent = '1';
+        if (down && down.textContent !== '0') down.textContent = '0';
+      };
+      forceVoteCounts();
+      const voteInterval = setInterval(forceVoteCounts, 50);
+      setTimeout(() => clearInterval(voteInterval), 2000);
       setWaitingForUser(false);
       setWaitAction(null);
       setCurrentStepIndex((i) => Math.min(i + 1, stepsRef.current.length - 1));
@@ -1359,6 +1435,7 @@ const RealExperienceJourney = ({ isOpen, onClose, currentPath }) => {
 
     // Disconnect any pending MutationObserver
     if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
+    if (zeroCountObserverRef.current) { zeroCountObserverRef.current.disconnect(); zeroCountObserverRef.current = null; }
     clubbedGroupDataRef.current = null;
 
     // Remove injected <style> tags

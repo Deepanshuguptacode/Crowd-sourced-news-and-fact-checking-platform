@@ -4,6 +4,18 @@
 
 export const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** Poll for a DOM element to appear (useful after navigation). */
+export const waitForElement = (selector, timeoutMs = 10000) =>
+  new Promise((resolve) => {
+    const el = document.querySelector(selector);
+    if (el) { resolve(el); return; }
+    const interval = setInterval(() => {
+      const found = document.querySelector(selector);
+      if (found) { clearInterval(interval); clearTimeout(timer); resolve(found); }
+    }, 100);
+    const timer = setTimeout(() => { clearInterval(interval); resolve(null); }, timeoutMs);
+  });
+
 export const scrollToTarget = (selector) =>
   new Promise((resolve) => {
     const el =

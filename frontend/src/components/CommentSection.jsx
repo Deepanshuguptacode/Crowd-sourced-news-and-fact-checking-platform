@@ -432,6 +432,7 @@ const CommentSection = ({ comments, onAddComment, onClose, newsId, onCommentDele
             />
             <button
               type="button"
+              data-tour="home-comment-post-btn"
               onClick={handleAddComment}
               disabled={loading || !isAuthenticated}
               className={`px-4 py-2 rounded-r text-white ${

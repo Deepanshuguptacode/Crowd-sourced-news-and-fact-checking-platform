@@ -118,7 +118,7 @@ export const buildNewsSteps = (/* analysis */) => [
     description:
       'A community member is writing a comment. The text has been filled in from an existing user analysis. Click the Post button to submit it!',
     gradient: 'from-pink-500 to-rose-600',
-    target: '[data-tour="home-comment-input"]',
+    target: '[data-tour="home-comment-post-btn"]',
     action: 'hideCommentsAndFillInput',
     highlightSendBtn: true,
     waitForClick: 'post-comment',
