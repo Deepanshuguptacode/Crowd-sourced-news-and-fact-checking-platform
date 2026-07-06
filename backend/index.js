@@ -39,6 +39,8 @@ const corsOptions = {
     // GCP VM IP
     'http://34.131.33.101',
     'https://34.131.33.101',
+    'http://34.131.160.23',
+    'https://34.131.160.23',
     // Environment variable for custom frontend URL
     process.env.FRONTEND_URL
   ].filter(Boolean), // Remove undefined values
