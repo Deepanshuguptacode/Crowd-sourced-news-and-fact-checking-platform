@@ -30,13 +30,15 @@ const corsOptions = {
     'http://127.0.0.1:4173',
     // Production domains
     'https://voxveritas.me',
+    'https://voxveritas.tech',
     'https://www.voxveritas.me',
+    'https://www.voxveritas.tech',
     'https://voxveritas.vercel.app',
     'https://voxveritas-frontend.vercel.app',
     'https://crowd-sourced-news-and-fact-checkin.vercel.app',
     // GCP VM IP
-    'http://34.131.44.0',
-    'https://34.131.44.0',
+    'http://34.131.33.101',
+    'https://34.131.33.101',
     // Environment variable for custom frontend URL
     process.env.FRONTEND_URL
   ].filter(Boolean), // Remove undefined values
