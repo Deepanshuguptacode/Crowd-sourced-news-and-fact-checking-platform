@@ -38,3 +38,6 @@ uploads/
 
 # Legacy
 DebateRoom
+
+# Graphify
+graphify-out/cache/

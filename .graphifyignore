@@ -1,0 +1,20 @@
+# Dependencies and build artifacts
+node_modules/
+dist/
+build/
+
+# Python environments and bytecode
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Generated graph output (avoid self-indexing)
+graphify-out/
+
+# Large runtime/data folders (remove if you want these included)
+logs/
+uploads/
+comment-data/
+dataset/

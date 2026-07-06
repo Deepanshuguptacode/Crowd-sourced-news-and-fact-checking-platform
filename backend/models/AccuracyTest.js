@@ -38,6 +38,34 @@ const accuracyTestSchema = new mongoose.Schema({
         mean: Number,
         std: Number
       }
+    },
+    gpt4PlusS: {
+      simple: {
+        mean: Number,
+        std: Number
+      },
+      moderate: {
+        mean: Number,
+        std: Number
+      },
+      complex: {
+        mean: Number,
+        std: Number
+      }
+    },
+    crowd: {
+      simple: {
+        mean: Number,
+        std: Number
+      },
+      moderate: {
+        mean: Number,
+        std: Number
+      },
+      complex: {
+        mean: Number,
+        std: Number
+      }
     }
   },
   engagementMetrics: {

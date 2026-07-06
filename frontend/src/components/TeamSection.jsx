@@ -11,13 +11,13 @@ export default function TeamSection() {
     {
       name: "Anantu Rajesh",
       role: "Frontend Developer",
-      social: { gmail: "rajeshanantu@gmail.com", linkedin: "https://www.linkedin.com/in/anantu-rajesh-22a78a2b5/", github: "https://github.com/Anantu-Rajesh",resume: "https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J"},
+      social: { gmail: "rajeshanantu@gmail.com", linkedin: "https://www.linkedin.com/in/anantu-rajesh-22a78a2b5/", github: "https://drive.google.com/file/d/1BSYnzSLX3XTyMex_TAtpspV3gjFbrY6l/view?usp=sharing"},
       image: anantuImg,
     },
     {
       name: "Deepanshu Gupta",
       role: "Backend & Gen-AI Engineer",
-      social: { gmail: "deepanshugupta650@gmail.com", linkedin: "https://www.linkedin.com/in/deepanshu-gupta-650d/", github: "https://github.com/Deepanshuguptacode",resume: "https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt" },
+      social: { gmail: "deepanshugupta650@gmail.com", linkedin: "https://www.linkedin.com/in/deepanshu-gupta-650d/", github: "https://github.com/Deepanshuguptacode",resume: "https://drive.google.com/file/d/1T_CWeY01TxoX_3c_YhocNFXNDCF0Wysu/view?usp=sharing" },
       image: deepanshuImg,
     },
   ];
