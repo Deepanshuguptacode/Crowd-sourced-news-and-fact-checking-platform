@@ -1,4 +1,4 @@
-# VoxVeritas: Complete Platform Architecture
+ha# VoxVeritas: Complete Platform Architecture
 ## Comprehensive Crowd-Sourced News Verification & Fact-Checking Platform
 
 ---

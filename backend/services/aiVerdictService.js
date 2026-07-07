@@ -83,7 +83,7 @@ class AIVerdictService {
         topComments,
         analysisMetadata: await this.calculateMetadata(newsId),
         generatedBy: {
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.5-flash',
           version: '1.0'
         }
       });
@@ -320,7 +320,7 @@ Return only the JSON arguments for the function invocation.
       const callStartTime = Date.now();
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.5-flash',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt }] }
         ],

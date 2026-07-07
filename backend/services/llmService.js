@@ -223,7 +223,7 @@ class LLMService {
 
     const ai = this._ai();
     const res = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: { tools: [{ functionDeclarations: [classifyFn] }], functionInvocation: 'auto' },
     });
@@ -307,7 +307,7 @@ class LLMService {
       const startTime = Date.now();
       const ai = this._ai();
       const res = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           tools: [{ functionDeclarations: [fn] }],
@@ -349,7 +349,7 @@ class LLMService {
       const prompt = `Analyze these comments and write a description in EXACTLY 10-13 words (no more):\n"${commentText}"\n\nRules:\n- Maximum 13 words total\n- Summarize the core theme or argument of the group\n- No introductory phrases like "This group" or "Comments about"\n- Return ONLY the description, nothing else`;
       const ai = this._ai();
       const res = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
       });
       const raw = res.text?.trim() || res.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
@@ -393,7 +393,7 @@ class LLMService {
     const prompt = `Current name: "${currentName}"\nComments:\n${list}\n\nSuggest a concise group name. Return only JSON.`;
     const ai = this._ai();
     const res = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: { tools: [{ functionDeclarations: [fn] }], functionInvocation: 'auto' },
     });
@@ -482,7 +482,7 @@ class LLMService {
     
     const ai = this._ai();
     const res = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: { 
         tools: [{ functionDeclarations: [fn] }], 
