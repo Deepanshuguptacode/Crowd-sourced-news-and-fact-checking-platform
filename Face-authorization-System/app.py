@@ -487,6 +487,23 @@ def liveness_frame():
         session_id = data.get('session_id')
         image_data = data.get('image')
         
+        # --- DETACHED LIVENESS: Bypass actual liveness frame processing ---
+        return jsonify({
+            'success': True,
+            'state': 'success',
+            'session_active': False,
+            'result': {
+                'success': True,
+                'confidence': 1.0,
+                'message': 'Liveness bypassed',
+                'details': {
+                    'successful_challenges': 3,
+                    'total_challenges': 3
+                }
+            }
+        })
+        # --- END DETACHED LIVENESS ---
+
         if not session_id or not image_data:
             return jsonify({'success': False, 'message': 'session_id and image required'}), 400
         

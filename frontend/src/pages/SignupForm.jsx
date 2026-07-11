@@ -5,7 +5,7 @@ import { authAPI } from "../services/api";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn, Briefcase, Camera, Shield, Users, Award, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import LivenessFaceCapture from "../components/LivenessFaceCapture";
+import FaceCapture from "../components/FaceCapture";
 import NavigationHeader from "../components/NavigationHeader";
 
 const roleContent = {
@@ -45,11 +45,11 @@ const SignupForm = () => {
   const handleFaceCapture = (imageDataUrl) => {
     setFaceImage(imageDataUrl);
     setShowFaceCapture(false);
-    toast.success("Liveness verified & face captured successfully!");
+    toast.success("Face captured successfully!");
   };
 
   const handleFaceCaptureError = (err) => {
-    toast.error("Liveness verification failed: " + err);
+    toast.error("Face capture failed: " + err);
     setFaceImage(null);
   };
 
@@ -207,7 +207,7 @@ const SignupForm = () => {
                         <span className="text-xs font-medium text-red-500 dark:text-red-400">(Required)</span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Face liveness verification is required to create an account</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">Face authentication is required to create an account</p>
                     <AnimatePresence mode="wait">
                       {(
                         <motion.div 
@@ -227,7 +227,7 @@ const SignupForm = () => {
                               transition={{ duration: 0.2 }}
                             >
                               <Camera className="w-5 h-5" />
-                              <span>Start Liveness + Face Verification</span>
+                              <span>Start Face Verification</span>
                             </motion.button>
                           )}
                           <AnimatePresence mode="wait">
@@ -239,7 +239,7 @@ const SignupForm = () => {
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-gray-200 dark:border-slate-600"
                               >
-                                <LivenessFaceCapture onSuccess={handleFaceCapture} onError={handleFaceCaptureError} />
+                                <FaceCapture onCapture={handleFaceCapture} onError={handleFaceCaptureError} />
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -252,7 +252,7 @@ const SignupForm = () => {
                             >
                               <div className="flex items-center space-x-2">
                                 <Camera className="w-4 h-4 text-green-700 dark:text-green-300" />
-                                <span className="text-sm text-green-700 dark:text-green-300 font-medium">✓ Liveness verified & face captured!</span>
+                                <span className="text-sm text-green-700 dark:text-green-300 font-medium">✓ Face captured successfully!</span>
                               </div>
                               <button 
                                 type="button"
