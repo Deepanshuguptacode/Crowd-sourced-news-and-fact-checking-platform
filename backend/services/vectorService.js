@@ -50,7 +50,7 @@ const NAMESPACES = {
 };
 
 const SIMILARITY_THRESHOLDS = {
-  GROUP_MATCH:   0.74,   // comment→group match (high = confident match)
+  GROUP_MATCH:   0.68,   // comment→group match (high = confident match)
   COUNTER_MATCH: 0.62,   // comment→ideal-counter avg (55% avg required for pairing)
   OFF_TOPIC:     0.25,   // below this = off-topic
   TANGENTIAL:    0.40,   // between OFF_TOPIC and this = tangential
