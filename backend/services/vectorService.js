@@ -465,7 +465,7 @@ class VectorService {
     if (best) {
       const passesThreshold = best.avgScore >= SIMILARITY_THRESHOLDS.COUNTER_MATCH;
       if (passesThreshold) {
-        console.log(`\n✅ Best counter match: group ${best.counterGroupId} (avg: ${(best.avgScore * 100).toFixed(1)}%, best IC: ${(best.bestScore * 100).toFixed(1)}%) - PASSES threshold (${(SIMILARITY_THRESHOLDS.COUNTER_MATCH * 100).toFixed(0)}%)`);
+        console.log(`\n✅ Best counter match: group ${best.counterGroupId} (avg: ${(best.avgScore * 100).toFixed(1)}%, best IC: ${(best.bestScore * 100).toFixed(1)}%) - PASSES threshold (${( _THRESHOLDS.COUNTER_MATCH * 100).toFixed(0)}%)`);
       } else {
         console.log(`\n⚠️ Best counter match: group ${best.counterGroupId} (avg: ${(best.avgScore * 100).toFixed(1)}%, best IC: ${(best.bestScore * 100).toFixed(1)}%) - BELOW threshold (${(SIMILARITY_THRESHOLDS.COUNTER_MATCH * 100).toFixed(0)}%)`);
       }
