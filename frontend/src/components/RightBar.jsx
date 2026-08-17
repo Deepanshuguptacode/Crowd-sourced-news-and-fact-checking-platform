@@ -68,7 +68,6 @@ const RightBar = () => {
               {isKnowUs && showContactDropdown && (
                 <div className="mt-2 ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
                   {[
-                    { name: 'Anantu Rajesh', url: 'https://1drv.ms/b/c/e7a646ee605c5de9/EZ9ksGsvoJlHptP0qGwy9E4BXk2D5WgG_y-zQh6IJGrD4Q?e=7i9c0J' },
                     { name: 'Deepanshu Gupta', url: 'https://1drv.ms/w/c/a98ec36420258513/EczRlPK_pOBMqKey_vKMZG8BEr4J3RJuTeYXq2BeUm_ygQ?e=kdzvxt' }
                   ].map((person, i) => (
                     <a key={i} href={person.url} target="_blank" rel="noopener noreferrer" className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200">
